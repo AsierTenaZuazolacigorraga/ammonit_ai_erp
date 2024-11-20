@@ -1,0 +1,16 @@
+# database & logs
+mysql-data/
+
+# customs
+.venv/
+.gitignores/
+__pycache__/
+*.pem
+*Zone.Identifier
+*.crt
+*.key
+*.log
+.env
+
+# nginx
+nginx.conf
