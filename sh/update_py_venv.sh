@@ -10,6 +10,8 @@ else
     echo "Virtual environment does not exist. Creating one..."
 
     # Create a virtual environment using Python 3
+    sudo apt install python3-pip
+    sudo apt install python3-venv
     python3 -m venv $VENV_DIR
 
     # Check if the virtual environment was successfully created

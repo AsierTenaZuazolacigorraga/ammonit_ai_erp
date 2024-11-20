@@ -1,1 +1,2 @@
 -r device/requirements.txt
+-r broker/requirements.txt
