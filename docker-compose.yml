@@ -63,6 +63,7 @@ services:
       - ./broker/log:/mosquitto/log
     ports:
       - 1883:1883
+      - 1884:1884
       - 8883:8883
     entrypoint: [ "/docker-entrypoint.sh" ]
     command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf" ]

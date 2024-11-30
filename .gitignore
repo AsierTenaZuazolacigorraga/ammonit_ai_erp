@@ -12,6 +12,7 @@ logs.txt
 *.key
 *.log
 *.pwfile
+*.db
 .env
 
 # nginx
