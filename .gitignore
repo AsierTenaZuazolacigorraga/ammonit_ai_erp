@@ -2,14 +2,16 @@
 mysql-data/
 
 # customs
+__pycache__/
 .venv/
 .gitignores/
-__pycache__/
-*.pem
+logs.txt
 *Zone.Identifier
+*.pem
 *.crt
 *.key
 *.log
+*.pwfile
 .env
 
 # nginx
