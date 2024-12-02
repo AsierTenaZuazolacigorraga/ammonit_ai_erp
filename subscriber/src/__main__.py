@@ -45,7 +45,7 @@ def main():
 
     mqtt_client = get_mqtt_client("sub", on_message=on_message)
     mqtt_client.connect(
-        "localhost", MQTT_HOST["port"], 60
+        "mosquitto", MQTT_HOST["port"], 60
     )  # Instead of using MQTT_HOST["host"], as the broker and subscriber are in the same machine, use localhost
     mqtt_client.loop_start()
 

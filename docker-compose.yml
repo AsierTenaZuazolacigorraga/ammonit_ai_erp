@@ -1,3 +1,7 @@
+##################################################################
+# Services
+##################################################################
+
 services:
 
   app:
@@ -61,6 +65,8 @@ services:
       - ./broker/config:/mosquitto/config
       - ./broker/data:/mosquitto/data
       - ./broker/log:/mosquitto/log
+    networks:
+      - internal
     ports:
       - 1884:1884
       #- 8883:8883
@@ -75,6 +81,19 @@ services:
     restart: no
     environment:
       INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+    networks:
+      - internal
     ports:
       - 1885:1884
       #- 8883:8883
+    depends_on:
+      - mosquitto
+
+##################################################################
+# Networks
+##################################################################
+
+networks:
+
+  internal:
+    driver: bridge
