@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Define paths
 current_path=$(dirname "$0")
 cd $current_path
