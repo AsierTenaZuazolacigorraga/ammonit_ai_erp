@@ -76,5 +76,5 @@ services:
     environment:
       INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
     ports:
-      - 1884:1884
+      - 1885:1884
       #- 8883:8883
