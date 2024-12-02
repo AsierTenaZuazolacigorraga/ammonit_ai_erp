@@ -1,2 +1,7 @@
--r device/requirements.txt
--r broker/requirements.txt
+# -r publisher/requirements.txt
+# -r subscriber/requirements.txt
+
+influxdb3-python==0.10.0
+pandas==2.2.3
+python-dotenv==1.0.1
+paho-mqtt==2.1.0

@@ -62,8 +62,19 @@ services:
       - ./broker/data:/mosquitto/data
       - ./broker/log:/mosquitto/log
     ports:
-      - 1883:1883
       - 1884:1884
-      - 8883:8883
+      #- 8883:8883
     entrypoint: [ "/docker-entrypoint.sh" ]
     command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf" ]
+
+  subscriber:
+    container_name: subscriber
+    build:
+      context: .
+      dockerfile: subscriber/Dockerfile
+    restart: no
+    environment:
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+    ports:
+      - 1884:1884
+      #- 8883:8883

@@ -1,4 +1,9 @@
 import logging
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Logger
 
@@ -12,7 +17,18 @@ LOGGER_FORMATTER = logging.Formatter(LOGGER_LINE_FMT, LOGGER_DATE_FMT)
 
 # Mqtt
 MQTT_HOSTS = {
-    "test.mosquitto.org": {
+    "aws": {
+        "host": "ec2-51-92-199-104.eu-south-2.compute.amazonaws.com",
+        "port": 1884,
+        "user": os.getenv("MQTT_USER"),
+        "psw": os.getenv("MQTT_PSW"),
+        "topic": "test/topic/16011",
+        # "cafile": "/home/atena/my_projects/iot_bind/.gitignores/mosquitto.org.crt",
+        # "key": "",
+        # "cert": "",
+    },
+    "mosquitto.org": {
+        "host": "test.mosquitto.org",
         "port": 8885,
         "user": "rw",
         "psw": "readwrite",
@@ -20,7 +36,8 @@ MQTT_HOSTS = {
         # "key": "",
         # "cert": "",
     },
-    "localhost": {
+    "local": {
+        "host": "localhost",
         "port": 8883,
         "user": "iot_bind",
         "psw": "iot_bind",
@@ -29,5 +46,9 @@ MQTT_HOSTS = {
         # "cert": "/etc/mosquitto/conf.d/custom_client.crt",
     },
 }
-MQTT_HOST = "test.mosquitto.org"
-MQTT_TOPIC = "test/topic/16011"
+MQTT_HOST = MQTT_HOSTS["aws"]
+
+# Influx
+INFLUXDB_HOST = "https://us-east-1-1.aws.cloud2.influxdata.com"
+INFLUXDB_ORG = "iot_bind"
+INFLUXDB_DB = "iot_bind_db"

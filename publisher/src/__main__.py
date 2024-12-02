@@ -3,6 +3,7 @@ import logging
 import os
 import pickle
 import time
+from datetime import datetime, timezone
 
 from dotenv import load_dotenv
 
@@ -20,19 +21,32 @@ def main():
     logging.info("Start mqtt publisher")
 
     mqtt_client = get_mqtt_client("pub")
-    mqtt_client.connect(MQTT_HOST, MQTT_HOSTS[MQTT_HOST]["port"], 60)
+    mqtt_client.connect(MQTT_HOST["host"], MQTT_HOST["port"], 60)
     mqtt_client.loop_start()
 
     i = 0
     while True:
         i += 1
 
+        # Get the current time in UTC
+        current_time_utc = datetime.now(timezone.utc)
+
+        # Format as ISO 8601 string
+        iso_8601_time = current_time_utc.isoformat()
+
         # Publishing a message
-        payload = json.dumps({"temperature": 22.5 + i, "humidity": 60 - i})
-        mqtt_client.publish(MQTT_TOPIC, payload)
+        payload = json.dumps(
+            {
+                "timestamp": iso_8601_time,
+                "machine": "fresadora trimodo",
+                "temperature": i,
+                "humidity": 10 + i,
+            }
+        )
+        mqtt_client.publish(MQTT_HOST["topic"], payload)
 
         logging.info(f"Message sent: {payload}")
-        time.sleep(1)
+        time.sleep(5)
 
 
 if __name__ == "__main__":

@@ -25,19 +25,18 @@ def on_log(mqttc, obj, level, string):
 def get_mqtt_client(
     mqtt_client_id: str,
     is_use_log: bool = False,
+    on_message: callable = on_message,
 ) -> mqtt.Client:
 
     mqtt_client = mqtt.Client(
         callback_api_version=CallbackAPIVersion.VERSION2, client_id=mqtt_client_id
     )
-    mqtt_client.tls_set(
-        ca_certs=MQTT_HOSTS[MQTT_HOST]["cafile"],
-        # certfile=MQTT_HOSTS[MQTT_HOST]["cert"],
-        # keyfile=MQTT_HOSTS[MQTT_HOST]["key"],
-    )
-    mqtt_client.username_pw_set(
-        MQTT_HOSTS[MQTT_HOST]["user"], MQTT_HOSTS[MQTT_HOST]["psw"]
-    )
+    # mqtt_client.tls_set(
+    #     ca_certs=MQTT_HOSTS[MQTT_HOST]["cafile"],
+    #     # certfile=MQTT_HOSTS[MQTT_HOST]["cert"],
+    #     # keyfile=MQTT_HOSTS[MQTT_HOST]["key"],
+    # )
+    mqtt_client.username_pw_set(MQTT_HOST["user"], MQTT_HOST["psw"])
     mqtt_client.on_message = on_message
     mqtt_client.on_connect = on_connect
     mqtt_client.on_subscribe = on_subscribe
