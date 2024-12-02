@@ -2,10 +2,15 @@
 
 source .env
 
-# Bring the .env files to remote
-scp -i ${KEY_PATH} .env ${USER}@${HOST}:${CLONED_IN}/
-scp -i ${KEY_PATH} ./app/.env ${USER}@${HOST}:${CLONED_IN}/app/
-scp -i ${KEY_PATH} ./broker/config/custom_ca.crt ${USER}@${HOST}:${CLONED_IN}/broker/config/
-scp -i ${KEY_PATH} ./broker/config/custom_server.crt ${USER}@${HOST}:${CLONED_IN}/broker/config/
-scp -i ${KEY_PATH} ./broker/config/custom_server.key ${USER}@${HOST}:${CLONED_IN}/broker/config/
-scp -i ${KEY_PATH} ./broker/config/custom.pwfile ${USER}@${HOST}:${CLONED_IN}/broker/config/
+# Bring the .env to: pi
+scp .env ${PI_USER}@${PI_HOST}:${PI_CLONED_IN}/
+
+# Bring the .env to: aws
+scp -i ${AWS_KEY_PATH} .env ${AWS_USER}@${AWS_HOST}:${AWS_CLONED_IN}/
+scp -i ${AWS_KEY_PATH} ./app/.env ${AWS_USER}@${AWS_HOST}:${AWS_CLONED_IN}/app/
+
+# This is not needed now, as mqtt works without tls
+# scp -i ${KEY_PATH} ./broker/config/custom_ca.crt ${USER}@${HOST}:${CLONED_IN}/broker/config/
+# scp -i ${KEY_PATH} ./broker/config/custom_server.crt ${USER}@${HOST}:${CLONED_IN}/broker/config/
+# scp -i ${KEY_PATH} ./broker/config/custom_server.key ${USER}@${HOST}:${CLONED_IN}/broker/config/
+# scp -i ${KEY_PATH} ./broker/config/custom.pwfile ${USER}@${HOST}:${CLONED_IN}/broker/config/

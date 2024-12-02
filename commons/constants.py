@@ -18,7 +18,7 @@ LOGGER_FORMATTER = logging.Formatter(LOGGER_LINE_FMT, LOGGER_DATE_FMT)
 # Mqtt
 MQTT_HOSTS = {
     "aws": {
-        "host": "ec2-51-92-199-104.eu-south-2.compute.amazonaws.com",
+        "host": os.getenv("AWS_HOST"),
         "port": 1884,
         "user": os.getenv("MQTT_USER"),
         "psw": os.getenv("MQTT_PSW"),

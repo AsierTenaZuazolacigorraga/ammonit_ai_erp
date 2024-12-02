@@ -78,7 +78,7 @@ services:
     build:
       context: .
       dockerfile: subscriber/Dockerfile
-    restart: no
+    restart: always
     environment:
       INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
     networks:
@@ -88,6 +88,16 @@ services:
       #- 8883:8883
     depends_on:
       - mosquitto
+
+  publisher:
+    container_name: publisher
+    build:
+      context: .
+      dockerfile: publisher/Dockerfile
+    restart: always
+    ports:
+      #- 8883:8883
+      - 1884:1884
 
 ##################################################################
 # Networks
