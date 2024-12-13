@@ -46,9 +46,12 @@ MQTT_HOSTS = {
         # "cert": "/etc/mosquitto/conf.d/custom_client.crt",
     },
 }
-MQTT_HOST = MQTT_HOSTS["aws"]
 
 # Influx
 INFLUXDB_HOST = "https://us-east-1-1.aws.cloud2.influxdata.com"
 INFLUXDB_ORG = "iot_bind"
 INFLUXDB_DB = "iot_bind_db"
+
+# User configurations
+MQTT_HOST = MQTT_HOSTS["aws"]
+MQTT_IS_DOCKER = True

@@ -1,8 +1,6 @@
 import json
 import logging
 import os
-import pickle
-import threading
 import time
 
 from dotenv import load_dotenv
@@ -10,19 +8,23 @@ from influxdb_client_3 import InfluxDBClient3, Point
 
 from commons.configs import *
 from commons.constants import *
-from commons.files import *
 from commons.mqtt import get_mqtt_client
 
 load_dotenv()
 logging_config(os.path.dirname(os.path.abspath(__file__)))
 
 
-influx_client = InfluxDBClient3(
-    host=INFLUXDB_HOST, token=os.environ.get("INFLUXDB_TOKEN"), org=INFLUXDB_ORG
-)
+def get_influx_client() -> InfluxDBClient3:
+
+    return InfluxDBClient3(
+        host=INFLUXDB_HOST, token=os.environ.get("INFLUXDB_TOKEN"), org=INFLUXDB_ORG
+    )
 
 
-def on_message(mqttc, obj, msg):
+influx_client = get_influx_client()
+
+
+def on_message(mqttc, obj, msg):  # Types not defined on porpouse
 
     # Parse the message (assuming it's JSON)
     data = json.loads(msg.payload.decode())
@@ -44,9 +46,14 @@ def main():
     logging.info("Start mqtt subscriber")
 
     mqtt_client = get_mqtt_client("sub", on_message=on_message)
-    mqtt_client.connect(
-        "mosquitto", MQTT_HOST["port"], 60
-    )  # Instead of using MQTT_HOST["host"], as the broker and subscriber are in the same machine, use localhost
+    if MQTT_IS_DOCKER:
+        mqtt_client.connect(
+            "mosquitto", MQTT_HOST["port"], 60
+        )  # Use this when running on aws and docker container
+    else:
+        mqtt_client.connect(
+            MQTT_HOST["host"], MQTT_HOST["port"], 60
+        )  # Use this when running on my pc
     mqtt_client.loop_start()
 
     mqtt_client.subscribe(MQTT_HOST["topic"])

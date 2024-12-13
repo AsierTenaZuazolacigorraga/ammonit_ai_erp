@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 from commons.configs import *
 from commons.constants import *
-from commons.files import *
 from commons.mqtt import get_mqtt_client
 
 load_dotenv()

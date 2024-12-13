@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
@@ -6,26 +7,30 @@ from paho.mqtt.enums import CallbackAPIVersion
 from .constants import *
 
 
-def on_connect(mqttc, obj, flags, reason_code, properties):
+def on_connect(
+    mqttc, obj, flags, reason_code, properties
+):  # Types not defined on porpouse
     logging.info(f"Connected: reason_code - {reason_code}")
 
 
-def on_message(mqttc, obj, msg):
+def on_message(mqttc, obj, msg):  # Types not defined on porpouse
     logging.info(f"Received: {msg.topic} {msg.qos} {msg.payload}")
 
 
-def on_subscribe(mqttc, obj, mid, reason_code_list, properties):
+def on_subscribe(
+    mqttc, obj, mid, reason_code_list, properties
+):  # Types not defined on porpouse
     logging.info(f"Subscribed: {mid} {reason_code_list}")
 
 
-def on_log(mqttc, obj, level, string):
+def on_log(mqttc, obj, level, string):  # Types not defined on porpouse
     logging.info(f"Log: {string}")
 
 
 def get_mqtt_client(
     mqtt_client_id: str,
     is_use_log: bool = False,
-    on_message: callable = on_message,
+    on_message: Callable = on_message,
 ) -> mqtt.Client:
 
     mqtt_client = mqtt.Client(
