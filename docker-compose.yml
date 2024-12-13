@@ -18,7 +18,7 @@ services:
     image: nginx
     restart: always
     environment:
-      DOMAIN: ${DOMAIN}
+      DOMAIN: ${WEB_DOMAIN}
     volumes:
       - ./certs:/etc/letsencrypt
       - ./certs-data:/data/letsencrypt

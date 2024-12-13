@@ -13,7 +13,7 @@ http {
         listen 80;
         include mime.types;
 
-        server_name ${DOMAIN} www.${DOMAIN};
+        server_name ${WEB_DOMAIN} www.${WEB_DOMAIN};
 
         location / {
             return 301 https://$host$request_uri;
@@ -24,7 +24,7 @@ http {
         listen 443 ssl;
         include mime.types;
 
-        server_name ${DOMAIN} www.${DOMAIN};
+        server_name ${WEB_DOMAIN} www.${WEB_DOMAIN};
 
         ssl_certificate /etc/letsencrypt/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/privkey.pem;
