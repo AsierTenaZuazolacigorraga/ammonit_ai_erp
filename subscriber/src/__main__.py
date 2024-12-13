@@ -5,6 +5,7 @@ import time
 
 from dotenv import load_dotenv
 from influxdb_client_3 import InfluxDBClient3, Point
+from influxdb_client_3.write_client.rest import ApiException
 
 from commons.configs import *
 from commons.constants import *
@@ -36,9 +37,14 @@ def on_message(mqttc, obj, msg):  # Types not defined on porpouse
         .field("temperature", data["temperature"])
     )
 
-    # Write to InfluxDB
-    influx_client.write(database=INFLUXDB_DB, record=point)
-    logging.info(f"InfluxDB: writting this data - {data}")
+    # Write to InfluxDB (ugly but it might work)
+    try:
+        influx_client.write(database=INFLUXDB_DB, record=point)
+        logging.info(f"InfluxDB: writting this data - {data}")
+    except ApiException as e:
+        logging.warning(f"InfluxDB: failed to write data to InfluxDB: {e}")
+        influx_client = get_influx_client()
+        influx_client.write(database=INFLUXDB_DB, record=point)
 
 
 def main():
