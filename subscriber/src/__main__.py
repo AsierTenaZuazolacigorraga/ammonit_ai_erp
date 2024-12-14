@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 from influxdb_client_3 import InfluxDBClient3, Point
 from influxdb_client_3.write_client.rest import ApiException
 
-from commons.configs import *
-from commons.constants import *
-from commons.mqtt import get_mqtt_client
+from commons_py.configs import *
+from commons_py.constants import *
+from commons_py.mqtt import get_mqtt_client
 
 load_dotenv()
 logging_config(os.path.dirname(os.path.abspath(__file__)))

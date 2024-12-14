@@ -6,7 +6,7 @@ ENV PYTHONPATH="/workdir/"
 # Copy and et work directory
 WORKDIR /workdir
 COPY publisher /workdir/publisher
-COPY commons /workdir/commons
+COPY commons_py /workdir/commons_py
 COPY requirements.txt /workdir/requirements.txt
 COPY .env /workdir/.env
 

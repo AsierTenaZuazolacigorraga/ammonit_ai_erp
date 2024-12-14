@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 
 from dotenv import load_dotenv
 
-from commons.configs import *
-from commons.constants import *
-from commons.mqtt import get_mqtt_client
+from commons_py.configs import *
+from commons_py.constants import *
+from commons_py.mqtt import get_mqtt_client
 
 load_dotenv()
 logging_config(os.path.dirname(os.path.abspath(__file__)))

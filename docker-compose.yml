@@ -4,14 +4,14 @@
 
 services:
 
-  app:
-    container_name: app
-    build: ./app
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: always
     ports:
-      - "8501:8501"
-    depends_on:
-      - mysql
+      - 8000:8000
 
   nginx:
     container_name: nginx
@@ -25,10 +25,9 @@ services:
       - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
     entrypoint: /bin/bash -c "envsubst '$$DOMAIN' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     depends_on:
-      - app
       - certbot
 
   certbot:
@@ -40,8 +39,8 @@ services:
       - ./certs-data:/data/letsencrypt
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h; done'"
 
-  mysql:
-    container_name: mysql
+  database:
+    container_name: database
     image: mysql:8.0
     restart: always
     environment:
@@ -50,13 +49,13 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - 3306:3306
     volumes:
       - ./mysql-data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
 
-  mosquitto:
-    container_name: mosquitto
+  broker:
+    container_name: broker
     image: eclipse-mosquitto:2.0.20
     restart: always
     environment:
@@ -69,7 +68,6 @@ services:
       - internal
     ports:
       - 1884:1884
-      #- 8883:8883
     entrypoint: [ "/docker-entrypoint.sh" ]
     command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf" ]
 
@@ -85,9 +83,8 @@ services:
       - internal
     ports:
       - 1885:1884
-      #- 8883:8883
     depends_on:
-      - mosquitto
+      - broker
 
   publisher:
     container_name: publisher
@@ -96,7 +93,6 @@ services:
       dockerfile: publisher/Dockerfile
     restart: always
     ports:
-      #- 8883:8883
       - 1884:1884
 
 ##################################################################
