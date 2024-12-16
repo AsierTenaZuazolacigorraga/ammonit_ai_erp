@@ -15,5 +15,9 @@ logs.txt
 *.db
 .env
 
-# nginx
-nginx.conf
+# node - frontend
+frontend/node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

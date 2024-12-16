@@ -4,22 +4,16 @@ import os
 import time
 
 from dotenv import load_dotenv
-from influxdb_client_3 import InfluxDBClient3, Point
+from influxdb_client_3 import Point
 from influxdb_client_3.write_client.rest import ApiException
 
 from commons_py.configs import *
 from commons_py.constants import *
+from commons_py.database import get_influx_client
 from commons_py.mqtt import get_mqtt_client
 
 load_dotenv()
 logging_config(os.path.dirname(os.path.abspath(__file__)))
-
-
-def get_influx_client() -> InfluxDBClient3:
-
-    return InfluxDBClient3(
-        host=INFLUXDB_HOST, token=os.environ.get("INFLUXDB_TOKEN"), org=INFLUXDB_ORG
-    )
 
 
 influx_client = get_influx_client()
