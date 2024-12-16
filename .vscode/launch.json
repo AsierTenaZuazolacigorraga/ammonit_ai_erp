@@ -19,25 +19,24 @@
             "name": "Backend",
             "type": "debugpy",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/backend",
+            "python": "${workspaceFolder}/backend/.venv/bin/python",
+            "envFile": "${workspaceFolder}/.env",
             "module": "uvicorn",
-            "console": "integratedTerminal",
-            "justMyCode": false,
             "args": [
-                "src.__main__:app",
+                "app.main:app",
                 "--reload",
                 "--host",
                 "localhost",
                 "--port",
                 "8000",
-                "--app-dir",
-                "backend"
             ],
             "env": {
                 "PYDEVD_CONTAINER_RANDOM_ACCESS_MAX_ITEMS": "15000",
                 "PYDEVD_WARN_EVALUATION_TIMEOUT": "30",
-                "PYTHONPATH": "${workspaceFolder}"
-            }
+            },
+            "justMyCode": false,
+            "jinja": true,
         },
         {
             "name": "Frontend",

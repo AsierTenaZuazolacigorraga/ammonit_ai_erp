@@ -1,21 +1,43 @@
 FROM python:3.10
 
-# Set environment variables
-ENV PYTHONPATH="/workdir/"
+ENV PYTHONUNBUFFERED=1
 
-# Copy and et work directory
-WORKDIR /workdir
-COPY backend /workdir/backend
-COPY commons_py /workdir/commons_py
-COPY requirements.txt /workdir/requirements.txt
-COPY .env /workdir/.env
+WORKDIR /app/
 
-# Install necessary things
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
+COPY --from=ghcr.io/astral-sh/uv:0.4.15 /uv /bin/uv
 
-# Expose the port
-EXPOSE 8000
+# Place executables in the environment at the front of the path
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Execute command
-# To test setup before CMD -> CMD ["python", "-c", "import time; time.sleep(1000000)"]
-CMD ["uvicorn", "src.__main__:app", "--reload", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "backend"]
+# Compile bytecode
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
+ENV UV_COMPILE_BYTECODE=1
+
+# uv Cache
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
+ENV UV_LINK_MODE=copy
+
+# Install dependencies
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project
+
+ENV PYTHONPATH=/app
+
+COPY ./scripts /app/scripts
+
+COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
+
+COPY ./app /app/app
+
+# Sync the project
+# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync
+
+CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
