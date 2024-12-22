@@ -1,10 +1,6 @@
-##################################################################
-# Services
-##################################################################
-
 services:
 
-  db-postgres:
+  db:
     image: postgres:12
     restart: always
     healthcheck:
@@ -14,7 +10,7 @@ services:
       start_period: 30s
       timeout: 10s
     volumes:
-      - db-postgres-data:/var/lib/postgresql/data/pgdata
+      - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
     environment:
@@ -30,21 +26,26 @@ services:
       - traefik-public
       - default
     depends_on:
-      - db-postgres
+      - db
     environment:
       - ADMINER_DESIGN=pepa-linha-dark
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
       - traefik.constraint-label=traefik-public
+
+      - traefik.http.services.${STACK_NAME?Variable not set}-adminer.loadbalancer.server.port=8080
+
       - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.rule=Host(`adminer.${DOMAIN?Variable not set}`)
       - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.entrypoints=http
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.middlewares=https-redirect
+
       - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.rule=Host(`adminer.${DOMAIN?Variable not set}`)
       - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.entrypoints=https
       - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.tls=true
       - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.tls.certresolver=le
-      - traefik.http.services.${STACK_NAME?Variable not set}-adminer.loadbalancer.server.port=8080
+
+      # Enable redirection for HTTP and HTTPS
+      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.middlewares=https-redirect
 
   prestart:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
@@ -54,7 +55,7 @@ services:
       - traefik-public
       - default
     depends_on:
-      db-postgres:
+      db:
         condition: service_healthy
         restart: true
     command: bash scripts/prestart.sh
@@ -72,7 +73,7 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
-      - POSTGRES_SERVER=db-postgres
+      - POSTGRES_SERVER=db
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
@@ -86,7 +87,7 @@ services:
       - traefik-public
       - default
     depends_on:
-      db-postgres:
+      db:
         condition: service_healthy
         restart: true
       prestart:
@@ -105,7 +106,7 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
-      - POSTGRES_SERVER=db-postgres
+      - POSTGRES_SERVER=db
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
@@ -166,64 +167,11 @@ services:
 
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
-  # broker:
-  #   container_name: broker
-  #   image: eclipse-mosquitto:2.0.20
-  #   restart: always
-  #   environment:
-  #     - TZ=Europe/Madrid
-  #   volumes:
-  #     - ./broker/config:/mosquitto/config
-  #     - ./broker/data:/mosquitto/data
-  #     - ./broker/log:/mosquitto/log
-  #   networks:
-  #     - internal
-  #   ports:
-  #     - 1884:1884
-  #   entrypoint: [ "/docker-entrypoint.sh" ]
-  #   command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf" ]
+volumes:
+  app-db-data:
 
-  # subscriber:
-  #   container_name: subscriber
-  #   build:
-  #     context: .
-  #     dockerfile: subscriber/Dockerfile
-  #   restart: always
-  #   environment:
-  #     INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
-  #   networks:
-  #     - internal
-  #   ports:
-  #     - 1885:1884
-  #   depends_on:
-  #     - broker
-
-  # publisher:
-  #   container_name: publisher
-  #   build:
-  #     context: .
-  #     dockerfile: publisher/Dockerfile
-  #   restart: always
-  #   ports:
-  #     - 1884:1884
-
-  ##################################################################
-  # Networks
-  ##################################################################
 
 networks:
-
-  internal:
-    driver: bridge
-
   traefik-public:
     # Allow setting it to false for testing
     external: true
-
-##################################################################
-# Volumes
-##################################################################
-
-volumes:
-
-  db-postgres-data:
