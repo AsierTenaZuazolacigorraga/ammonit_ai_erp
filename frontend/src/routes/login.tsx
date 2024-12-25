@@ -10,8 +10,7 @@ import {
   InputGroup,
   InputRightElement,
   Link,
-  Text,
-  useBoolean,
+  useBoolean
 } from "@chakra-ui/react"
 import {
   Link as RouterLink,
@@ -20,10 +19,10 @@ import {
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
-import Logo from "/assets/images/fastapi-logo.svg"
 import type { Body_login_login_access_token as AccessToken } from "../client"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { emailPattern } from "../utils"
+import Logo from "/assets/images/fastapi-logo.svg"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -132,12 +131,12 @@ function Login() {
         <Button variant="primary" type="submit" isLoading={isSubmitting}>
           Log In
         </Button>
-        <Text>
+        {/*<Text>
           Don't have an account?{" "}
           <Link as={RouterLink} to="/signup" color="blue.500">
             Sign up
           </Link>
-        </Text>
+        </Text>*/}
       </Container>
     </>
   )
