@@ -96,8 +96,6 @@ class Settings(BaseSettings):
     # TODO: update type to EmailStr when sqlmodel supports it
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
-    FIRST_EXAMPLEUSER: str
-    FIRST_EXAMPLEUSER_PASSWORD: str
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
@@ -116,9 +114,6 @@ class Settings(BaseSettings):
         self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
         self._check_default_secret(
             "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
-        )
-        self._check_default_secret(
-            "FIRST_EXAMPLEUSER_PASSWORD", self.FIRST_EXAMPLEUSER_PASSWORD
         )
 
         return self

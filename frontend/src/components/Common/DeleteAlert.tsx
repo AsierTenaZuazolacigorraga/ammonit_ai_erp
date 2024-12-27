@@ -11,7 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import React from "react"
 import { useForm } from "react-hook-form"
 
-import { ItemsService, UsersService } from "../../client"
+import { ItemsService } from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
 
 interface DeleteProps {
@@ -33,8 +33,8 @@ const Delete = ({ type, id, isOpen, onClose }: DeleteProps) => {
   const deleteEntity = async (id: string) => {
     if (type === "Item") {
       await ItemsService.deleteItem({ id: id })
-    } else if (type === "User") {
-      await UsersService.deleteUser({ userId: id })
+      // } else if (type === "User") {
+      //   await UsersService.deleteUser({ userId: id })
     } else {
       throw new Error(`Unexpected type: ${type}`)
     }

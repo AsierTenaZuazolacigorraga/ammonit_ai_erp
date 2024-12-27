@@ -4,7 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router"
 import ReactDOM from "react-dom/client"
 import { routeTree } from "./routeTree.gen"
 
-import { StrictMode } from "react"
+import React from "react"
 import { OpenAPI } from "./client"
 import theme from "./theme"
 
@@ -23,11 +23,11 @@ declare module "@tanstack/react-router" {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <React.StrictMode>
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>
     </ChakraProvider>
-  </StrictMode>,
+  </React.StrictMode>,
 )
