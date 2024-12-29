@@ -4,8 +4,6 @@ from typing import Callable
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 
-from .constants import *
-
 
 def on_connect(
     mqttc, obj, flags, reason_code, properties
@@ -29,6 +27,8 @@ def on_log(mqttc, obj, level, string):  # Types not defined on porpouse
 
 def get_mqtt_client(
     mqtt_client_id: str,
+    mqtt_user: str,
+    mqtt_psw: str,
     is_use_log: bool = False,
     on_message: Callable = on_message,
 ) -> mqtt.Client:
@@ -41,7 +41,7 @@ def get_mqtt_client(
     #     # certfile=MQTT_HOSTS[MQTT_HOST]["cert"],
     #     # keyfile=MQTT_HOSTS[MQTT_HOST]["key"],
     # )
-    mqtt_client.username_pw_set(MQTT_HOST["user"], MQTT_HOST["psw"])
+    mqtt_client.username_pw_set(mqtt_user, mqtt_psw)
     mqtt_client.on_message = on_message
     mqtt_client.on_connect = on_connect
     mqtt_client.on_subscribe = on_subscribe

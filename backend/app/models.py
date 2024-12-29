@@ -64,6 +64,20 @@ class MachineBase(SQLModel):
     name: str | None = Field(default=None, max_length=255)
     provider: str | None = Field(default=None, max_length=255)
     plc: str | None = Field(default=None, max_length=255)
+    oee: float
+    oee_availability: float
+    oee_performance: float
+    oee_quality: float
+
+
+# Properties to receive on item creation
+class MachineCreate(MachineBase):
+    pass
+
+
+# Properties to receive on item update
+class MachineUpdate(MachineBase):
+    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
 
 
 # Database model, database table inferred from class name

@@ -35,10 +35,24 @@ export type ItemUpdate = {
   description?: string | null
 }
 
+export type MachineCreate = {
+  name?: string | null
+  provider?: string | null
+  plc?: string | null
+  oee: number
+  oee_availability: number
+  oee_performance: number
+  oee_quality: number
+}
+
 export type MachinePublic = {
   name?: string | null
   provider?: string | null
   plc?: string | null
+  oee: number
+  oee_availability: number
+  oee_performance: number
+  oee_quality: number
   id: string
   owner_id: string
 }
@@ -46,6 +60,17 @@ export type MachinePublic = {
 export type MachinesPublic = {
   data: Array<MachinePublic>
   count: number
+}
+
+export type MachineUpdate = {
+  name?: string | null
+  provider?: string | null
+  plc?: string | null
+  oee: number
+  oee_availability: number
+  oee_performance: number
+  oee_quality: number
+  title?: string | null
 }
 
 export type Message = {
@@ -164,11 +189,30 @@ export type MachinesReadMachinesData = {
 
 export type MachinesReadMachinesResponse = MachinesPublic
 
+export type MachinesCreateMachineData = {
+  requestBody: MachineCreate
+}
+
+export type MachinesCreateMachineResponse = MachinePublic
+
 export type MachinesReadMachineData = {
   id: string
 }
 
 export type MachinesReadMachineResponse = MachinePublic
+
+export type MachinesUpdateMachineData = {
+  id: string
+  requestBody: MachineUpdate
+}
+
+export type MachinesUpdateMachineResponse = MachinePublic
+
+export type MachinesDeleteMachineData = {
+  id: string
+}
+
+export type MachinesDeleteMachineResponse = Message
 
 export type UsersReadUsersData = {
   limit?: number

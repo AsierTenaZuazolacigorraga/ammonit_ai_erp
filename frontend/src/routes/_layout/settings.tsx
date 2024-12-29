@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 
-import Appearance from "../../components/UserSettings/Appearance"
+// import Appearance from "../../components/UserSettings/Appearance"
 import ChangePassword from "../../components/UserSettings/ChangePassword"
 // import DeleteAccount from "../../components/UserSettings/DeleteAccount"
 import UserInformation from "../../components/UserSettings/UserInformation"
@@ -17,7 +17,7 @@ import UserInformation from "../../components/UserSettings/UserInformation"
 const tabsConfig = [
   { title: "My profile", component: UserInformation },
   { title: "Password", component: ChangePassword },
-  { title: "Appearance", component: Appearance },
+  // { title: "Appearance", component: Appearance },
   // { title: "Danger zone", component: DeleteAccount },
 ]
 

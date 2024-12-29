@@ -25,8 +25,14 @@ import type {
   LoginRecoverPasswordHtmlContentResponse,
   MachinesReadMachinesData,
   MachinesReadMachinesResponse,
+  MachinesCreateMachineData,
+  MachinesCreateMachineResponse,
   MachinesReadMachineData,
   MachinesReadMachineResponse,
+  MachinesUpdateMachineData,
+  MachinesUpdateMachineResponse,
+  MachinesDeleteMachineData,
+  MachinesDeleteMachineResponse,
   UsersReadUsersData,
   UsersReadUsersResponse,
   UsersReadUserMeResponse,
@@ -296,6 +302,28 @@ export class MachinesService {
   }
 
   /**
+   * Create Machine
+   * Create new machine.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns MachinePublic Successful Response
+   * @throws ApiError
+   */
+  public static createMachine(
+    data: MachinesCreateMachineData,
+  ): CancelablePromise<MachinesCreateMachineResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/machines/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
    * Read Machine
    * Get machine by ID.
    * @param data The data for the request.
@@ -308,6 +336,55 @@ export class MachinesService {
   ): CancelablePromise<MachinesReadMachineResponse> {
     return __request(OpenAPI, {
       method: "GET",
+      url: "/api/v1/machines/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Machine
+   * Update an machine.
+   * @param data The data for the request.
+   * @param data.id
+   * @param data.requestBody
+   * @returns MachinePublic Successful Response
+   * @throws ApiError
+   */
+  public static updateMachine(
+    data: MachinesUpdateMachineData,
+  ): CancelablePromise<MachinesUpdateMachineResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/machines/{id}",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Machine
+   * Delete an machine.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteMachine(
+    data: MachinesDeleteMachineData,
+  ): CancelablePromise<MachinesDeleteMachineResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
       url: "/api/v1/machines/{id}",
       path: {
         id: data.id,
