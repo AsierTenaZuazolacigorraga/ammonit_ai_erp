@@ -96,20 +96,3 @@ def update_machine(
     session.commit()
     session.refresh(machine)
     return machine
-
-
-@router.delete("/{id}")
-def delete_machine(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
-) -> Message:
-    """
-    Delete an machine.
-    """
-    machine = session.get(Machine, id)
-    if not machine:
-        raise HTTPException(status_code=404, detail="Machine not found")
-    if not current_user.is_superuser and (machine.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
-    session.delete(machine)
-    session.commit()
-    return Message(message="Machine deleted successfully")

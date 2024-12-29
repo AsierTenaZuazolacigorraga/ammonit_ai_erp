@@ -20,16 +20,18 @@ AUTH_HEADERS = {
 }
 LOGIN_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/login/access-token/"
 LOGIN_DATA_POST = {
-    "username": "asier.tena.zu@gmail.com",
-    "password": "iot_bind",
+    "username": os.getenv("DEVICE_USERNAME"),
+    "password": os.getenv("DEVICE_PASSWORD"),
 }
 MACHINES_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/machines/"
 MACHINES_PARAMS_GET = {
     "skip": 0,
     "limit": 100,
 }
-MACHINE_ID = "6bc4c2ed-fe4e-428f-bc1a-be6bad4560e0"
-MACHINE_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/machines/{MACHINE_ID}"
+MACHINE_URL = (
+    f"http://api.{os.getenv('DOMAIN')}/api/v1/machines/{os.getenv('DEVICE_MACHINE_ID')}"
+)
+MEASUREMENT_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/measurements/"
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -78,7 +80,7 @@ def main():
                 machine = [
                     m
                     for m in process_response(response)["data"]
-                    if m["id"] == MACHINE_ID
+                    if m["id"] == os.getenv("DEVICE_MACHINE_ID")
                 ]
                 if machine:
                     machine = machine[0]
@@ -86,17 +88,38 @@ def main():
             time.sleep(1)
 
         # Update machine
+        loops = 0
         while True:
-            machine["oee"] = random.randint(1, 100)
-            machine["oee_availability"] = random.randint(1, 100)
-            machine["oee_performance"] = random.randint(1, 100)
-            machine["oee_quality"] = random.randint(1, 100)
-            response = requests.put(
-                MACHINE_URL,
+
+            loops += 1
+
+            # Update oee if needed
+            if loops == 10:
+                machine["oee"] = random.randint(1, 100)
+                machine["oee_availability"] = random.randint(1, 100)
+                machine["oee_performance"] = random.randint(1, 100)
+                machine["oee_quality"] = random.randint(1, 100)
+                response = requests.put(
+                    MACHINE_URL,
+                    headers=AUTH_HEADERS,
+                    json=machine,
+                )
+                process_response(response)
+
+            # Create measurement
+            response = requests.post(
+                MEASUREMENT_URL,
                 headers=AUTH_HEADERS,
-                json=machine,
+                json={
+                    "timestamp": datetime.now(
+                        timezone.utc
+                    ).isoformat(),  # Current UTC time in ISO 8601 format
+                    "temperature": loops,  # Example temperature value
+                    "power_usage": loops - 0.9,  # Example power usage value
+                    "owner_id": machine["id"],  # Id of the machine
+                },
             )
-            process_response(response)
+            data = process_response(response)
             time.sleep(1)
 
 
