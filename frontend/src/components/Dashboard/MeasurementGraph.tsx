@@ -41,9 +41,9 @@ function MeasurementGraph({ measurements }: MeasurementGraphProps) {
         console.log("useEffect triggered");
 
         if (measurements) {
-            const timestamps = measurements.map((measurement: any) => new Date(measurement.timestamp).toLocaleTimeString());
-            const temperatures = measurements.map((measurement: any) => measurement.temperature);
-            const powerUsages = measurements.map((measurement: any) => measurement.power_usage);
+            const timestamps = measurements.data.map((measurement: any) => new Date(measurement.timestamp).toLocaleTimeString());
+            const temperatures = measurements.data.map((measurement: any) => measurement.temperature);
+            const powerUsages = measurements.data.map((measurement: any) => measurement.power_usage);
 
             setGraphData(generateDataset(timestamps, temperatures, powerUsages));
         }

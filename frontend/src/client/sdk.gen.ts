@@ -31,8 +31,8 @@ import type {
   MachinesReadMachineResponse,
   MachinesUpdateMachineData,
   MachinesUpdateMachineResponse,
-  MeasurementsReadMeasurementsData,
-  MeasurementsReadMeasurementsResponse,
+  MeasurementsReadLatestMeasurementsData,
+  MeasurementsReadLatestMeasurementsResponse,
   MeasurementsCreateMeasurementData,
   MeasurementsCreateMeasurementResponse,
   MeasurementsReadMeasurementData,
@@ -331,7 +331,7 @@ export class MachinesService {
    * Read Machine
    * Get machine by ID.
    * @param data The data for the request.
-   * @param data.id
+   * @param data.machineId
    * @returns MachinePublic Successful Response
    * @throws ApiError
    */
@@ -340,9 +340,9 @@ export class MachinesService {
   ): CancelablePromise<MachinesReadMachineResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/v1/machines/{id}",
+      url: "/api/v1/machines/{machine_id}",
       path: {
-        id: data.id,
+        machine_id: data.machineId,
       },
       errors: {
         422: "Validation Error",
@@ -354,7 +354,7 @@ export class MachinesService {
    * Update Machine
    * Update an machine.
    * @param data The data for the request.
-   * @param data.id
+   * @param data.machineId
    * @param data.requestBody
    * @returns MachinePublic Successful Response
    * @throws ApiError
@@ -364,9 +364,9 @@ export class MachinesService {
   ): CancelablePromise<MachinesUpdateMachineResponse> {
     return __request(OpenAPI, {
       method: "PUT",
-      url: "/api/v1/machines/{id}",
+      url: "/api/v1/machines/{machine_id}",
       path: {
-        id: data.id,
+        machine_id: data.machineId,
       },
       body: data.requestBody,
       mediaType: "application/json",
@@ -379,23 +379,21 @@ export class MachinesService {
 
 export class MeasurementsService {
   /**
-   * Read Measurements
+   * Read Latest Measurements
    * Retrieve measurements.
    * @param data The data for the request.
-   * @param data.skip
-   * @param data.limit
+   * @param data.machineId
    * @returns MeasurementsPublic Successful Response
    * @throws ApiError
    */
-  public static readMeasurements(
-    data: MeasurementsReadMeasurementsData = {},
-  ): CancelablePromise<MeasurementsReadMeasurementsResponse> {
+  public static readLatestMeasurements(
+    data: MeasurementsReadLatestMeasurementsData,
+  ): CancelablePromise<MeasurementsReadLatestMeasurementsResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/v1/measurements/",
-      query: {
-        skip: data.skip,
-        limit: data.limit,
+      url: "/api/v1/measurements/{machine_id}",
+      path: {
+        machine_id: data.machineId,
       },
       errors: {
         422: "Validation Error",
@@ -407,6 +405,7 @@ export class MeasurementsService {
    * Create Measurement
    * Create new measurement.
    * @param data The data for the request.
+   * @param data.machineId
    * @param data.requestBody
    * @returns MeasurementPublic Successful Response
    * @throws ApiError
@@ -416,7 +415,10 @@ export class MeasurementsService {
   ): CancelablePromise<MeasurementsCreateMeasurementResponse> {
     return __request(OpenAPI, {
       method: "POST",
-      url: "/api/v1/measurements/",
+      url: "/api/v1/measurements/{machine_id}",
+      path: {
+        machine_id: data.machineId,
+      },
       body: data.requestBody,
       mediaType: "application/json",
       errors: {
@@ -429,7 +431,8 @@ export class MeasurementsService {
    * Read Measurement
    * Get measurement by ID.
    * @param data The data for the request.
-   * @param data.id
+   * @param data.machineId
+   * @param data.measurementId
    * @returns MeasurementPublic Successful Response
    * @throws ApiError
    */
@@ -438,9 +441,10 @@ export class MeasurementsService {
   ): CancelablePromise<MeasurementsReadMeasurementResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/v1/measurements/{id}",
+      url: "/api/v1/measurements/{machine_id}/{measurement_id}",
       path: {
-        id: data.id,
+        machine_id: data.machineId,
+        measurement_id: data.measurementId,
       },
       errors: {
         422: "Validation Error",

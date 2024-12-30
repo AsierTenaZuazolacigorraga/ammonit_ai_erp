@@ -77,7 +77,6 @@ export type MeasurementCreate = {
   timestamp?: string
   temperature: number
   power_usage: number
-  owner_id: string
 }
 
 export type MeasurementPublic = {
@@ -216,33 +215,34 @@ export type MachinesCreateMachineData = {
 export type MachinesCreateMachineResponse = MachinePublic
 
 export type MachinesReadMachineData = {
-  id: string
+  machineId: string
 }
 
 export type MachinesReadMachineResponse = MachinePublic
 
 export type MachinesUpdateMachineData = {
-  id: string
+  machineId: string
   requestBody: MachineUpdate
 }
 
 export type MachinesUpdateMachineResponse = MachinePublic
 
-export type MeasurementsReadMeasurementsData = {
-  limit?: number
-  skip?: number
+export type MeasurementsReadLatestMeasurementsData = {
+  machineId: string
 }
 
-export type MeasurementsReadMeasurementsResponse = MeasurementsPublic
+export type MeasurementsReadLatestMeasurementsResponse = MeasurementsPublic
 
 export type MeasurementsCreateMeasurementData = {
+  machineId: string
   requestBody: MeasurementCreate
 }
 
 export type MeasurementsCreateMeasurementResponse = MeasurementPublic
 
 export type MeasurementsReadMeasurementData = {
-  id: string
+  machineId: string
+  measurementId: string
 }
 
 export type MeasurementsReadMeasurementResponse = MeasurementPublic

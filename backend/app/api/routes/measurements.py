@@ -12,51 +12,40 @@ from app.models import (
     Message,
 )
 from fastapi import APIRouter, HTTPException
-from sqlmodel import func, select
+from sqlmodel import desc, func, select
 
 from .machines import read_machine
 
 router = APIRouter(prefix="/measurements", tags=["measurements"])
 
 
-@router.get("/", response_model=MeasurementsPublic)
+@router.get("/{machine_id}", response_model=MeasurementsPublic)
 def read_latest_measurements(
     session: SessionDep,
     current_user: CurrentUser,
+    machine_id: uuid.UUID,
 ) -> Any:
     """
     Retrieve measurements.
     """
 
-    # if not current_user.is_superuser and (
-    #     measurement.owner.owner_id != current_user.id
-    # ):
-    #     raise HTTPException(status_code=400, detail="Not enough permissions")
+    read_machine(session, current_user, machine_id)
 
-    # if current_user.is_superuser:
-    #     count_statement = select(func.count()).select_from(Measurement)
-    #     count = session.exec(count_statement).one()
-    #     statement = select(Measurement).offset(skip).limit(limit)
-    #     measurements = session.exec(statement).all()
-    # else:
-    #     count_statement = (
-    #         select(func.count())
-    #         .select_from(Measurement)
-    #         .join(Machine, Measurement.owner_id == Machine.id)
-    #         .where(Machine.owner_id == current_user.id)
-    #     )
-    #     count = session.exec(count_statement).one()
-    #     statement = (
-    #         select(Measurement)
-    #         .join(Machine, Measurement.owner_id == Machine.id)
-    #         .where(Machine.owner_id == current_user.id)
-    #         .offset(skip)
-    #         .limit(limit)
-    #     )
-    #     measurements = session.exec(statement).all()
-
-    measurements = []
-    count = 0
+    count_statement = (
+        select(func.count())
+        .select_from(Measurement)
+        .join(Machine, Measurement.owner_id == Machine.id)
+        .where(Machine.owner_id == current_user.id)
+    )
+    count = session.exec(count_statement).one()
+    statement = (
+        select(Measurement)
+        .join(Machine, Measurement.owner_id == Machine.id)
+        .where(Machine.owner_id == current_user.id)
+        .order_by(desc(Measurement.timestamp))
+        .limit(100)
+    )
+    measurements = session.exec(statement).all()
 
     return MeasurementsPublic(data=measurements, count=count)
 

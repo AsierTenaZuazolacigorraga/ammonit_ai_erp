@@ -23,15 +23,7 @@ LOGIN_DATA_POST = {
     "username": os.getenv("DEVICE_USERNAME"),
     "password": os.getenv("DEVICE_PASSWORD"),
 }
-MACHINES_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/machines/"
-MACHINES_PARAMS_GET = {
-    "skip": 0,
-    "limit": 100,
-}
-MACHINE_URL = (
-    f"http://api.{os.getenv('DOMAIN')}/api/v1/machines/{os.getenv('DEVICE_MACHINE_ID')}"
-)
-MEASUREMENT_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/measurements/"
+MEASUREMENT_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/measurements/{os.getenv('DEVICE_MACHINE_ID')}"
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -70,41 +62,24 @@ def main():
                 break
             time.sleep(1)
 
-        # Get all machines
-        while True:
-            response = requests.get(
-                MACHINES_URL, headers=AUTH_HEADERS, params=MACHINES_PARAMS_GET
-            )
-            data = process_response(response)
-            if data:
-                machine = [
-                    m
-                    for m in process_response(response)["data"]
-                    if m["id"] == os.getenv("DEVICE_MACHINE_ID")
-                ]
-                if machine:
-                    machine = machine[0]
-                    break
-            time.sleep(1)
-
         # Update machine
         loops = 0
         while True:
 
             loops += 1
 
-            # Update oee if needed
-            if loops == 10:
-                machine["oee"] = random.randint(1, 100)
-                machine["oee_availability"] = random.randint(1, 100)
-                machine["oee_performance"] = random.randint(1, 100)
-                machine["oee_quality"] = random.randint(1, 100)
-                response = requests.put(
-                    MACHINE_URL,
-                    headers=AUTH_HEADERS,
-                    json=machine,
-                )
-                process_response(response)
+            # # Update oee if needed
+            # if loops == 10:
+            #     machine["oee"] = random.randint(1, 100)
+            #     machine["oee_availability"] = random.randint(1, 100)
+            #     machine["oee_performance"] = random.randint(1, 100)
+            #     machine["oee_quality"] = random.randint(1, 100)
+            #     response = requests.put(
+            #         MACHINE_URL,
+            #         headers=AUTH_HEADERS,
+            #         json=machine,
+            #     )
+            #     process_response(response)
 
             # Create measurement
             response = requests.post(
@@ -116,7 +91,7 @@ def main():
                     ).isoformat(),  # Current UTC time in ISO 8601 format
                     "temperature": loops,  # Example temperature value
                     "power_usage": loops - 0.9,  # Example power usage value
-                    "owner_id": machine["id"],  # Id of the machine
+                    "machine_id": os.getenv("DEVICE_MACHINE_ID"),  # Id of the machine
                 },
             )
             data = process_response(response)

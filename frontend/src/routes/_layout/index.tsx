@@ -2,7 +2,7 @@ import { Container, Grid, GridItem, Heading } from '@chakra-ui/react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from 'react';
-import { MachinesService, MeasurementsService } from "../../client";
+import { MachinePublic, MachinesService, MeasurementsPublic, MeasurementsService } from "../../client";
 import MachineDetails from '../../components/Dashboard/MachineDetails';
 import MeasurementGraph from '../../components/Dashboard/MeasurementGraph';
 import OEEIndicators from '../../components/Dashboard/OEEIndicators';
@@ -18,19 +18,20 @@ function Dashboard() {
     queryKey: ['machines'],
     queryFn: () => MachinesService.readMachines(),
   });
-  let machine = machinesData?.data[0];
-  if (machinesIsLoading || !machine) {
-    machine = {
-      id: '...',
-      owner_id: '...',
-      name: '...',
-      provider: '...',
-      plc: '...',
-      oee_availability: 0,
-      oee_performance: 0,
-      oee_quality: 0,
-      oee: 0,
-    };
+
+  let machine: MachinePublic = {
+    id: '...',
+    owner_id: '...',
+    name: '...',
+    provider: '...',
+    plc: '...',
+    oee_availability: 0,
+    oee_performance: 0,
+    oee_quality: 0,
+    oee: 0,
+  };
+  if (machinesIsLoading) {
+    // Keep the default loading state
   } else if (machinesIsError) {
     machine = {
       id: 'Error',
@@ -43,31 +44,43 @@ function Dashboard() {
       oee_quality: 0,
       oee: 0,
     };
+  } else if (machinesData?.data[0]) {
+    machine = machinesData.data[0];
   }
 
   // Obtain measurements data
   const { data: measurementsData, isLoading: measurementsIsLoading, isError: measurementsIsError } = useQuery({
     queryKey: ["measurements"],
-    queryFn: () => MeasurementsService.readMeasurements(),
+    queryFn: () => MeasurementsService.readLatestMeasurements({ machineId: machine.id }),
   });
-  let measurements = measurementsData?.data;
-  if (measurementsIsLoading || !measurements) {
-    measurements = [{
+
+  let measurements: MeasurementsPublic = {
+    data: [{
       "id": "...",
       "owner_id": "...",
       "timestamp": "...",
       "temperature": 0,
       "power_usage": 0,
-    }];
+    }],
+    count: 0,
+  };
+  if (measurementsIsLoading) {
+    // Keep the default loading state
   } else if (measurementsIsError) {
-    measurements = [{
-      "id": "Error",
-      "owner_id": "Error",
-      "timestamp": "Error",
-      "temperature": -1,
-      "power_usage": -1,
-    }];
+    measurements = {
+      data: [{
+        "id": "Error",
+        "owner_id": "Error",
+        "timestamp": "Error",
+        "temperature": 0,
+        "power_usage": 0,
+      }],
+      count: 0,
+    };
+  } else if (measurementsData?.data) {
+    measurements = measurementsData;
   }
+
 
   // Polling mechanism to refresh measurements data
   const queryClient = useQueryClient();
