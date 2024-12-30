@@ -47,12 +47,14 @@ def read_machines(
     return MachinesPublic(data=machines, count=count)
 
 
-@router.get("/{id}", response_model=MachinePublic)
-def read_machine(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+@router.get("/{machine_id}", response_model=MachinePublic)
+def read_machine(
+    session: SessionDep, current_user: CurrentUser, machine_id: uuid.UUID
+) -> Any:
     """
     Get machine by ID.
     """
-    machine = session.get(Machine, id)
+    machine = session.get(Machine, machine_id)
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
     if not current_user.is_superuser and (machine.owner_id != current_user.id):
@@ -74,18 +76,18 @@ def create_machine(
     return machine
 
 
-@router.put("/{id}", response_model=MachinePublic)
+@router.put("/{machine_id}", response_model=MachinePublic)
 def update_machine(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    id: uuid.UUID,
+    machine_id: uuid.UUID,
     machine_in: MachineUpdate,
 ) -> Any:
     """
     Update an machine.
     """
-    machine = session.get(Machine, id)
+    machine = session.get(Machine, machine_id)
     if not machine:
         raise HTTPException(status_code=404, detail="Machine not found")
     if not current_user.is_superuser and (machine.owner_id != current_user.id):

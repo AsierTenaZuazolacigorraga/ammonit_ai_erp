@@ -31,8 +31,12 @@ import type {
   MachinesReadMachineResponse,
   MachinesUpdateMachineData,
   MachinesUpdateMachineResponse,
-  MachinesDeleteMachineData,
-  MachinesDeleteMachineResponse,
+  MeasurementsReadMeasurementsData,
+  MeasurementsReadMeasurementsResponse,
+  MeasurementsCreateMeasurementData,
+  MeasurementsCreateMeasurementResponse,
+  MeasurementsReadMeasurementData,
+  MeasurementsReadMeasurementResponse,
   UsersReadUsersData,
   UsersReadUsersResponse,
   UsersReadUserMeResponse,
@@ -371,21 +375,70 @@ export class MachinesService {
       },
     })
   }
+}
 
+export class MeasurementsService {
   /**
-   * Delete Machine
-   * Delete an machine.
+   * Read Measurements
+   * Retrieve measurements.
    * @param data The data for the request.
-   * @param data.id
-   * @returns Message Successful Response
+   * @param data.skip
+   * @param data.limit
+   * @returns MeasurementsPublic Successful Response
    * @throws ApiError
    */
-  public static deleteMachine(
-    data: MachinesDeleteMachineData,
-  ): CancelablePromise<MachinesDeleteMachineResponse> {
+  public static readMeasurements(
+    data: MeasurementsReadMeasurementsData = {},
+  ): CancelablePromise<MeasurementsReadMeasurementsResponse> {
     return __request(OpenAPI, {
-      method: "DELETE",
-      url: "/api/v1/machines/{id}",
+      method: "GET",
+      url: "/api/v1/measurements/",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Measurement
+   * Create new measurement.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns MeasurementPublic Successful Response
+   * @throws ApiError
+   */
+  public static createMeasurement(
+    data: MeasurementsCreateMeasurementData,
+  ): CancelablePromise<MeasurementsCreateMeasurementResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/measurements/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Measurement
+   * Get measurement by ID.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns MeasurementPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMeasurement(
+    data: MeasurementsReadMeasurementData,
+  ): CancelablePromise<MeasurementsReadMeasurementResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/measurements/{id}",
       path: {
         id: data.id,
       },

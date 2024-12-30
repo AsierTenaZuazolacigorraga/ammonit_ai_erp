@@ -73,6 +73,26 @@ export type MachineUpdate = {
   title?: string | null
 }
 
+export type MeasurementCreate = {
+  timestamp?: string
+  temperature: number
+  power_usage: number
+  owner_id: string
+}
+
+export type MeasurementPublic = {
+  timestamp?: string
+  temperature: number
+  power_usage: number
+  id: string
+  owner_id: string
+}
+
+export type MeasurementsPublic = {
+  data: Array<MeasurementPublic>
+  count: number
+}
+
 export type Message = {
   message: string
 }
@@ -208,11 +228,24 @@ export type MachinesUpdateMachineData = {
 
 export type MachinesUpdateMachineResponse = MachinePublic
 
-export type MachinesDeleteMachineData = {
+export type MeasurementsReadMeasurementsData = {
+  limit?: number
+  skip?: number
+}
+
+export type MeasurementsReadMeasurementsResponse = MeasurementsPublic
+
+export type MeasurementsCreateMeasurementData = {
+  requestBody: MeasurementCreate
+}
+
+export type MeasurementsCreateMeasurementResponse = MeasurementPublic
+
+export type MeasurementsReadMeasurementData = {
   id: string
 }
 
-export type MachinesDeleteMachineResponse = Message
+export type MeasurementsReadMeasurementResponse = MeasurementPublic
 
 export type UsersReadUsersData = {
   limit?: number

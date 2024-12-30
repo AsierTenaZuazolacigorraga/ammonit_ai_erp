@@ -6,6 +6,12 @@
             "type": "shell",
             "command": "source .env",
             "problemMatcher": []
+        },
+        {
+            "label": "refresh-client",
+            "type": "shell",
+            "command": "scripts/generate-client.sh",
+            "problemMatcher": []
         }
     ]
 }

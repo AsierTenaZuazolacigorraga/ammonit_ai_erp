@@ -115,7 +115,7 @@ class MeasurementBase(SQLModel):
 
 
 class MeasurementCreate(MeasurementBase):
-    owner_id: uuid.UUID  # Id of the machine
+    pass
 
 
 class MeasurementUpdate(MeasurementBase):
