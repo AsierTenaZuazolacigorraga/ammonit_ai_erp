@@ -10,6 +10,10 @@ import requests
 from dotenv import load_dotenv
 
 # Define the endpoints and parameters
+if os.getenv("DOMAIN") == "localhost.tiangolo.com":
+    IS_HTTPS = ""
+else:
+    IS_HTTPS = "s"
 NO_AUTH_HEADERS = {
     "accept": "application/json",
     "Content-Type": "application/x-www-form-urlencoded",
@@ -18,12 +22,9 @@ AUTH_HEADERS = {
     "accept": "application/json",
     "Authorization": "Bearer {AUTH_TOKEN}",
 }
-LOGIN_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/login/access-token/"
-LOGIN_DATA_POST = {
-    "username": os.getenv("DEVICE_USERNAME"),
-    "password": os.getenv("DEVICE_PASSWORD"),
-}
-MEASUREMENT_URL = f"http://api.{os.getenv('DOMAIN')}/api/v1/measurements/{os.getenv('DEVICE_MACHINE_ID')}"
+LOGIN_URL = f"https://api.{os.getenv('DOMAIN')}/api/v1/login/access-token"
+MACHINE_URL = f"https://api.{os.getenv('DOMAIN')}/api/v1/machines/{os.getenv('DEVICE_MACHINE_ID')}"
+MEASUREMENT_URL = f"https://api.{os.getenv('DOMAIN')}/api/v1/measurements/{os.getenv('DEVICE_MACHINE_ID')}"
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +53,12 @@ def main():
         # Get the access token
         while True:
             response = requests.post(
-                LOGIN_URL, headers=NO_AUTH_HEADERS, data=LOGIN_DATA_POST
+                LOGIN_URL,
+                headers=NO_AUTH_HEADERS,
+                data={
+                    "username": os.getenv("DEVICE_USERNAME"),
+                    "password": os.getenv("DEVICE_PASSWORD"),
+                },
             )
             data = process_response(response)
             if data:
@@ -62,24 +68,38 @@ def main():
                 break
             time.sleep(1)
 
+        # Get machine
+        while True:
+            response = requests.get(
+                MACHINE_URL,
+                headers=AUTH_HEADERS,
+                params={"machine_id": os.getenv("DEVICE_MACHINE_ID")},
+            )
+            data = process_response(response)
+            if data:
+                machine = data
+                break
+            time.sleep(1)
+
         # Update machine
         loops = 0
         while True:
 
             loops += 1
 
-            # # Update oee if needed
-            # if loops == 10:
-            #     machine["oee"] = random.randint(1, 100)
-            #     machine["oee_availability"] = random.randint(1, 100)
-            #     machine["oee_performance"] = random.randint(1, 100)
-            #     machine["oee_quality"] = random.randint(1, 100)
-            #     response = requests.put(
-            #         MACHINE_URL,
-            #         headers=AUTH_HEADERS,
-            #         json=machine,
-            #     )
-            #     process_response(response)
+            # Update oee if needed
+            if loops == 60:
+                machine["oee"] = random.randint(1, 100)
+                machine["oee_availability"] = random.randint(1, 100)
+                machine["oee_performance"] = random.randint(1, 100)
+                machine["oee_quality"] = random.randint(1, 100)
+                response = requests.put(
+                    MACHINE_URL,
+                    headers=AUTH_HEADERS,
+                    json=machine,
+                )
+                process_response(response)
+                loops = loops / 2
 
             # Create measurement
             response = requests.post(
