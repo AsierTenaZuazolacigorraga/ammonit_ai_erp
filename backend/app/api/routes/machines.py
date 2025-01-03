@@ -1,7 +1,10 @@
+import asyncio
+import time
 import uuid
+from time import sleep
 from typing import Any
 
-from app.api.deps import CurrentUser, SessionDep
+from app.api.deps import CurrentUser, SessionDep, WebSocketManager
 from app.models import (
     Machine,
     MachineCreate,
@@ -10,10 +13,17 @@ from app.models import (
     MachineUpdate,
     Message,
 )
-from fastapi import APIRouter, HTTPException
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+)
 from sqlmodel import func, select
 
 router = APIRouter(prefix="/machines", tags=["machines"])
+ws_manager = WebSocketManager()
 
 
 @router.get("/", response_model=MachinesPublic)
@@ -98,3 +108,33 @@ def update_machine(
     session.commit()
     session.refresh(machine)
     return machine
+
+
+# @router.websocket("/ws")
+# async def websocket_endpoint(
+#     websocket: WebSocket,
+#     # session: SessionDep,
+#     # current_user: CurrentUser,
+# ):
+#     # if not current_user and not session:
+#     #     raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+
+#     print("pre-connect")
+#     await ws_manager.connect(websocket)
+#     try:
+#         i = 0
+#         while True:
+#             i += 1
+#             # data = await websocket.receive_text()
+#             print("pre-send")
+#             await ws_manager.send({"counter": i}, websocket)
+#             print("post-send")
+#             # await ws_manager.broadcast(f"Client #{current_user} says: {data}")
+#             await asyncio.sleep(1)  # Increment and broadcast every 1 second
+
+#     except WebSocketDisconnect:
+#         print("pre-disconnect")
+#         ws_manager.disconnect(websocket)
+#         print("pre-send-broadcast")
+#         await ws_manager.send_broadcast({"counter": -1})
+#         # await ws_manager.broadcast(f"Client #{current_user} left the chat")
