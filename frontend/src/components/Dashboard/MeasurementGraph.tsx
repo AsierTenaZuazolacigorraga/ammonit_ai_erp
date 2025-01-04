@@ -9,61 +9,14 @@ interface MeasurementGraphProps {
 
 function MeasurementGraph({ measurements }: MeasurementGraphProps) {
 
-    // const generateDataset = (labels: number[], temperature_data: number[], power_usage_data: number[]) => ({
-    //     labels: labels,
-    //     datasets: [
-    //         {
-    //             label: "Temperature (°C)",
-    //             data: temperature_data,
-    //             borderColor: "rgba(255, 99, 132, 1)",
-    //             backgroundColor: "rgba(255, 99, 132, 0.2)",
-    //             fill: false,
-    //             tension: 0.1,
-    //         },
-    //         {
-    //             label: "Power Usage (kW)",
-    //             data: power_usage_data,
-    //             borderColor: "rgba(54, 162, 235, 1)",
-    //             backgroundColor: "rgba(54, 162, 235, 0.2)",
-    //             fill: false,
-    //             tension: 0.1,
-    //         },
-    //     ],
-    // });
-
-    // const options = {
-    //     responsive: true,
-    //     plugins: {
-    //         legend: {
-    //             position: "top" as const,
-    //         },
-    //         title: {
-    //             display: true,
-    //             text: "Measurements Over Time",
-    //         },
-    //     },
-    //     scales: {
-    //         x: {
-    //             title: {
-    //                 display: true,
-    //                 text: "Time",
-    //             },
-    //         },
-    //         y: {
-    //             title: {
-    //                 display: true,
-    //                 text: "Values",
-    //             },
-    //         },
-    //     },
-    // };
-
-
     const generateDataset = (timestamps_data: number[], temperature_data: number[], power_usage_data: number[]) => ({
         options: {
             chart: {
                 toolbar: {
                     show: false
+                },
+                zoom: {
+                    enabled: false // Disable zoom
                 }
             },
             tooltip: {
@@ -73,7 +26,9 @@ function MeasurementGraph({ measurements }: MeasurementGraphProps) {
                 enabled: false
             },
             stroke: {
-                curve: "smooth" as "smooth"
+                curve: "smooth" as "smooth",
+                width: 3, // Thicker lines for better visibility
+                colors: ["#4FD1C5", "#2D3748"] // Vibrant colors for the lines
             },
             xaxis: {
                 type: "datetime" as "datetime",
@@ -94,7 +49,7 @@ function MeasurementGraph({ measurements }: MeasurementGraphProps) {
                 }
             },
             legend: {
-                show: false
+                show: true // Display legend for better clarity
             },
             grid: {
                 strokeDashArray: 5,
@@ -110,20 +65,10 @@ function MeasurementGraph({ measurements }: MeasurementGraphProps) {
                 }
             },
             fill: {
-                type: "gradient",
-                gradient: {
-                    shade: "light",
-                    type: "vertical",
-                    shadeIntensity: 0.5,
-                    gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
-                    inverseColors: true,
-                    opacityFrom: 0.8,
-                    opacityTo: 0,
-                    stops: []
-                },
-                colors: ["#4FD1C5", "#2D3748"]
+                type: "solid", // Change gradient to solid fill
+                colors: ["#4FD1C5", "#2D3748"] // Match the stroke colors
             },
-            colors: ["#4FD1C5", "#2D3748"]
+            colors: ["#4FD1C5", "#2D3748"] // Use the same colors for consistency
         },
         data: [
             {
@@ -144,10 +89,13 @@ function MeasurementGraph({ measurements }: MeasurementGraphProps) {
         console.log("useEffect triggered");
 
         if (measurements) {
+            console.log("Updating graph data with new measurements");
+
             const timestamps = measurements.data.map((measurement: any) => {
                 const date = new Date(measurement.timestamp);
                 return isNaN(date.getTime()) ? null : date.toISOString();
             }).filter((timestamp: string | null) => timestamp !== null);
+            // const timestamps = measurements.data.map((measurement: any) => measurement.timestamps.toISOString());
             const temperatures = measurements.data.map((measurement: any) => measurement.temperature);
             const powerUsages = measurements.data.map((measurement: any) => measurement.power_usage);
 

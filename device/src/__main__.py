@@ -22,9 +22,9 @@ AUTH_HEADERS = {
     "accept": "application/json",
     "Authorization": "Bearer {AUTH_TOKEN}",
 }
-LOGIN_URL = f"https://api.{os.getenv('DOMAIN')}/api/v1/login/access-token"
-MACHINE_URL = f"https://api.{os.getenv('DOMAIN')}/api/v1/machines/{os.getenv('DEVICE_MACHINE_ID')}"
-MEASUREMENT_URL = f"https://api.{os.getenv('DOMAIN')}/api/v1/measurements/{os.getenv('DEVICE_MACHINE_ID')}"
+LOGIN_URL = f"http{IS_HTTPS}://api.{os.getenv('DOMAIN')}/api/v1/login/access-token"
+MACHINE_URL = f"http{IS_HTTPS}://api.{os.getenv('DOMAIN')}/api/v1/machines/{os.getenv('DEVICE_CUSTOMER_MACHINE_ID')}"
+MEASUREMENT_URL = f"http{IS_HTTPS}://api.{os.getenv('DOMAIN')}/api/v1/measurements/{os.getenv('DEVICE_CUSTOMER_MACHINE_ID')}"
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -56,8 +56,8 @@ def main():
                 LOGIN_URL,
                 headers=NO_AUTH_HEADERS,
                 data={
-                    "username": os.getenv("DEVICE_USERNAME"),
-                    "password": os.getenv("DEVICE_PASSWORD"),
+                    "username": os.getenv("DEVICE_CUSTOMER_USERNAME"),
+                    "password": os.getenv("DEVICE_CUSTOMER_PASSWORD"),
                 },
             )
             data = process_response(response)
@@ -73,7 +73,7 @@ def main():
             response = requests.get(
                 MACHINE_URL,
                 headers=AUTH_HEADERS,
-                params={"machine_id": os.getenv("DEVICE_MACHINE_ID")},
+                params={"machine_id": os.getenv("DEVICE_CUSTOMER_MACHINE_ID")},
             )
             data = process_response(response)
             if data:
@@ -111,7 +111,9 @@ def main():
                     ).isoformat(),  # Current UTC time in ISO 8601 format
                     "temperature": loops,  # Example temperature value
                     "power_usage": loops - 0.9,  # Example power usage value
-                    "machine_id": os.getenv("DEVICE_MACHINE_ID"),  # Id of the machine
+                    "machine_id": os.getenv(
+                        "DEVICE_CUSTOMER_MACHINE_ID"
+                    ),  # Id of the machine
                 },
             )
             data = process_response(response)

@@ -54,6 +54,16 @@ function Dashboard() {
     queryFn: () => MeasurementsService.readLatestMeasurements({ machineId: machine.id }),
   });
 
+  // Polling mechanism to refresh measurements data
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["measurements"] });
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [queryClient]);
+
   let measurements: MeasurementsPublic = {
     data: [{
       "id": "...",
@@ -80,17 +90,6 @@ function Dashboard() {
   } else if (measurementsData?.data) {
     measurements = measurementsData;
   }
-
-
-  // Polling mechanism to refresh measurements data
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["measurements"] });
-    }, 5000); // Poll every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [queryClient]);
 
   return (
     <Container maxW="full">
