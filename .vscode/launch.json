@@ -31,6 +31,21 @@
             "preLaunchTask": "refresh-env"
         },
         {
+            "name": "Device OPC UA Server",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/device",
+            "python": "${workspaceFolder}/device/.venv/bin/python",
+            "envFile": "${workspaceFolder}/.env",
+            "program": "${workspaceFolder}/device/tests/opc_ua_server.py",
+            "justMyCode": false,
+            "jinja": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "preLaunchTask": "refresh-env"
+        },
+        {
             "name": "Backend",
             "type": "debugpy",
             "request": "launch",
