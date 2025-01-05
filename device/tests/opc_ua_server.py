@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 from asyncua import Server, ua
 from asyncua.common.methods import uamethod
@@ -15,10 +16,10 @@ async def main():
     # setup our server
     server = Server()
     await server.init()
-    server.set_endpoint("opc.tcp://0.0.0.0:4840/freeopcua/server/")
+    server.set_endpoint(os.getenv("DEVICE_OPCUA_URL_SERVER"))
 
     # set up our own namespace, not really necessary but should as spec
-    uri = "http://examples.freeopcua.github.io"
+    uri = os.getenv("DEVICE_OPCUA_NAMESPACE")
     idx = await server.register_namespace(uri)
 
     # populating our address space
@@ -38,9 +39,9 @@ async def main():
     async with server:
         while True:
             await asyncio.sleep(1)
-            new_val = await myvar.get_value() + 0.1
-            _logger.info("Set value of %s to %.1f", myvar, new_val)
-            await myvar.write_value(new_val)
+            new_val = await myvar.get_value()
+            _logger.info("Value of %s to %.1f", myvar, new_val)
+            # await myvar.write_value(new_val)
 
 
 if __name__ == "__main__":

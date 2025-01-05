@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 
 import requests
+from asyncua.sync import Client
 from dotenv import load_dotenv
 
 # Define the endpoints and parameters
@@ -85,21 +86,43 @@ def main():
         loops = 0
         while True:
 
-            loops += 1
-
-            # Update oee if needed
-            if loops == 60:
-                machine["oee"] = random.randint(1, 100)
-                machine["oee_availability"] = random.randint(1, 100)
-                machine["oee_performance"] = random.randint(1, 100)
-                machine["oee_quality"] = random.randint(1, 100)
-                response = requests.put(
-                    MACHINE_URL,
-                    headers=AUTH_HEADERS,
-                    json=machine,
+            # Obtain the value of the variable from the OPC UA server
+            with Client(url=os.getenv("DEVICE_OPCUA_URL_CLIENT")) as client:
+                # Find the namespace index
+                nsidx = client.get_namespace_index(os.getenv("DEVICE_OPCUA_NAMESPACE"))
+                print(
+                    f"Namespace Index for '{os.getenv('DEVICE_OPCUA_NAMESPACE')}': {nsidx}"
                 )
-                process_response(response)
-                loops = loops / 2
+
+                # Get the variable node for read / write
+                var = client.nodes.root.get_child(
+                    f"0:Objects/{nsidx}:MyObject/{nsidx}:MyVariable"
+                )
+                value = var.read_value()
+                print(f"Value of MyVariable ({var}): {value}")
+
+                new_value = value + 0.1
+                print(f"Setting value of MyVariable to {new_value} ...")
+                var.write_value(new_value)
+
+                # # Calling a method
+                # res = client.nodes.objects.call_method(f"{nsidx}:ServerMethod", 5)
+                # print(f"Calling ServerMethod returned {res}")
+
+            # # Update oee if needed
+            # loops += 1
+            # if loops == 60:
+            #     machine["oee"] = random.randint(1, 100)
+            #     machine["oee_availability"] = random.randint(1, 100)
+            #     machine["oee_performance"] = random.randint(1, 100)
+            #     machine["oee_quality"] = random.randint(1, 100)
+            #     response = requests.put(
+            #         MACHINE_URL,
+            #         headers=AUTH_HEADERS,
+            #         json=machine,
+            #     )
+            #     process_response(response)
+            #     loops = loops / 2
 
             # Create measurement
             response = requests.post(
