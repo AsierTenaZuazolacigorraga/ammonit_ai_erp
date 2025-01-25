@@ -1,3 +1,4 @@
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import {
   Box,
   Button,
@@ -6,8 +7,12 @@ import {
   FormErrorMessage,
   FormLabel,
   Heading,
+  Icon,
   Input,
-  useColorModeValue,
+  InputGroup,
+  InputRightElement,
+  useBoolean,
+  useColorModeValue
 } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
@@ -21,6 +26,9 @@ interface UpdatePasswordForm extends UpdatePassword {
 }
 
 const ChangePassword = () => {
+  const [showCurrentPass, setShowCurrentPass] = useBoolean()
+  const [showNewPass, setShowNewPass] = useBoolean()
+  const [showConfirmPass, setShowConfirmPass] = useBoolean()
   const color = useColorModeValue("inherit", "ui.light")
   const showToast = useCustomToast()
   const {
@@ -38,7 +46,7 @@ const ChangePassword = () => {
     mutationFn: (data: UpdatePassword) =>
       UsersService.updatePasswordMe({ requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "Password updated successfully.", "success")
+      showToast("Éxito!", "Password actualizado correctamente.", "success")
       reset()
     },
     onError: (err: ApiError) => {
@@ -54,7 +62,7 @@ const ChangePassword = () => {
     <>
       <Container maxW="full">
         <Heading size="sm" py={4}>
-          Change Password
+          Cabiar Password
         </Heading>
         <Box
           w={{ sm: "full", md: "50%" }}
@@ -63,15 +71,31 @@ const ChangePassword = () => {
         >
           <FormControl isRequired isInvalid={!!errors.current_password}>
             <FormLabel color={color} htmlFor="current_password">
-              Current Password
+              Password Actual
             </FormLabel>
-            <Input
-              id="current_password"
-              {...register("current_password")}
-              placeholder="Password"
-              type="password"
-              w="auto"
-            />
+            <InputGroup width='50%'>
+              <Input
+                id="current_password"
+                {...register("current_password")}
+                placeholder="Password"
+                type={showCurrentPass ? "text" : "password"}
+              // w="auto"
+              />
+              <InputRightElement
+                color="ui.dim"
+                _hover={{
+                  cursor: "pointer",
+                }}
+              >
+                <Icon
+                  as={showCurrentPass ? ViewOffIcon : ViewIcon}
+                  onClick={setShowCurrentPass.toggle}
+                  aria-label={showCurrentPass ? "Hide password" : "Show password"}
+                >
+                  {showCurrentPass ? <ViewOffIcon /> : <ViewIcon />}
+                </Icon>
+              </InputRightElement>
+            </InputGroup>
             {errors.current_password && (
               <FormErrorMessage>
                 {errors.current_password.message}
@@ -79,27 +103,59 @@ const ChangePassword = () => {
             )}
           </FormControl>
           <FormControl mt={4} isRequired isInvalid={!!errors.new_password}>
-            <FormLabel htmlFor="password">Set Password</FormLabel>
-            <Input
-              id="password"
-              {...register("new_password", passwordRules())}
-              placeholder="Password"
-              type="password"
-              w="auto"
-            />
+            <FormLabel htmlFor="password">Nuevo Password</FormLabel>
+            <InputGroup width='50%'>
+              <Input
+                id="password"
+                {...register("new_password", passwordRules())}
+                placeholder="Password"
+                type={showNewPass ? "text" : "password"}
+              // w="auto"
+              />
+              <InputRightElement
+                color="ui.dim"
+                _hover={{
+                  cursor: "pointer",
+                }}
+              >
+                <Icon
+                  as={showNewPass ? ViewOffIcon : ViewIcon}
+                  onClick={setShowNewPass.toggle}
+                  aria-label={showNewPass ? "Hide password" : "Show password"}
+                >
+                  {showNewPass ? <ViewOffIcon /> : <ViewIcon />}
+                </Icon>
+              </InputRightElement>
+            </InputGroup>
             {errors.new_password && (
               <FormErrorMessage>{errors.new_password.message}</FormErrorMessage>
             )}
           </FormControl>
           <FormControl mt={4} isRequired isInvalid={!!errors.confirm_password}>
-            <FormLabel htmlFor="confirm_password">Confirm Password</FormLabel>
-            <Input
-              id="confirm_password"
-              {...register("confirm_password", confirmPasswordRules(getValues))}
-              placeholder="Password"
-              type="password"
-              w="auto"
-            />
+            <FormLabel htmlFor="confirm_password">Nuevo Password Confirmado</FormLabel>
+            <InputGroup width='50%'>
+              <Input
+                id="confirm_password"
+                {...register("confirm_password", confirmPasswordRules(getValues))}
+                placeholder="Password"
+                type={showConfirmPass ? "text" : "password"}
+              // w="auto"
+              />
+              <InputRightElement
+                color="ui.dim"
+                _hover={{
+                  cursor: "pointer",
+                }}
+              >
+                <Icon
+                  as={showConfirmPass ? ViewOffIcon : ViewIcon}
+                  onClick={setShowConfirmPass.toggle}
+                  aria-label={showConfirmPass ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPass ? <ViewOffIcon /> : <ViewIcon />}
+                </Icon>
+              </InputRightElement>
+            </InputGroup>
             {errors.confirm_password && (
               <FormErrorMessage>
                 {errors.confirm_password.message}
@@ -112,7 +168,7 @@ const ChangePassword = () => {
             type="submit"
             isLoading={isSubmitting}
           >
-            Save
+            Guardar
           </Button>
         </Box>
       </Container>

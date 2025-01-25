@@ -54,7 +54,7 @@ const UserInformation = () => {
     mutationFn: (data: UserUpdateMe) =>
       UsersService.updateUserMe({ requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "User updated successfully.", "success")
+      showToast("Éxito!", "Usuario actualizado correctamente.", "success")
     },
     onError: (err: ApiError) => {
       handleError(err, showToast)
@@ -77,7 +77,7 @@ const UserInformation = () => {
     <>
       <Container maxW="full">
         <Heading size="sm" py={4}>
-          User Information
+          Información de Usuario
         </Heading>
         <Box
           w={{ sm: "full", md: "50%" }}
@@ -86,7 +86,7 @@ const UserInformation = () => {
         >
           <FormControl>
             <FormLabel color={color} htmlFor="name">
-              Full name
+              Nombre completo
             </FormLabel>
             {editMode ? (
               <Input
@@ -116,7 +116,7 @@ const UserInformation = () => {
               <Input
                 id="email"
                 {...register("email", {
-                  required: "Email is required",
+                  required: "Se requiere email",
                   pattern: emailPattern,
                 })}
                 type="email"
@@ -140,11 +140,11 @@ const UserInformation = () => {
               isLoading={editMode ? isSubmitting : false}
               isDisabled={editMode ? !isDirty || !getValues("email") : false}
             >
-              {editMode ? "Save" : "Edit"}
+              {editMode ? "Guardar" : "Editar"}
             </Button>
             {editMode && (
               <Button onClick={onCancel} isDisabled={isSubmitting}>
-                Cancel
+                Cancelar
               </Button>
             )}
           </Flex>

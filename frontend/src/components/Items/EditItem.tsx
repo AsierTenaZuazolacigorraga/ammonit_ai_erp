@@ -48,7 +48,7 @@ const EditItem = ({ item, isOpen, onClose }: EditItemProps) => {
     mutationFn: (data: ItemUpdate) =>
       ItemsService.updateItem({ id: item.id, requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "Item updated successfully.", "success")
+      showToast("Éxito!", "Item actualizado correctamente.", "success")
       onClose()
     },
     onError: (err: ApiError) => {

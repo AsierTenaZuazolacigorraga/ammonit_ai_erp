@@ -45,7 +45,7 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
     mutationFn: (data: ItemCreate) =>
       ItemsService.createItem({ requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "Item created successfully.", "success")
+      showToast("Éxito!", "Item creado correctamente.", "success")
       reset()
       onClose()
     },

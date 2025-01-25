@@ -13,3 +13,11 @@
 # net stop winnat
 # docker start ...
 # net start winnat
+
+# If you want to fordware ports of windows to wsl #######################################################################
+# Add
+# netsh interface portproxy add v4tov4 listenaddress=10.0.0.10 listenport=4840 connectaddress=127.0.0.1 connectport=4840
+# Show
+# netsh interface portproxy show all
+# Delete
+# netsh interface portproxy delete v4tov4 listenaddress=10.0.0.10 listenport=4840

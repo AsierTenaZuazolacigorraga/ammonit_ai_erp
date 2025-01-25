@@ -35,13 +35,13 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
     except (InvalidTokenError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Could not validate credentials",
+            detail="No se pudieron validar las credenciales",
         )
     user = session.get(User, token_data.sub)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail="Usuario no activo")
     return user
 
 
@@ -51,25 +51,25 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 def get_current_active_superuser(current_user: CurrentUser) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
+            status_code=403, detail="El usuario no tiene permisos suficientes"
         )
     return current_user
 
 
-class WebSocketManager:
-    def __init__(self):
-        self.active_connections: list[WebSocket] = []
+# class WebSocketManager:
+#     def __init__(self):
+#         self.active_connections: list[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
+#     async def connect(self, websocket: WebSocket):
+#         await websocket.accept()
+#         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+#     def disconnect(self, websocket: WebSocket):
+#         self.active_connections.remove(websocket)
 
-    async def send(self, message: dict, websocket: WebSocket):
-        await websocket.send_json(message)
+#     async def send(self, message: dict, websocket: WebSocket):
+#         await websocket.send_json(message)
 
-    async def send_broadcast(self, message: dict):
-        for connection in self.active_connections:
-            await connection.send_json(message)
+#     async def send_broadcast(self, message: dict):
+#         for connection in self.active_connections:
+#             await connection.send_json(message)

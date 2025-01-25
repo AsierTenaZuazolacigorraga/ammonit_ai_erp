@@ -16,13 +16,6 @@ import type {
   ItemsDeleteItemResponse,
   LoginLoginAccessTokenData,
   LoginLoginAccessTokenResponse,
-  LoginTestTokenResponse,
-  LoginRecoverPasswordData,
-  LoginRecoverPasswordResponse,
-  LoginResetPasswordData,
-  LoginResetPasswordResponse,
-  LoginRecoverPasswordHtmlContentData,
-  LoginRecoverPasswordHtmlContentResponse,
   MachinesReadMachinesData,
   MachinesReadMachinesResponse,
   MachinesCreateMachineData,
@@ -37,19 +30,11 @@ import type {
   MeasurementsCreateMeasurementResponse,
   MeasurementsReadMeasurementData,
   MeasurementsReadMeasurementResponse,
-  UsersReadUsersData,
-  UsersReadUsersResponse,
   UsersReadUserMeResponse,
   UsersUpdateUserMeData,
   UsersUpdateUserMeResponse,
   UsersUpdatePasswordMeData,
   UsersUpdatePasswordMeResponse,
-  UsersReadUserByIdData,
-  UsersReadUserByIdResponse,
-  UsersUpdateUserData,
-  UsersUpdateUserResponse,
-  UtilsTestEmailData,
-  UtilsTestEmailResponse,
   UtilsHealthCheckResponse,
 } from "./types.gen"
 
@@ -191,87 +176,6 @@ export class LoginService {
       url: "/api/v1/login/access-token",
       formData: data.formData,
       mediaType: "application/x-www-form-urlencoded",
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Test Token
-   * Test access token
-   * @returns UserPublic Successful Response
-   * @throws ApiError
-   */
-  public static testToken(): CancelablePromise<LoginTestTokenResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/login/test-token",
-    })
-  }
-
-  /**
-   * Recover Password
-   * Password Recovery
-   * @param data The data for the request.
-   * @param data.email
-   * @returns Message Successful Response
-   * @throws ApiError
-   */
-  public static recoverPassword(
-    data: LoginRecoverPasswordData,
-  ): CancelablePromise<LoginRecoverPasswordResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/password-recovery/{email}",
-      path: {
-        email: data.email,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Reset Password
-   * Reset password
-   * @param data The data for the request.
-   * @param data.requestBody
-   * @returns Message Successful Response
-   * @throws ApiError
-   */
-  public static resetPassword(
-    data: LoginResetPasswordData,
-  ): CancelablePromise<LoginResetPasswordResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/reset-password/",
-      body: data.requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Recover Password Html Content
-   * HTML Content for Password Recovery
-   * @param data The data for the request.
-   * @param data.email
-   * @returns string Successful Response
-   * @throws ApiError
-   */
-  public static recoverPasswordHtmlContent(
-    data: LoginRecoverPasswordHtmlContentData,
-  ): CancelablePromise<LoginRecoverPasswordHtmlContentResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/password-recovery-html-content/{email}",
-      path: {
-        email: data.email,
-      },
       errors: {
         422: "Validation Error",
       },
@@ -455,31 +359,6 @@ export class MeasurementsService {
 
 export class UsersService {
   /**
-   * Read Users
-   * Retrieve users.
-   * @param data The data for the request.
-   * @param data.skip
-   * @param data.limit
-   * @returns UsersPublic Successful Response
-   * @throws ApiError
-   */
-  public static readUsers(
-    data: UsersReadUsersData = {},
-  ): CancelablePromise<UsersReadUsersResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/v1/users/",
-      query: {
-        skip: data.skip,
-        limit: data.limit,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
    * Read User Me
    * Get current user.
    * @returns UserPublic Successful Response
@@ -535,81 +414,9 @@ export class UsersService {
       },
     })
   }
-
-  /**
-   * Read User By Id
-   * Get a specific user by id.
-   * @param data The data for the request.
-   * @param data.userId
-   * @returns UserPublic Successful Response
-   * @throws ApiError
-   */
-  public static readUserById(
-    data: UsersReadUserByIdData,
-  ): CancelablePromise<UsersReadUserByIdResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/v1/users/{user_id}",
-      path: {
-        user_id: data.userId,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Update User
-   * Update a user.
-   * @param data The data for the request.
-   * @param data.userId
-   * @param data.requestBody
-   * @returns UserPublic Successful Response
-   * @throws ApiError
-   */
-  public static updateUser(
-    data: UsersUpdateUserData,
-  ): CancelablePromise<UsersUpdateUserResponse> {
-    return __request(OpenAPI, {
-      method: "PATCH",
-      url: "/api/v1/users/{user_id}",
-      path: {
-        user_id: data.userId,
-      },
-      body: data.requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
 }
 
 export class UtilsService {
-  /**
-   * Test Email
-   * Test emails.
-   * @param data The data for the request.
-   * @param data.emailTo
-   * @returns Message Successful Response
-   * @throws ApiError
-   */
-  public static testEmail(
-    data: UtilsTestEmailData,
-  ): CancelablePromise<UtilsTestEmailResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/utils/test-email/",
-      query: {
-        email_to: data.emailTo,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
   /**
    * Health Check
    * @returns boolean Successful Response

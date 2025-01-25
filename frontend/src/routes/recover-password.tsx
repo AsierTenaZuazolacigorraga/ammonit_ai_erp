@@ -50,8 +50,8 @@ function RecoverPassword() {
     mutationFn: recoverPassword,
     onSuccess: () => {
       showToast(
-        "Email sent.",
-        "We sent an email with a link to get back into your account.",
+        "Email enviado.",
+        "Se ha enviado un email para poder recuperar su password.",
         "success",
       )
       reset()
@@ -77,16 +77,16 @@ function RecoverPassword() {
       centerContent
     >
       <Heading size="xl" color="ui.main" textAlign="center" mb={2}>
-        Password Recovery
+        Recupere su Password
       </Heading>
       <Text align="center">
-        A password recovery email will be sent to the registered account.
+        Se enviará un email de recuperación de password al siguiente email ya registrado.
       </Text>
       <FormControl isInvalid={!!errors.email}>
         <Input
           id="email"
           {...register("email", {
-            required: "Email is required",
+            required: "Se requiere email",
             pattern: emailPattern,
           })}
           placeholder="Email"
@@ -97,7 +97,7 @@ function RecoverPassword() {
         )}
       </FormControl>
       <Button variant="primary" type="submit" isLoading={isSubmitting}>
-        Continue
+        Continuar
       </Button>
     </Container>
   )

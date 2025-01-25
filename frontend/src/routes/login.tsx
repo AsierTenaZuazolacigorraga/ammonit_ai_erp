@@ -9,20 +9,19 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Link,
   useBoolean
 } from "@chakra-ui/react"
 import {
-  Link as RouterLink,
   createFileRoute,
-  redirect,
+  redirect
 } from "@tanstack/react-router"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
 import type { Body_login_login_access_token as AccessToken } from "../client"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { emailPattern } from "../utils"
-import Logo from "/assets/images/fastapi-logo.svg"
+import Logo from "/assets/images/ammonit_generic_logo.svg"
+// import Logo from "/assets/images/fastapi-logo.svg"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -87,7 +86,7 @@ function Login() {
           <Input
             id="username"
             {...register("username", {
-              required: "Username is required",
+              required: "Se requiere email",
               pattern: emailPattern,
             })}
             placeholder="Email"
@@ -102,7 +101,7 @@ function Login() {
           <InputGroup>
             <Input
               {...register("password", {
-                required: "Password is required",
+                required: "Se requiere password",
               })}
               type={show ? "text" : "password"}
               placeholder="Password"
@@ -125,9 +124,9 @@ function Login() {
           </InputGroup>
           {error && <FormErrorMessage>{error}</FormErrorMessage>}
         </FormControl>
-        <Link as={RouterLink} to="/recover-password" color="blue.500">
-          Forgot password?
-        </Link>
+        {/* <Link as={RouterLink} to="/recover-password" color="blue.500">
+          Ha olvidado su contraseña?
+        </Link> */}
         <Button variant="primary" type="submit" isLoading={isSubmitting}>
           Log In
         </Button>

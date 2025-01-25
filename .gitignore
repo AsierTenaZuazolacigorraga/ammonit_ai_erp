@@ -3,6 +3,7 @@ mysql-data/
 
 # customs
 __pycache__/
+.olds/
 .venv/
 .gitignores/
 logs.txt

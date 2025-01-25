@@ -10,7 +10,7 @@
         {
             "label": "refresh-client",
             "type": "shell",
-            "command": "scripts/generate-client.sh",
+            "command": "source ${workspaceFolder}/backend/.venv/bin/activate && scripts/generate-client.sh",
             "problemMatcher": []
         }
     ]

@@ -56,7 +56,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
     mutationFn: (data: UserUpdateForm) =>
       UsersService.updateUser({ userId: user.id, requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "User updated successfully.", "success")
+      showToast("Éxito!", "Usuario actualizado correctamente.", "success")
       onClose()
     },
     onError: (err: ApiError) => {
@@ -97,7 +97,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
               <Input
                 id="email"
                 {...register("email", {
-                  required: "Email is required",
+                  required: "Se requiere email",
                   pattern: emailPattern,
                 })}
                 placeholder="Email"
@@ -118,7 +118,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
                 {...register("password", {
                   minLength: {
                     value: 8,
-                    message: "Password must be at least 8 characters",
+                    message: "El password debe de tener al menos 8 caracteres",
                   },
                 })}
                 placeholder="Password"
@@ -135,7 +135,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
                 {...register("confirm_password", {
                   validate: (value) =>
                     value === getValues().password ||
-                    "The passwords do not match",
+                    "Los password no coinciden",
                 })}
                 placeholder="Password"
                 type="password"

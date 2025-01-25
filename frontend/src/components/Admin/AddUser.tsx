@@ -57,7 +57,7 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "User created successfully.", "success")
+      showToast("Éxito!", "Usuario creado correctamente.", "success")
       reset()
       onClose()
     },
@@ -91,7 +91,7 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
               <Input
                 id="email"
                 {...register("email", {
-                  required: "Email is required",
+                  required: "Se requiere email",
                   pattern: emailPattern,
                 })}
                 placeholder="Email"
@@ -106,7 +106,7 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
               <Input
                 id="name"
                 {...register("full_name")}
-                placeholder="Full name"
+                placeholder="Nombre completo"
                 type="text"
               />
               {errors.full_name && (
@@ -118,10 +118,10 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
               <Input
                 id="password"
                 {...register("password", {
-                  required: "Password is required",
+                  required: "Se requiere password",
                   minLength: {
                     value: 8,
-                    message: "Password must be at least 8 characters",
+                    message: "El password debe de tener al menos 8 caracteres",
                   },
                 })}
                 placeholder="Password"
@@ -140,10 +140,10 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
               <Input
                 id="confirm_password"
                 {...register("confirm_password", {
-                  required: "Please confirm your password",
+                  required: "Por favor, confirme su password",
                   validate: (value) =>
                     value === getValues().password ||
-                    "The passwords do not match",
+                    "Los password no coinciden",
                 })}
                 placeholder="Password"
                 type="password"

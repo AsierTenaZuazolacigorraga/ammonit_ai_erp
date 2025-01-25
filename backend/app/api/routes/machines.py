@@ -4,7 +4,7 @@ import uuid
 from time import sleep
 from typing import Any
 
-from app.api.deps import CurrentUser, SessionDep, WebSocketManager
+from app.api.deps import CurrentUser, SessionDep  # WebSocketManager
 from app.models import (
     Machine,
     MachineCreate,
@@ -23,7 +23,7 @@ from fastapi import (
 from sqlmodel import func, select
 
 router = APIRouter(prefix="/machines", tags=["machines"])
-ws_manager = WebSocketManager()
+# ws_manager = WebSocketManager()
 
 
 @router.get("/", response_model=MachinesPublic)

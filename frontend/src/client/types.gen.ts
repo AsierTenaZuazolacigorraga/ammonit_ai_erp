@@ -96,11 +96,6 @@ export type Message = {
   message: string
 }
 
-export type NewPassword = {
-  token: string
-  new_password: string
-}
-
 export type Token = {
   access_token: string
   token_type?: string
@@ -117,19 +112,6 @@ export type UserPublic = {
   is_superuser?: boolean
   full_name?: string | null
   id: string
-}
-
-export type UsersPublic = {
-  data: Array<UserPublic>
-  count: number
-}
-
-export type UserUpdate = {
-  email?: string | null
-  is_active?: boolean
-  is_superuser?: boolean
-  full_name?: string | null
-  password?: string | null
 }
 
 export type UserUpdateMe = {
@@ -181,26 +163,6 @@ export type LoginLoginAccessTokenData = {
 
 export type LoginLoginAccessTokenResponse = Token
 
-export type LoginTestTokenResponse = UserPublic
-
-export type LoginRecoverPasswordData = {
-  email: string
-}
-
-export type LoginRecoverPasswordResponse = Message
-
-export type LoginResetPasswordData = {
-  requestBody: NewPassword
-}
-
-export type LoginResetPasswordResponse = Message
-
-export type LoginRecoverPasswordHtmlContentData = {
-  email: string
-}
-
-export type LoginRecoverPasswordHtmlContentResponse = string
-
 export type MachinesReadMachinesData = {
   limit?: number
   skip?: number
@@ -247,13 +209,6 @@ export type MeasurementsReadMeasurementData = {
 
 export type MeasurementsReadMeasurementResponse = MeasurementPublic
 
-export type UsersReadUsersData = {
-  limit?: number
-  skip?: number
-}
-
-export type UsersReadUsersResponse = UsersPublic
-
 export type UsersReadUserMeResponse = UserPublic
 
 export type UsersUpdateUserMeData = {
@@ -267,24 +222,5 @@ export type UsersUpdatePasswordMeData = {
 }
 
 export type UsersUpdatePasswordMeResponse = Message
-
-export type UsersReadUserByIdData = {
-  userId: string
-}
-
-export type UsersReadUserByIdResponse = UserPublic
-
-export type UsersUpdateUserData = {
-  requestBody: UserUpdate
-  userId: string
-}
-
-export type UsersUpdateUserResponse = UserPublic
-
-export type UtilsTestEmailData = {
-  emailTo: string
-}
-
-export type UtilsTestEmailResponse = Message
 
 export type UtilsHealthCheckResponse = boolean
