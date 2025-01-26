@@ -1,13 +1,22 @@
-import { Box, Flex, Icon, Text, useColorModeValue } from "@chakra-ui/react"
-import { Link } from "@tanstack/react-router"
-import { FiHome, FiSettings } from "react-icons/fi"
+import { Box, Flex, Text } from "@chakra-ui/react"
+import { useQueryClient } from "@tanstack/react-query"
+import { FiBriefcase, FiHome, FiSettings, FiUsers } from "react-icons/fi"
 
+import { RouterLink } from "@/components/ui/router-link"
 
-const items = [
+import type { UserPublic } from "@/client"
+import { ReactIcon } from "@/components/ui/icon"
+import type { IconType } from "react-icons/lib"
+
+interface SidebarItemProps {
+  icon: IconType
+  title: string
+  path: string
+}
+const items: SidebarItemProps[] = [
   { icon: FiHome, title: "Dashboard", path: "/" },
-  // { icon: FiBriefcase, title: "Items", path: "/items" },
-  { icon: FiSettings, title: "Configuración", path: "/settings" },
-  // { icon: FiSettings, title: "Production", path: "/Production" },
+  { icon: FiBriefcase, title: "Items", path: "/items" },
+  { icon: FiSettings, title: "User Settings", path: "/settings" },
 ]
 
 interface SidebarItemsProps {
@@ -15,34 +24,20 @@ interface SidebarItemsProps {
 }
 
 const SidebarItems = ({ onClose }: SidebarItemsProps) => {
-  // const queryClient = useQueryClient()
-  const textColor = useColorModeValue("ui.main", "ui.light")
-  const bgActive = useColorModeValue("#E2E8F0", "#4A5568")
-  // const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const queryClient = useQueryClient()
+  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
 
-  // const finalItems = currentUser?.is_superuser
-  //   ? [...items, { icon: FiUsers, title: "Admin", path: "/admin" }]
-  //   : items
+  const finalItems: SidebarItemProps[] = currentUser?.is_superuser
+    ? [...items, { icon: FiUsers, title: "Admin", path: "/admin" }]
+    : items
 
-  const listItems = items.map(({ icon, title, path }) => (
-    <Flex
-      as={Link}
-      to={path}
-      w="100%"
-      p={2}
-      key={title}
-      activeProps={{
-        style: {
-          background: bgActive,
-          borderRadius: "12px",
-        },
-      }}
-      color={textColor}
-      onClick={onClose}
-    >
-      <Icon as={icon} alignSelf="center" />
-      <Text ml={2}>{title}</Text>
-    </Flex>
+  const listItems = finalItems.map(({ icon, title, path }) => (
+    <RouterLink to={path} key={title} asChild>
+      <Flex w="100%" p={2} onClick={onClose}>
+        <ReactIcon icon={icon} alignSelf="center" />
+        <Text ml={2}>{title}</Text>
+      </Flex>
+    </RouterLink>
   ))
 
   return (

@@ -44,10 +44,7 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
-    machines: list["Machine"] = Relationship(
-        back_populates="owner", cascade_delete=True
-    )
+    orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class UserPublic(UserBase):
@@ -60,120 +57,41 @@ class UsersPublic(SQLModel):
 
 
 ##########################################################################################
-# Machine
+# Order
 ##########################################################################################
 
 
-class MachineBase(SQLModel):
-    name: str | None = Field(default=None, max_length=255)
-    provider: str | None = Field(default=None, max_length=255)
-    plc: str | None = Field(default=None, max_length=255)
-    oee: float
-    oee_availability: float
-    oee_performance: float
-    oee_quality: float
+class OrderBase(SQLModel):
+    date: datetime = Field(nullable=False)  # For storing dates/times
+    in_document: bytes | None = Field(
+        default=None, nullable=False
+    )  # For storing binary data (documents)
+    out_document: bytes | None = Field(default=None, nullable=False)
 
 
-class MachineCreate(MachineBase):
+class OrderCreate(OrderBase):
     pass
 
 
-class MachineUpdate(MachineBase):
-    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
+class OrderUpdate(OrderBase):
+    pass
 
 
-class Machine(MachineBase, table=True):
+class Order(OrderBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="machines")
-    measurements: list["Measurement"] = Relationship(
-        back_populates="owner", cascade_delete=True
-    )
+    owner: User | None = Relationship(back_populates="orders")
 
 
-class MachinePublic(MachineBase):
+class OrderPublic(OrderBase):
     id: uuid.UUID
     owner_id: uuid.UUID
 
 
-class MachinesPublic(SQLModel):
-    data: list[MachinePublic]
-    count: int
-
-
-##########################################################################################
-# Measurement
-##########################################################################################
-
-
-class MeasurementBase(SQLModel):
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    temperature: float
-    power_usage: float
-
-
-class MeasurementCreate(MeasurementBase):
-    pass
-
-
-class MeasurementUpdate(MeasurementBase):
-    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
-
-
-class Measurement(MeasurementBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="machine.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: Machine | None = Relationship(back_populates="measurements")
-
-
-class MeasurementPublic(MeasurementBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class MeasurementsPublic(SQLModel):
-    data: list[MeasurementPublic]
-    count: int
-
-
-##########################################################################################
-# Item
-##########################################################################################
-
-
-class ItemBase(SQLModel):
-    title: str = Field(min_length=1, max_length=255)
-    description: str | None = Field(default=None, max_length=255)
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class ItemUpdate(ItemBase):
-    title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
-
-
-class Item(ItemBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    title: str = Field(max_length=255)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="items")
-
-
-class ItemPublic(ItemBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
+class OrdersPublic(SQLModel):
+    data: list[OrderPublic]
     count: int
 
 

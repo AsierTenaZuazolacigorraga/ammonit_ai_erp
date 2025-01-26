@@ -1,22 +1,22 @@
+import { Box, IconButton, useDisclosure } from "@chakra-ui/react"
+
 import {
-  Button,
-  Menu,
-  MenuButton,
+  MenuContent,
   MenuItem,
-  MenuList,
-  useDisclosure,
-} from "@chakra-ui/react"
+  MenuRoot,
+  MenuTrigger,
+} from "@/components/ui/menu"
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { FiEdit, FiTrash } from "react-icons/fi"
 
-import type { ItemPublic, UserPublic } from "../../client"
+import type { OrderPublic, UserPublic } from "@/client"
 import EditUser from "../Admin/EditUser"
-import EditItem from "../Items/EditItem"
+import EditOrder from "../Orders/EditOrder"
 import Delete from "./DeleteAlert"
 
 interface ActionsMenuProps {
   type: string
-  value: ItemPublic | UserPublic
+  value: OrderPublic | UserPublic
   disabled?: boolean
 }
 
@@ -26,48 +26,42 @@ const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
 
   return (
     <>
-      <Menu>
-        <MenuButton
-          isDisabled={disabled}
-          as={Button}
-          rightIcon={<BsThreeDotsVertical />}
-          variant="unstyled"
-        />
-        <MenuList>
-          <MenuItem
-            onClick={editUserModal.onOpen}
-            icon={<FiEdit fontSize="16px" />}
-          >
-            Edit {type}
+      <MenuRoot>
+        <MenuTrigger asChild>
+          <IconButton size="sm" variant="ghost" disabled={disabled}>
+            <BsThreeDotsVertical />
+          </IconButton>
+        </MenuTrigger>
+        <MenuContent>
+          <MenuItem value="edit" onClick={editUserModal.onOpen}>
+            <FiEdit fontSize="16px" />
+            <Box flex="1">Edit {type}</Box>
           </MenuItem>
-          <MenuItem
-            onClick={deleteModal.onOpen}
-            icon={<FiTrash fontSize="16px" />}
-            color="ui.danger"
-          >
-            Delete {type}
+          <MenuItem value="delete" onClick={deleteModal.onOpen} color="red">
+            <FiTrash fontSize="16px" />
+            <Box flex="1">Delete {type}</Box>
           </MenuItem>
-        </MenuList>
-        {type === "User" ? (
-          <EditUser
-            user={value as UserPublic}
-            isOpen={editUserModal.isOpen}
-            onClose={editUserModal.onClose}
+          {type === "User" ? (
+            <EditUser
+              user={value as UserPublic}
+              open={editUserModal.open}
+              onClose={editUserModal.onClose}
+            />
+          ) : (
+            <EditOrder
+              order={value as OrderPublic}
+              open={editUserModal.open}
+              onClose={editUserModal.onClose}
+            />
+          )}
+          <Delete
+            type={type}
+            id={value.id}
+            open={deleteModal.open}
+            onClose={deleteModal.onClose}
           />
-        ) : (
-          <EditItem
-            item={value as ItemPublic}
-            isOpen={editUserModal.isOpen}
-            onClose={editUserModal.onClose}
-          />
-        )}
-        <Delete
-          type={type}
-          id={value.id}
-          isOpen={deleteModal.isOpen}
-          onClose={deleteModal.onClose}
-        />
-      </Menu>
+        </MenuContent>
+      </MenuRoot>
     </>
   )
 }

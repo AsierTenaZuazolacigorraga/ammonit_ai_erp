@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -11,6 +11,7 @@ import {
   // type UserRegister,
   UsersService,
 } from "../client"
+import useCustomToast from "./useCustomToast"
 
 const isLoggedIn = () => {
   return localStorage.getItem("access_token") !== null
@@ -19,39 +20,39 @@ const isLoggedIn = () => {
 const useAuth = () => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
-  // const showToast = useCustomToast()
-  // const queryClient = useQueryClient()
+  const { showToast, showErrorToast } = useCustomToast()
+  const queryClient = useQueryClient()
   const { data: user, isLoading } = useQuery<UserPublic | null, Error>({
     queryKey: ["currentUser"],
     queryFn: UsersService.readUserMe,
     enabled: isLoggedIn(),
   })
 
-  // const signUpMutation = useMutation({
-  //   mutationFn: (data: UserRegister) =>
-  //     UsersService.registerUser({ requestBody: data }),
+  const signUpMutation = useMutation({
+    // mutationFn: (data: UserRegister) =>
+    //   UsersService.registerUser({ requestBody: data }),
 
-  //   onSuccess: () => {
-  //     navigate({ to: "/login" })
-  //     showToast(
-  //       "Account created.",
-  //       "Your account has been created successfully.",
-  //       "success",
-  //     )
-  //   },
-  //   onError: (err: ApiError) => {
-  //     let errDetail = (err.body as any)?.detail
+    onSuccess: () => {
+      navigate({ to: "/login" })
+      showToast(
+        "Cuenta creada.",
+        "Tu cuenta se ha creado con éxito.",
+        "success",
+      )
+    },
+    onError: (err: ApiError) => {
+      let errDetail = (err.body as any)?.detail
 
-  //     if (err instanceof AxiosError) {
-  //       errDetail = err.message
-  //     }
+      if (err instanceof AxiosError) {
+        errDetail = err.message
+      }
 
-  //     showToast("Something went wrong.", errDetail, "error")
-  //   },
-  //   onSettled: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["users"] })
-  //   },
-  // })
+      showErrorToast(errDetail)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] })
+    },
+  })
 
   const login = async (data: AccessToken) => {
     const response = await LoginService.loginAccessToken({
@@ -73,7 +74,7 @@ const useAuth = () => {
       }
 
       if (Array.isArray(errDetail)) {
-        errDetail = "Something went wrong"
+        errDetail = "Algo fue mal. Por favor, inténtalo de nuevo."
       }
 
       setError(errDetail)
@@ -86,7 +87,7 @@ const useAuth = () => {
   }
 
   return {
-    // signUpMutation,
+    signUpMutation,
     loginMutation,
     logout,
     user,
