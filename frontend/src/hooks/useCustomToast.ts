@@ -15,11 +15,11 @@ const useCustomToast = () => {
   }
 
   const showErrorToast = (description: string) => {
-    showToast("An error occured", description, "error")
+    showToast("Error!", description, "error")
   }
 
   const showSuccessToast = (description: string) => {
-    showToast("Success!", description, "success")
+    showToast("Éxito!", description, "success")
   }
 
   return { showToast, showSuccessToast, showErrorToast }

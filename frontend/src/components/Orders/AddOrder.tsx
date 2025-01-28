@@ -1,12 +1,11 @@
 import {
   DialogBackdrop,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Input } from "@chakra-ui/react"
@@ -71,7 +70,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Añadir Pedido</DialogTitle>
-            <DialogCloseTrigger />
+            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
           <DialogBody pb={6}>
             <Field
@@ -91,7 +90,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
           </DialogBody>
 
           <DialogFooter gap={3}>
-            <Button colorPalette="blue" type="submit" loading={isSubmitting}>
+            <Button colorPalette="green" type="submit" loading={isSubmitting}>
               Guardar
             </Button>
             <Button onClick={onClose}>Cancelar</Button>

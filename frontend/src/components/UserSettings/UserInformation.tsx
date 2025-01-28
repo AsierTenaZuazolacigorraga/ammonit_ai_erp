@@ -66,14 +66,14 @@ const UserInformation = () => {
     <>
       <Container maxW="full">
         <Heading size="sm" py={4}>
-          User Information
+          Información de Usuario
         </Heading>
         <Box
           w={{ sm: "full", md: "50%" }}
           as="form"
           onSubmit={handleSubmit(onSubmit)}
         >
-          <Field label="Full name">
+          <Field label="Nombre completo">
             {editMode ? (
               <Input
                 {...register("full_name", { maxLength: 30 })}
@@ -117,7 +117,7 @@ const UserInformation = () => {
           </Field>
           <Flex mt={4} gap={3}>
             <Button
-              colorPalette="blue"
+              colorPalette="green"
               onClick={toggleEditMode}
               type={editMode ? "button" : "submit"}
               loading={editMode ? isSubmitting : false}

@@ -3,12 +3,12 @@ import useCustomToast from "./hooks/useCustomToast"
 
 export const emailPattern = {
   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-  message: "Invalid email address",
+  message: "Email no válido",
 }
 
 export const namePattern = {
   value: /^[A-Za-z\s\u00C0-\u017F]{1,30}$/,
-  message: "Invalid name",
+  message: "Nombre no válido",
 }
 
 export const passwordRules = (isRequired = true) => {
@@ -20,7 +20,7 @@ export const passwordRules = (isRequired = true) => {
   }
 
   if (isRequired) {
-    rules.required = "Password is required"
+    rules.required = "Se requiere password"
   }
 
   return rules
@@ -38,7 +38,7 @@ export const confirmPasswordRules = (
   }
 
   if (isRequired) {
-    rules.required = "Password confirmation is required"
+    rules.required = "Se requiere confirmación de password"
   }
 
   return rules
@@ -47,7 +47,7 @@ export const confirmPasswordRules = (
 export const handleError = (err: ApiError) => {
   const { showErrorToast } = useCustomToast()
   const errDetail = (err.body as any)?.detail
-  let errorMessage = errDetail || "Something went wrong."
+  let errorMessage = errDetail || "Algo salió mal."
   if (Array.isArray(errDetail) && errDetail.length > 0) {
     errorMessage = errDetail[0].msg
   }

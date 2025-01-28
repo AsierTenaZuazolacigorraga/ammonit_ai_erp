@@ -3,12 +3,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import {
   DialogBackdrop,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Flex, Input } from "@chakra-ui/react"
@@ -56,7 +55,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("User created successfully.")
+      showSuccessToast("Usuario creado correctamente.")
       reset()
       onClose()
     },
@@ -83,8 +82,8 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
         <DialogBackdrop />
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Add User</DialogTitle>
-            <DialogCloseTrigger />
+            <DialogTitle>Añadir Usuario</DialogTitle>
+            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
           <DialogBody pb={6}>
             <Field
@@ -104,13 +103,13 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
             </Field>
             <Field
               mt={4}
-              label="Full name"
+              label="Nombre completo"
               invalid={!!errors.full_name}
               errorText={errors.full_name?.message}
             >
               <Input
                 {...register("full_name")}
-                placeholder="Full name"
+                placeholder="Nombre completo"
                 type="text"
               />
             </Field>
@@ -123,7 +122,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
             >
               <Input
                 {...register("password", {
-                  required: "Password is required",
+                  required: "Se requiere password",
                   minLength: {
                     value: 8,
                     message: "El password debe de tener al menos 8 caracteres",
@@ -142,7 +141,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
             >
               <Input
                 {...register("confirm_password", {
-                  required: "Please confirm your password",
+                  required: "Por favor, confirme su password",
                   validate: (value) =>
                     value === getValues().password ||
                     "Las contraseñas no coinciden",
@@ -165,7 +164,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is superuser?
+                      Es superuser?
                     </Checkbox>
                   </Field>
                 )}
@@ -183,7 +182,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is active?
+                      Es active?
                     </Checkbox>
                   </Field>
                 )}
@@ -191,7 +190,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
             </Flex>
           </DialogBody>
           <DialogFooter gap={3}>
-            <Button colorPalette="blue" type="submit" loading={isSubmitting}>
+            <Button colorPalette="green" type="submit" loading={isSubmitting}>
               Guardar
             </Button>
             <Button onClick={onClose}>Cancelar</Button>

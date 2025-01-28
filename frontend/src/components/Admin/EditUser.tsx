@@ -3,12 +3,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import {
   DialogBackdrop,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Flex, Input } from "@chakra-ui/react"
@@ -90,7 +89,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Editar Usuario</DialogTitle>
-            <DialogCloseTrigger />
+            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
           <DialogBody pb={6}>
             <Field
@@ -107,7 +106,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
                 type="email"
               />
             </Field>
-            <Field mt={4} label="Full name">
+            <Field mt={4} label="Nombre completo">
               <Input {...register("full_name")} type="text" />
             </Field>
             <Field
@@ -143,7 +142,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
                 type="password"
               />
             </Field>
-            <Flex>
+            <Flex mt={4}>
               <Controller
                 control={control}
                 name="is_superuser"
@@ -157,7 +156,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is superuser?
+                      Es superuser?
                     </Checkbox>
                   </Field>
                 )}
@@ -175,7 +174,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Is active?
+                      Es active?
                     </Checkbox>
                   </Field>
                 )}
@@ -185,7 +184,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
 
           <DialogFooter gap={3}>
             <Button
-              colorPalette="blue"
+              colorPalette="green"
               type="submit"
               loading={isSubmitting}
               disabled={!isDirty}

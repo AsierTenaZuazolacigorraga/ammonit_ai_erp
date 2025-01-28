@@ -5,12 +5,11 @@ import { Field } from "@/components/ui/field"
 import {
   DialogBackdrop,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 
 import { Button } from "@/components/ui/button"
@@ -82,7 +81,7 @@ const EditOrder = ({ order, open, onClose }: EditOrderProps) => {
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Editar Pedido</DialogTitle>
-            <DialogCloseTrigger />
+            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
           <DialogBody pb={6}>
             <Field
@@ -100,7 +99,7 @@ const EditOrder = ({ order, open, onClose }: EditOrderProps) => {
           </DialogBody>
           <DialogFooter gap={3}>
             <Button
-              colorPalette="blue"
+              colorPalette="green"
               type="submit"
               loading={isSubmitting}
               disabled={!isDirty}

@@ -1,5 +1,5 @@
 import { Flex, Image } from "@chakra-ui/react"
-import Logo from "/assets/images/fastapi-logo.svg"
+import Logo from "/assets/images/ammonit_generic_logo.svg"
 
 import { RouterLink } from "../ui/router-link"
 import { SidebarMobile } from "./Sidebar"
@@ -10,6 +10,7 @@ export const NAVBAR_HEIGHT = 12
 const Navbar = () => {
   return (
     <>
+
       <Flex
         position="fixed"
         top={0}

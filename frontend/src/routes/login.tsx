@@ -11,7 +11,7 @@ import { useBoolean } from "usehooks-ts"
 import type { Body_login_login_access_token as AccessToken } from "../client"
 import useAuth, { isLoggedIn } from "../hooks/useAuth"
 import { emailPattern } from "../utils"
-import Logo from "/assets/images/fastapi-logo.svg"
+import Logo from "/assets/images/ammonit_generic_logo.svg"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -111,7 +111,7 @@ function Login() {
         {/* <RouterLink to="/recover-password" color="blue.500">
           Forgot password?
         </RouterLink> */}
-        <Button colorPalette="blue" type="submit" loading={isSubmitting}>
+        <Button colorPalette="green" type="submit" loading={isSubmitting}>
           Log In
         </Button>
         {/* <Text>

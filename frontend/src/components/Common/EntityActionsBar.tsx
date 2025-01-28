@@ -25,8 +25,9 @@ const EntityActionsBar = ({ type, addModalAs }: NavbarProps) => {
         gap={1}
         fontSize={{ base: "sm", md: "inherit" }}
         onClick={addModal.onOpen}
+        colorPalette="green"
       >
-        <FaPlus /> Add {type}
+        <FaPlus /> Añadir {type}
       </Button>
       <AddModal open={addModal.open} onClose={addModal.onClose} />
     </Flex>

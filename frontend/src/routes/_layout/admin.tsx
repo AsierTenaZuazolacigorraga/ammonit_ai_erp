@@ -66,11 +66,11 @@ function UsersTable() {
       <Table.Root size={{ base: "sm", md: "md" }}>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader width="20%">Full name</Table.ColumnHeader>
+            <Table.ColumnHeader width="20%">Nombre completo</Table.ColumnHeader>
             <Table.ColumnHeader width="50%">Email</Table.ColumnHeader>
-            <Table.ColumnHeader width="10%">Role</Table.ColumnHeader>
-            <Table.ColumnHeader width="10%">Status</Table.ColumnHeader>
-            <Table.ColumnHeader width="10%">Actions</Table.ColumnHeader>
+            <Table.ColumnHeader width="10%">Rol</Table.ColumnHeader>
+            <Table.ColumnHeader width="10%">Estado</Table.ColumnHeader>
+            <Table.ColumnHeader width="10%">Acciones</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         {isPending ? (
@@ -103,7 +103,7 @@ function UsersTable() {
                   {user.email}
                 </Table.Cell>
                 <Table.Cell>
-                  {user.is_superuser ? "Superuser" : "User"}
+                  {user.is_superuser ? "Superuser" : "Usuario"}
                 </Table.Cell>
                 <Table.Cell>
                   <Flex gap={2}>
@@ -114,12 +114,12 @@ function UsersTable() {
                       bg={user.is_active ? "success" : "danger"}
                       alignSelf="center"
                     />
-                    {user.is_active ? "Active" : "Inactive"}
+                    {user.is_active ? "Activo" : "Inactivo"}
                   </Flex>
                 </Table.Cell>
                 <Table.Cell>
                   <ActionsMenu
-                    type="User"
+                    type="Usuario"
                     value={user}
                     disabled={currentUser?.id === user.id}
                   />
@@ -144,10 +144,10 @@ function Admin() {
   return (
     <Container maxW="full">
       <Heading size="lg" textAlign={{ base: "center", md: "left" }}>
-        Users Management
+        Gestión de Usuarios
       </Heading>
 
-      <EntityActionsBar type={"User"} addModalAs={AddUser} />
+      <EntityActionsBar type={"Usuario"} addModalAs={AddUser} />
       <UsersTable />
     </Container>
   )

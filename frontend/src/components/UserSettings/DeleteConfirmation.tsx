@@ -2,12 +2,11 @@ import { Button } from "@/components/ui/button"
 import {
   DialogBackdrop,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
@@ -34,7 +33,7 @@ const DeleteConfirmation = ({ open, onClose }: DeleteProps) => {
   const mutation = useMutation({
     mutationFn: () => UsersService.deleteUserMe(),
     onSuccess: () => {
-      showSuccessToast("Your account has been successfully deleted.")
+      showSuccessToast("Su cuenta se ha eliminado con éxito.")
       logout()
       onClose()
     },
@@ -61,21 +60,21 @@ const DeleteConfirmation = ({ open, onClose }: DeleteProps) => {
         <DialogBackdrop />
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Confirmation Required</DialogTitle>
-            <DialogCloseTrigger />
+            <DialogTitle>Se Requiere Confirmación</DialogTitle>
+            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
           <DialogBody>
-            All your account data will be <strong>permanently deleted.</strong>{" "}
-            If you are sure, please click <strong>"Confirm"</strong> to proceed.
-            This action cannot be undone.
+            Todos los datos de su cuenta <strong>se eliminarán permanentemente.</strong>{" "}
+            Si está seguro, por fabor, clicke en <strong>"Confirmar"</strong>.
+            Esta acción no se podrá deshacer.
           </DialogBody>
 
           <DialogFooter gap={3}>
             <Button colorPalette="red" type="submit" loading={isSubmitting}>
-              Confirm
+              Confirmar
             </Button>
             <Button onClick={onClose} disabled={isSubmitting}>
-              Cancel
+              Cancelar
             </Button>
           </DialogFooter>
         </DialogContent>

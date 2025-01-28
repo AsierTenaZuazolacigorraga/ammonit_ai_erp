@@ -29,7 +29,7 @@ const ChangePassword = () => {
     mutationFn: (data: UpdatePassword) =>
       UsersService.updatePasswordMe({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Password updated successfully.")
+      showSuccessToast("Password actualizado correctamente.")
       reset()
     },
     onError: (err: ApiError) => {
@@ -45,7 +45,7 @@ const ChangePassword = () => {
     <>
       <Container maxW="full">
         <Heading size="sm" py={4}>
-          Change Password
+          Cambiar Password
         </Heading>
         <Box
           w={{ sm: "full", md: "50%" }}
@@ -53,7 +53,7 @@ const ChangePassword = () => {
           onSubmit={handleSubmit(onSubmit)}
         >
           <Field
-            label="Current Password"
+            label="Password Actual"
             required
             invalid={!!errors.current_password}
             errorText={errors.current_password?.message}
@@ -94,7 +94,7 @@ const ChangePassword = () => {
             />
           </Field>
           <Button
-            colorPalette="blue"
+            colorPalette="green"
             mt={4}
             type="submit"
             loading={isSubmitting}

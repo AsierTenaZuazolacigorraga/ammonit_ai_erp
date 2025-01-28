@@ -2,12 +2,11 @@ import { Button } from "@/components/ui/button"
 import {
   DialogBackdrop,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
@@ -31,9 +30,9 @@ const Delete = ({ type, id, open, onClose }: DeleteProps) => {
   } = useForm()
 
   const deleteEntity = async (id: string) => {
-    if (type === "Order") {
+    if (type === "Pedido") {
       await OrdersService.deleteOrder({ id })
-    } else if (type === "User") {
+    } else if (type === "Usuario") {
       await UsersService.deleteUser({ userId: id })
     } else {
       throw new Error(`Unexpected type: ${type}`)
@@ -43,17 +42,17 @@ const Delete = ({ type, id, open, onClose }: DeleteProps) => {
   const mutation = useMutation({
     mutationFn: deleteEntity,
     onSuccess: () => {
-      showSuccessToast(`The ${type.toLowerCase()} was deleted successfully.`)
+      showSuccessToast(`${type.toLowerCase()} se ha eliminado correctamente.`)
       onClose()
     },
     onError: () => {
       showErrorToast(
-        `An error occurred while deleting the ${type.toLowerCase()}.`,
+        `Ha ocurrido algún error al eliminar ${type.toLowerCase()}.`,
       )
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: [type === "Order" ? "items" : "users"],
+        queryKey: [type === "Pedido" ? "items" : "users"],
       })
     },
   })
@@ -74,11 +73,11 @@ const Delete = ({ type, id, open, onClose }: DeleteProps) => {
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Eliminar {type}</DialogTitle>
-            <DialogCloseTrigger />
+            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
 
           <DialogBody>
-            {type === "User" && (
+            {type === "Usuario" && (
               <span>
                 Todo lo relacionado con el usuario también será{" "}
                 <strong>eliminado permanentemente. </strong>

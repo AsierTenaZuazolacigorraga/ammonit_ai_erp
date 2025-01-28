@@ -35,13 +35,13 @@ const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
         <MenuContent>
           <MenuItem value="edit" onClick={editUserModal.onOpen}>
             <FiEdit fontSize="16px" />
-            <Box flex="1">Edit {type}</Box>
+            <Box flex="1">Editar {type}</Box>
           </MenuItem>
           <MenuItem value="delete" onClick={deleteModal.onOpen} color="red">
             <FiTrash fontSize="16px" />
-            <Box flex="1">Delete {type}</Box>
+            <Box flex="1">Eliminar {type}</Box>
           </MenuItem>
-          {type === "User" ? (
+          {type === "Usuario" ? (
             <EditUser
               user={value as UserPublic}
               open={editUserModal.open}

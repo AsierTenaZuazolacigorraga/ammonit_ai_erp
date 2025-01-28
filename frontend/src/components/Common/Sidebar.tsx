@@ -12,10 +12,10 @@ import { FiLogOut, FiMenu } from "react-icons/fi"
 
 import type { UserPublic } from "@/client"
 import useAuth from "@/hooks/useAuth"
-import Logo from "/assets/images/fastapi-logo.svg"
 import { Button } from "../ui/button"
 import { NAVBAR_HEIGHT } from "./Navbar"
 import SidebarItems from "./SidebarItems"
+import Logo from "/assets/images/ammonit_generic_logo.svg"
 
 export const SidebarMobile = () => {
   const queryClient = useQueryClient()
@@ -70,8 +70,8 @@ export const SidebarMobile = () => {
 }
 
 export const SidebarDesktop = () => {
-  const queryClient = useQueryClient()
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  // const queryClient = useQueryClient()
+  // const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
 
   return (
     <>
@@ -91,11 +91,11 @@ export const SidebarDesktop = () => {
           <Box>
             <SidebarItems />
           </Box>
-          {currentUser?.email && (
+          {/* {currentUser?.email && (
             <Text lineClamp={2} fontSize="sm" p={2} maxW="180px">
               Logged in as: {currentUser.email}
             </Text>
-          )}
+          )} */}
         </Flex>
       </Box>
     </>
