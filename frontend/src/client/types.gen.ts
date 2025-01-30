@@ -22,6 +22,8 @@ export type OrderCreate = {
     date_utc: string;
     in_document?: (string | null);
     in_document_name?: (string | null);
+    out_document?: ((Blob | File) | null);
+    out_document_name?: (string | null);
 };
 
 export type OrderPublic = {
@@ -29,6 +31,8 @@ export type OrderPublic = {
     date_utc: string;
     in_document?: (string | null);
     in_document_name?: (string | null);
+    out_document?: (string | null);
+    out_document_name?: (string | null);
     id: string;
     owner_id: string;
 };
@@ -36,13 +40,6 @@ export type OrderPublic = {
 export type OrdersPublic = {
     data: Array<OrderPublic>;
     count: number;
-};
-
-export type OrderUpdate = {
-    date_local: string;
-    date_utc: string;
-    in_document?: ((Blob | File) | null);
-    in_document_name?: (string | null);
 };
 
 export type Token = {
@@ -108,24 +105,17 @@ export type OrdersReadOrdersData = {
 
 export type OrdersReadOrdersResponse = (OrdersPublic);
 
-export type OrdersCreateOrderData = {
+export type OrdersCreateAndProcessOrderData = {
     requestBody: OrderCreate;
 };
 
-export type OrdersCreateOrderResponse = (OrderPublic);
+export type OrdersCreateAndProcessOrderResponse = (OrderPublic);
 
 export type OrdersReadOrderData = {
     id: string;
 };
 
 export type OrdersReadOrderResponse = (OrderPublic);
-
-export type OrdersUpdateOrderData = {
-    id: string;
-    requestBody: OrderUpdate;
-};
-
-export type OrdersUpdateOrderResponse = (OrderPublic);
 
 export type OrdersDeleteOrderData = {
     id: string;

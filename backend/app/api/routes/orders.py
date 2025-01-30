@@ -62,37 +62,25 @@ def read_order(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) ->
 
 
 @router.post("/", response_model=OrderPublic)
-def create_order(
+def create_and_process_order(
     *, session: SessionDep, current_user: CurrentUser, order_in: OrderCreate
 ) -> Any:
     """
-    Create new order.
+    Create and Process new order.
     """
     order = Order.model_validate(order_in, update={"owner_id": current_user.id})
-    session.add(order)
-    session.commit()
-    session.refresh(order)
-    return order
 
+    # Process order name
+    def in_name_2_out_name(name: str) -> str:
+        name, extension = name.rsplit(".", 1)
+        return f"{name}_ammonit_processed.{extension}"
 
-@router.put("/{id}", response_model=OrderPublic)
-def update_order(
-    *,
-    session: SessionDep,
-    current_user: CurrentUser,
-    id: uuid.UUID,
-    order_in: OrderUpdate,
-) -> Any:
-    """
-    Update an order.
-    """
-    order = session.get(Order, id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    if not current_user.is_superuser and (order.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Permisos insuficientes")
-    update_dict = order_in.model_dump(exclude_unset=True)
-    order.sqlmodel_update(update_dict)
+    order.out_document_name = in_name_2_out_name(order.in_document_name)
+
+    # Process order content
+    order.out_document = order.in_document
+
+    # Save order in db
     session.add(order)
     session.commit()
     session.refresh(order)

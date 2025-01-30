@@ -24,7 +24,6 @@ const UserInformation = () => {
     register,
     handleSubmit,
     reset,
-    getValues,
     formState: { isSubmitting, errors },
   } = useForm<UserPublic>({
     mode: "onBlur",

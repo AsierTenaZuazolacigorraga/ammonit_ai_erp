@@ -11,7 +11,7 @@ import { FiEdit, FiTrash } from "react-icons/fi"
 
 import type { OrderPublic, UserPublic } from "@/client"
 import EditUser from "../Admin/EditUser"
-import EditOrder from "../Orders/EditOrder"
+// import EditOrder from "../Orders/EditOrder"
 import Delete from "./DeleteAlert"
 
 interface ActionsMenuProps {
@@ -50,11 +50,12 @@ const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
               onClose={editUserModal.onClose}
             />
           ) : (
-            <EditOrder
-              order={value as OrderPublic}
-              open={editUserModal.open}
-              onClose={editUserModal.onClose}
-            />
+            null
+            // <EditOrder
+            //   order={value as OrderPublic}
+            //   open={editUserModal.open}
+            //   onClose={editUserModal.onClose}
+            // />
           )}
           <Delete
             type={type}

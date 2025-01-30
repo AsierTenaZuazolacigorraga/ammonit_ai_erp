@@ -1,5 +1,5 @@
 import { SkeletonText } from '@/components/ui/skeleton'
-import { Container, Heading, Table } from '@chakra-ui/react'
+import { Container, Heading, Link, Table } from '@chakra-ui/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
@@ -89,10 +89,24 @@ function OrdersTable() {
                                     {order.date_local}
                                 </Table.Cell>
                                 <Table.Cell truncate maxWidth="150px">
-                                    {order.in_document_name}
+                                    <Link
+                                        href={`data:application/pdf;base64,${order.in_document}`}
+                                        download={order.in_document_name}
+                                        color="blue.500"
+                                        textDecoration="underline"
+                                    >
+                                        {order.in_document_name}
+                                    </Link>
                                 </Table.Cell>
                                 <Table.Cell truncate maxWidth="150px">
-                                    B
+                                    <Link
+                                        href={`data:application/pdf;base64,${order.out_document}`}
+                                        download={order.out_document_name}
+                                        color="blue.500"
+                                        textDecoration="underline"
+                                    >
+                                        {order.out_document_name}
+                                    </Link>
                                 </Table.Cell>
                                 <Table.Cell>
                                     <ActionsMenu type={'Pedido'} value={order} />

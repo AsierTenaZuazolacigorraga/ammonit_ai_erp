@@ -32,6 +32,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
     handleSubmit,
     reset,
     setValue,
+    getValue,
     formState: { isSubmitting, errors },
   } = useForm<OrderCreate>({
     mode: "onBlur",
@@ -46,7 +47,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
 
   const mutation = useMutation({
     mutationFn: (data: OrderCreate) =>
-      OrdersService.createOrder({ requestBody: data }),
+      OrdersService.createAndProcessOrder({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Pedido creado correctamente.")
       reset()
@@ -74,6 +75,10 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
       ...data,
       date_utc: dateUtc,
       date_local: dateLocal,
+      // in_document: getValue("in_document"),
+      // in_document_name: getValue("in_document_name"),
+      // out_document: getValue("out_document"),
+      // out_document_name: getValue("out_document_name"),
     })
   }
 
@@ -92,7 +97,8 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
         setValue("in_document", base64String)
       }
 
-      reader.readAsArrayBuffer(file) // Read the file
+      // Use readAsDataURL to get a base64-encoded string
+      reader.readAsDataURL(file);
     }
   }
   const { getRootProps, getInputProps } = useDropzone({

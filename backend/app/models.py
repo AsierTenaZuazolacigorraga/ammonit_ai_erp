@@ -69,18 +69,14 @@ class OrderBase(SQLModel):
         default=None, nullable=False
     )  # For storing binary data (documents)
     in_document_name: str | None = Field(default=None, max_length=255)
-    # out_document: bytes | None = Field(default=None, nullable=False)
-    # out_document_name: str | None = Field(default=None, max_length=255)
+    out_document: bytes | None = Field(default=None, nullable=False)
+    out_document_name: str | None = Field(default=None, max_length=255)
 
 
 class OrderCreate(OrderBase):
-    in_document: str | None = Field(
-        default=None
-    )  # Expect Base64-encoded string from client
-    # For example, this string "U29tZSBkYXRhIHN0cmluZw==" is a representatio fo this data b'Some data string'
 
     @model_validator(mode="before")
-    def decode_in_document(cls, values):
+    def decode_documents(cls, values):
         if "in_document" in values:
             values["in_document"] = base64.b64decode(
                 values["in_document"]
@@ -103,15 +99,17 @@ class Order(OrderBase, table=True):
 class OrderPublic(OrderBase):
     id: uuid.UUID
     owner_id: uuid.UUID
-    in_document: str | None = Field(
-        default=None
-    )  # Expect Base64-encoded string from client
+    in_document: str | None = Field(default=None)
+    out_document: str | None = Field(default=None)
+    # Expect Base64-encoded string from client
     # For example, this string "U29tZSBkYXRhIHN0cmluZw==" is a representatio fo this data b'Some data string'
 
     @model_validator(mode="before")
-    def encode_in_document(cls, values):
+    def encode_documents(cls, values):
         if values.in_document:
             values.in_document = base64.b64encode(values.in_document).decode("utf-8")
+        if values.out_document:
+            values.out_document = base64.b64encode(values.out_document).decode("utf-8")
         return values
 
 
