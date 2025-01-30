@@ -18,15 +18,17 @@ export type Message = {
 };
 
 export type OrderCreate = {
-    date: string;
-    in_document?: ((Blob | File) | null);
-    out_document?: ((Blob | File) | null);
+    date_local: string;
+    date_utc: string;
+    in_document?: (string | null);
+    in_document_name?: (string | null);
 };
 
 export type OrderPublic = {
-    date: string;
-    in_document?: ((Blob | File) | null);
-    out_document?: ((Blob | File) | null);
+    date_local: string;
+    date_utc: string;
+    in_document?: (string | null);
+    in_document_name?: (string | null);
     id: string;
     owner_id: string;
 };
@@ -37,9 +39,10 @@ export type OrdersPublic = {
 };
 
 export type OrderUpdate = {
-    date: string;
+    date_local: string;
+    date_utc: string;
     in_document?: ((Blob | File) | null);
-    out_document?: ((Blob | File) | null);
+    in_document_name?: (string | null);
 };
 
 export type Token = {

@@ -76,9 +76,10 @@ export const SidebarDesktop = () => {
   return (
     <>
       <Box
+        p={3}
         h="100vh"
         position="sticky"
-        top={0}
+        top="0"
         display={{ base: "none", md: "flex" }}
       >
         <Flex

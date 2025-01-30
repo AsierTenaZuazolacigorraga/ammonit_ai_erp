@@ -85,18 +85,17 @@ function OrdersTable() {
                     <Table.Body>
                         {orders?.data.map((order) => (
                             <Table.Row key={order.id} opacity={isPlaceholderData ? 0.5 : 1}>
-                                <Table.Cell>{order.id}</Table.Cell>
+                                <Table.Cell>
+                                    {order.date_local}
+                                </Table.Cell>
                                 <Table.Cell truncate maxWidth="150px">
-                                    A
+                                    {order.in_document_name}
                                 </Table.Cell>
                                 <Table.Cell truncate maxWidth="150px">
                                     B
                                 </Table.Cell>
-                                <Table.Cell truncate maxWidth="150px">
-                                    C
-                                </Table.Cell>
                                 <Table.Cell>
-                                    <ActionsMenu type={'Order'} value={order} />
+                                    <ActionsMenu type={'Pedido'} value={order} />
                                 </Table.Cell>
                             </Table.Row>
                         ))}

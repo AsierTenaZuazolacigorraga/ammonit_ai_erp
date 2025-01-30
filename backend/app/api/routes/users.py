@@ -217,8 +217,8 @@ def delete_user(
             status_code=403, detail="El superusuario no se puede eliminar a si mismo"
         )
     # statement = delete(Item).where(col(Item.owner_id) == user_id)
+    # session.exec(statement)  # type: ignore
     # TODO update this in order to delete all info related with current user
-    session.exec(statement)  # type: ignore
     session.delete(user)
     session.commit()
     return Message(message="Usuario eliminado correctamente")

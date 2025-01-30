@@ -29,15 +29,17 @@ interface UserCreateForm extends UserCreate {
 }
 
 const AddUser = ({ open, onClose }: AddUserProps) => {
+
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
+
   const {
     register,
     control,
     handleSubmit,
     reset,
     getValues,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<UserCreateForm>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -77,7 +79,6 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
         open={open}
         onExitComplete={onClose}
         size={{ base: "sm", md: "md" }}
-        role="alertdialog"
       >
         <DialogBackdrop />
         <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
@@ -190,7 +191,7 @@ const AddUser = ({ open, onClose }: AddUserProps) => {
             </Flex>
           </DialogBody>
           <DialogFooter gap={3}>
-            <Button colorPalette="green" type="submit" loading={isSubmitting}>
+            <Button colorPalette="green" type="submit" loading={isSubmitting} >
               Guardar
             </Button>
             <Button onClick={onClose}>Cancelar</Button>

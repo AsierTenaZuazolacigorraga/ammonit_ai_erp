@@ -43,7 +43,7 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
     handleSubmit,
     reset,
     getValues,
-    formState: { errors, isSubmitting, isDirty },
+    formState: { errors, isSubmitting },
   } = useForm<UserUpdateForm>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -187,7 +187,6 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
               colorPalette="green"
               type="submit"
               loading={isSubmitting}
-              disabled={!isDirty}
             >
               Guardar
             </Button>

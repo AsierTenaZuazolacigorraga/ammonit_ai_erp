@@ -39,7 +39,7 @@ const EditOrder = ({ order, open, onClose }: EditOrderProps) => {
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting, errors, isDirty },
+    formState: { isSubmitting, errors },
   } = useForm<OrderUpdate>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -51,6 +51,7 @@ const EditOrder = ({ order, open, onClose }: EditOrderProps) => {
       OrdersService.updateOrder({ id: order.id, requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Order updated successfully.")
+      reset()
       onClose()
     },
     onError: (err: ApiError) => {
@@ -102,7 +103,6 @@ const EditOrder = ({ order, open, onClose }: EditOrderProps) => {
               colorPalette="green"
               type="submit"
               loading={isSubmitting}
-              disabled={!isDirty}
             >
               Guardar
             </Button>

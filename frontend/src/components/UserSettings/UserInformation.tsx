@@ -25,7 +25,7 @@ const UserInformation = () => {
     handleSubmit,
     reset,
     getValues,
-    formState: { isSubmitting, errors, isDirty },
+    formState: { isSubmitting, errors },
   } = useForm<UserPublic>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -121,7 +121,7 @@ const UserInformation = () => {
               onClick={toggleEditMode}
               type={editMode ? "button" : "submit"}
               loading={editMode ? isSubmitting : false}
-              disabled={editMode ? !isDirty || !getValues("email") : false}
+            // disabled={editMode ? !isDirty || !getValues("email") : false}
             >
               {editMode ? "Guardar" : "Editar"}
             </Button>

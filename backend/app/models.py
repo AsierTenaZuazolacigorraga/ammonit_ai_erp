@@ -1,7 +1,8 @@
+import base64
 import uuid
 from datetime import datetime, timezone
 
-from pydantic import EmailStr
+from pydantic import EmailStr, model_validator
 from sqlmodel import Field, Relationship, SQLModel
 
 ##########################################################################################
@@ -62,15 +63,29 @@ class UsersPublic(SQLModel):
 
 
 class OrderBase(SQLModel):
-    date: datetime = Field(nullable=False)  # For storing dates/times
+    date_local: datetime = Field(nullable=False)
+    date_utc: datetime = Field(nullable=False)
     in_document: bytes | None = Field(
         default=None, nullable=False
     )  # For storing binary data (documents)
-    out_document: bytes | None = Field(default=None, nullable=False)
+    in_document_name: str | None = Field(default=None, max_length=255)
+    # out_document: bytes | None = Field(default=None, nullable=False)
+    # out_document_name: str | None = Field(default=None, max_length=255)
 
 
 class OrderCreate(OrderBase):
-    pass
+    in_document: str | None = Field(
+        default=None
+    )  # Expect Base64-encoded string from client
+    # For example, this string "U29tZSBkYXRhIHN0cmluZw==" is a representatio fo this data b'Some data string'
+
+    @model_validator(mode="before")
+    def decode_in_document(cls, values):
+        if "in_document" in values:
+            values["in_document"] = base64.b64decode(
+                values["in_document"]
+            )  # Convert Base64 to binary
+        return values
 
 
 class OrderUpdate(OrderBase):
@@ -88,6 +103,16 @@ class Order(OrderBase, table=True):
 class OrderPublic(OrderBase):
     id: uuid.UUID
     owner_id: uuid.UUID
+    in_document: str | None = Field(
+        default=None
+    )  # Expect Base64-encoded string from client
+    # For example, this string "U29tZSBkYXRhIHN0cmluZw==" is a representatio fo this data b'Some data string'
+
+    @model_validator(mode="before")
+    def encode_in_document(cls, values):
+        if values.in_document:
+            values.in_document = base64.b64encode(values.in_document).decode("utf-8")
+        return values
 
 
 class OrdersPublic(SQLModel):

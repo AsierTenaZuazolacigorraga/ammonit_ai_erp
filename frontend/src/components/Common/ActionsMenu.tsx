@@ -33,10 +33,12 @@ const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
           </IconButton>
         </MenuTrigger>
         <MenuContent>
-          <MenuItem value="edit" onClick={editUserModal.onOpen}>
-            <FiEdit fontSize="16px" />
-            <Box flex="1">Editar {type}</Box>
-          </MenuItem>
+          {type === "Usuario" ? (
+            <MenuItem value="edit" onClick={editUserModal.onOpen}>
+              <FiEdit fontSize="16px" />
+              <Box flex="1">Editar {type}</Box>
+            </MenuItem>
+          ) : null}
           <MenuItem value="delete" onClick={deleteModal.onOpen} color="red">
             <FiTrash fontSize="16px" />
             <Box flex="1">Eliminar {type}</Box>

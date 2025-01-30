@@ -32,7 +32,11 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
 
   const listItems = finalItems.map(({ icon, title, path }) => (
     <RouterLink to={path} key={title} asChild>
-      <Flex w="100%" p={2} onClick={onClose}>
+      <Flex
+        w="100%"
+        p={2}
+        onClick={onClose}
+      >
         <ReactIcon icon={icon} alignSelf="center" />
         <Text ml={2}>{title}</Text>
       </Flex>

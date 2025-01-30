@@ -42,17 +42,17 @@ const Delete = ({ type, id, open, onClose }: DeleteProps) => {
   const mutation = useMutation({
     mutationFn: deleteEntity,
     onSuccess: () => {
-      showSuccessToast(`${type.toLowerCase()} se ha eliminado correctamente.`)
+      showSuccessToast(`Se ha eliminado correctamente: ${type.toLowerCase()}.`)
       onClose()
     },
     onError: () => {
       showErrorToast(
-        `Ha ocurrido algún error al eliminar ${type.toLowerCase()}.`,
+        `Ha ocurrido algún error al eliminar: ${type.toLowerCase()}.`,
       )
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: [type === "Pedido" ? "items" : "users"],
+        queryKey: [type === "Pedido" ? "orders" : "users"],
       })
     },
   })
