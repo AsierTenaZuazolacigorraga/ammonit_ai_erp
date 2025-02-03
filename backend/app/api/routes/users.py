@@ -69,26 +69,26 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
     return user
 
 
-@router.patch("/me", response_model=UserPublic)
-def update_user_me(
-    *, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
-) -> Any:
-    """
-    Update own user.
-    """
+# @router.patch("/me", response_model=UserPublic)
+# def update_user_me(
+#     *, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
+# ) -> Any:
+#     """
+#     Update own user.
+#     """
 
-    if user_in.email:
-        existing_user = crud.get_user_by_email(session=session, email=user_in.email)
-        if existing_user and existing_user.id != current_user.id:
-            raise HTTPException(
-                status_code=409, detail="Ya existe un usuario con este email"
-            )
-    user_data = user_in.model_dump(exclude_unset=True)
-    current_user.sqlmodel_update(user_data)
-    session.add(current_user)
-    session.commit()
-    session.refresh(current_user)
-    return current_user
+#     if user_in.email:
+#         existing_user = crud.get_user_by_email(session=session, email=user_in.email)
+#         if existing_user and existing_user.id != current_user.id:
+#             raise HTTPException(
+#                 status_code=409, detail="Ya existe un usuario con este email"
+#             )
+#     user_data = user_in.model_dump(exclude_unset=True)
+#     current_user.sqlmodel_update(user_data)
+#     session.add(current_user)
+#     session.commit()
+#     session.refresh(current_user)
+#     return current_user
 
 
 @router.patch("/me/password", response_model=Message)
@@ -119,21 +119,21 @@ def read_user_me(current_user: CurrentUser) -> Any:
     return current_user
 
 
-@router.delete("/me", response_model=Message)
-def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
-    """
-    Delete own user.
-    """
-    if current_user.is_superuser:
-        raise HTTPException(
-            status_code=403, detail="El superusuario no se puede eliminar a si mismo"
-        )
-    # statement = delete(Item).where(col(Item.owner_id) == current_user.id)
-    # session.exec(statement)  # type: ignore
-    # TODO update this in order to delete all info related with current user
-    session.delete(current_user)
-    session.commit()
-    return Message(message="Usuario eliminado correctamente")
+# @router.delete("/me", response_model=Message)
+# def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
+#     """
+#     Delete own user.
+#     """
+#     if current_user.is_superuser:
+#         raise HTTPException(
+#             status_code=403, detail="El superusuario no se puede eliminar a si mismo"
+#         )
+#     # statement = delete(Item).where(col(Item.owner_id) == current_user.id)
+#     # session.exec(statement)  # type: ignore
+#     # TODO update this in order to delete all info related with current user
+#     session.delete(current_user)
+#     session.commit()
+#     return Message(message="Usuario eliminado correctamente")
 
 
 # @router.post("/signup", response_model=UserPublic)

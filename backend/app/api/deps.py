@@ -9,23 +9,28 @@ from app.models import TokenPayload, User
 from fastapi import Depends, HTTPException, WebSocket, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
+from openai import OpenAI
 from pydantic import ValidationError
 from sqlmodel import Session
 
+# Token dependency
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
 
+TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
+
+# Db dependency
 def get_db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
-TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
 
+# Current user dependency
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
         payload = jwt.decode(
@@ -54,6 +59,24 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="El usuario no tiene permisos suficientes"
         )
     return current_user
+
+
+# Current ai client dependency
+def get_current_ai_client(session: SessionDep, token: TokenDep) -> OpenAI:
+
+    # Get user and its correspondent api key
+    user = get_current_user(session, token)
+    api_key = f"OPENAI_API_KEY_{user.full_name}"
+    if hasattr(settings, api_key):
+        return OpenAI(api_key=getattr(settings, api_key))
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="El usuario no se asocia a un cliente de inteligencia artificial",
+        )
+
+
+CurrentAIClient = Annotated[User, Depends(get_current_ai_client)]
 
 
 # class WebSocketManager:

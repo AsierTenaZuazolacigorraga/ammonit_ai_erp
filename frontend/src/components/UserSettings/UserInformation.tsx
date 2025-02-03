@@ -1,30 +1,26 @@
-import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
-import { Box, Container, Flex, Heading, Input, Text } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
-import { type SubmitHandler, useForm } from "react-hook-form"
+import { Box, Container, Heading, Input, Text } from "@chakra-ui/react"
+import { useForm } from "react-hook-form"
 
 import {
-  type ApiError,
-  type UserPublic,
-  type UserUpdateMe,
-  UsersService,
+  type UserPublic
 } from "@/client"
 import useAuth from "@/hooks/useAuth"
-import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { emailPattern } from "@/utils"
+import { useState } from "react"
 
 const UserInformation = () => {
-  const queryClient = useQueryClient()
-  const { showSuccessToast } = useCustomToast()
-  const [editMode, setEditMode] = useState(false)
+  // const queryClient = useQueryClient()
+  // const { showSuccessToast } = useCustomToast()
+  // const [editMode, setEditMode] = useState(false)
+  const [editMode] = useState(false)
   const { user: currentUser } = useAuth()
   const {
     register,
-    handleSubmit,
-    reset,
-    formState: { isSubmitting, errors },
+    // handleSubmit,
+    // reset,
+    // formState: { isSubmitting, errors },
+    formState: { errors },
   } = useForm<UserPublic>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -34,32 +30,32 @@ const UserInformation = () => {
     },
   })
 
-  const toggleEditMode = () => {
-    setEditMode(!editMode)
-  }
+  // const toggleEditMode = () => {
+  //   setEditMode(!editMode)
+  // }
 
-  const mutation = useMutation({
-    mutationFn: (data: UserUpdateMe) =>
-      UsersService.updateUserMe({ requestBody: data }),
-    onSuccess: () => {
-      showSuccessToast("Usuario actualizado correctamente.")
-    },
-    onError: (err: ApiError) => {
-      handleError(err)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries()
-    },
-  })
+  // const mutation = useMutation({
+  //   // mutationFn: (data: UserUpdateMe) =>
+  //   //   UsersService.updateUserMe({ requestBody: data }),
+  //   onSuccess: () => {
+  //     showSuccessToast("Usuario actualizado correctamente.")
+  //   },
+  //   onError: (err: ApiError) => {
+  //     handleError(err)
+  //   },
+  //   onSettled: () => {
+  //     queryClient.invalidateQueries()
+  //   },
+  // })
 
-  const onSubmit: SubmitHandler<UserUpdateMe> = async (data) => {
-    mutation.mutate(data)
-  }
+  // const onSubmit: SubmitHandler<UserUpdateMe> = async (data) => {
+  //   mutation.mutate(data)
+  // }
 
-  const onCancel = () => {
-    reset()
-    toggleEditMode()
-  }
+  // const onCancel = () => {
+  //   reset()
+  //   toggleEditMode()
+  // }
 
   return (
     <>
@@ -70,7 +66,7 @@ const UserInformation = () => {
         <Box
           w={{ sm: "full", md: "50%" }}
           as="form"
-          onSubmit={handleSubmit(onSubmit)}
+        // onSubmit={handleSubmit(onSubmit)}
         >
           <Field label="Nombre completo">
             {editMode ? (
@@ -114,7 +110,7 @@ const UserInformation = () => {
               </Text>
             )}
           </Field>
-          <Flex mt={4} gap={3}>
+          {/* <Flex mt={4} gap={3}>
             <Button
               colorPalette="green"
               onClick={toggleEditMode}
@@ -129,7 +125,7 @@ const UserInformation = () => {
                 Cancel
               </Button>
             )}
-          </Flex>
+          </Flex> */}
         </Box>
       </Container>
     </>

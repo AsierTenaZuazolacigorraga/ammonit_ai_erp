@@ -20,10 +20,11 @@ export type Message = {
 export type OrderCreate = {
     date_local: string;
     date_utc: string;
-    in_document?: (string | null);
+    in_document?: ((Blob | File) | null);
     in_document_name?: (string | null);
     out_document?: ((Blob | File) | null);
     out_document_name?: (string | null);
+    in_document_base64?: (string | null);
 };
 
 export type OrderPublic = {
@@ -81,11 +82,6 @@ export type UserUpdate = {
     password?: (string | null);
 };
 
-export type UserUpdateMe = {
-    full_name?: (string | null);
-    email?: (string | null);
-};
-
 export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
@@ -136,21 +132,13 @@ export type UsersCreateUserData = {
 
 export type UsersCreateUserResponse = (UserPublic);
 
-export type UsersReadUserMeResponse = (UserPublic);
-
-export type UsersDeleteUserMeResponse = (Message);
-
-export type UsersUpdateUserMeData = {
-    requestBody: UserUpdateMe;
-};
-
-export type UsersUpdateUserMeResponse = (UserPublic);
-
 export type UsersUpdatePasswordMeData = {
     requestBody: UpdatePassword;
 };
 
 export type UsersUpdatePasswordMeResponse = (Message);
+
+export type UsersReadUserMeResponse = (UserPublic);
 
 export type UsersReadUserByIdData = {
     userId: string;

@@ -1,19 +1,27 @@
+import { type ApiError, type UpdatePassword, UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
+import { ReactIcon } from "@/components/ui/icon"
+import { InputGroup } from "@/components/ui/input-group"
+import useCustomToast from "@/hooks/useCustomToast"
+import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
 import { Box, Container, Heading, Input } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
-
-import { type ApiError, type UpdatePassword, UsersService } from "@/client"
-import useCustomToast from "@/hooks/useCustomToast"
-import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
+import { FaEye, FaEyeSlash } from "react-icons/fa"
+import { useBoolean } from "usehooks-ts"
 
 interface UpdatePasswordForm extends UpdatePassword {
   confirm_password: string
 }
 
 const ChangePassword = () => {
+
   const { showSuccessToast } = useCustomToast()
+  const { value: showPasswordActual, toggle: togglePasswordActual } = useBoolean()
+  const { value: showPasswordNew, toggle: togglePasswordNew } = useBoolean()
+  const { value: showPasswordConf, toggle: togglePasswordConf } = useBoolean()
+
   const {
     register,
     handleSubmit,
@@ -58,13 +66,25 @@ const ChangePassword = () => {
             invalid={!!errors.current_password}
             errorText={errors.current_password?.message}
           >
-            <Input
-              {...register("current_password")}
-              placeholder="Password"
-              type="password"
-              w="auto"
-            />
+            <InputGroup
+              endElement={
+                <ReactIcon
+                  icon={showPasswordActual ? FaEyeSlash : FaEye}
+                  cursor="pointer"
+                  onClick={togglePasswordActual}
+                  aria-label={showPasswordActual ? "Hide password" : "Show password"}
+                />
+              }
+            >
+              <Input
+                {...register("current_password")}
+                placeholder="Password"
+                type={showPasswordActual ? "text" : "password"}
+                w="auto"
+              />
+            </InputGroup>
           </Field>
+
           <Field
             mt={4}
             label="Nuevo Password"
@@ -72,12 +92,24 @@ const ChangePassword = () => {
             invalid={!!errors.new_password}
             errorText={errors.new_password?.message}
           >
-            <Input
-              {...register("new_password", passwordRules())}
-              placeholder="Password"
-              type="password"
-              w="auto"
-            />
+            <InputGroup
+              endElement={
+                <ReactIcon
+                  icon={showPasswordNew ? FaEyeSlash : FaEye}
+                  cursor="pointer"
+                  onClick={togglePasswordNew}
+                  aria-label={showPasswordNew ? "Hide password" : "Show password"}
+                />
+              }
+            >
+              <Input
+                {...register("new_password", passwordRules())}
+                placeholder="Password"
+                type="password"
+                type={showPasswordNew ? "text" : "password"}
+                w="auto"
+              />
+            </InputGroup>
           </Field>
           <Field
             mt={4}
@@ -86,12 +118,23 @@ const ChangePassword = () => {
             invalid={!!errors.confirm_password}
             errorText={errors.confirm_password?.message}
           >
-            <Input
-              {...register("confirm_password", confirmPasswordRules(getValues))}
-              placeholder="Password"
-              type="password"
-              w="auto"
-            />
+            <InputGroup
+              endElement={
+                <ReactIcon
+                  icon={showPasswordConf ? FaEyeSlash : FaEye}
+                  cursor="pointer"
+                  onClick={togglePasswordConf}
+                  aria-label={showPasswordConf ? "Hide password" : "Show password"}
+                />
+              }
+            >
+              <Input
+                {...register("confirm_password", confirmPasswordRules(getValues))}
+                placeholder="Password"
+                type={showPasswordConf ? "text" : "password"}
+                w="auto"
+              />
+            </InputGroup>
           </Field>
           <Button
             colorPalette="green"
@@ -102,7 +145,7 @@ const ChangePassword = () => {
             Guardar
           </Button>
         </Box>
-      </Container>
+      </Container >
     </>
   )
 }

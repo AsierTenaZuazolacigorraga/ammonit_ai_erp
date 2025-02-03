@@ -118,5 +118,9 @@ class Settings(BaseSettings):
 
         return self
 
+    # OpenAI relateds
+    OPENAI_API_KEY_Alberdi: str | None = None
+    OPENAI_API_KEY_Asier: str | None = None
+
 
 settings = Settings()  # type: ignore

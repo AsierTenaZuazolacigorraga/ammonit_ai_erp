@@ -74,12 +74,13 @@ class OrderBase(SQLModel):
 
 
 class OrderCreate(OrderBase):
+    in_document_base64: str | None = Field(default=None)
 
     @model_validator(mode="before")
     def decode_documents(cls, values):
-        if "in_document" in values:
+        if "in_document_base64" in values:
             values["in_document"] = base64.b64decode(
-                values["in_document"]
+                values["in_document_base64"]
             )  # Convert Base64 to binary
         return values
 
@@ -103,6 +104,7 @@ class OrderPublic(OrderBase):
     out_document: str | None = Field(default=None)
     # Expect Base64-encoded string from client
     # For example, this string "U29tZSBkYXRhIHN0cmluZw==" is a representatio fo this data b'Some data string'
+    # This class should return the "" and not the b''
 
     @model_validator(mode="before")
     def encode_documents(cls, values):

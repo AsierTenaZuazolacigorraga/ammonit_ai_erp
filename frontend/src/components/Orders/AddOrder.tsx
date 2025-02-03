@@ -32,17 +32,10 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
     handleSubmit,
     reset,
     setValue,
-    getValue,
     formState: { isSubmitting, errors },
   } = useForm<OrderCreate>({
     mode: "onBlur",
     criteriaMode: "all",
-    defaultValues: {
-      date_local: "",
-      date_utc: "",
-      in_document: "",
-      in_document_name: "",
-    },
   })
 
   const mutation = useMutation({
@@ -75,10 +68,6 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
       ...data,
       date_utc: dateUtc,
       date_local: dateLocal,
-      // in_document: getValue("in_document"),
-      // in_document_name: getValue("in_document_name"),
-      // out_document: getValue("out_document"),
-      // out_document_name: getValue("out_document_name"),
     })
   }
 
@@ -94,7 +83,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
       reader.onloadend = () => {
         const base64String = (reader.result as string).split(",")[1] // Extract only Base64 data
         // Set the blob in the form
-        setValue("in_document", base64String)
+        setValue("in_document_base64", base64String)
       }
 
       // Use readAsDataURL to get a base64-encoded string
@@ -106,6 +95,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
     accept: { 'application/pdf': ['.pdf'] }, // accept only pdf files
     maxFiles: 1,
     maxSize: 5 * 1024 * 1024, // 5MB
+    disabled: isSubmitting || mutation.isPending, // Disable when submitting or loading
   })
 
   return (
@@ -128,7 +118,13 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
               invalid={!!errors.in_document_name}
               errorText={errors.in_document_name?.message}
             >
-              <div {...getRootProps()} style={{ border: "2px dashed #ccc", padding: "10px" }}>
+              <div {...getRootProps()} style={{
+                border: "2px dashed #ccc",
+                padding: "10px",
+                backgroundColor: isSubmitting || mutation.isPending ? "#f5f5f5" : "transparent",
+                opacity: isSubmitting || mutation.isPending ? 0.6 : 1,
+                cursor: isSubmitting || mutation.isPending ? "not-allowed" : "pointer",
+              }}>
                 <input {...getInputProps()} />
                 <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
               </div>
@@ -144,10 +140,16 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
             </Field>
           </DialogBody>
           <DialogFooter gap={3}>
-            <Button colorPalette="green" type="submit" loading={isSubmitting}>
+            <Button
+              colorPalette="green"
+              type="submit"
+              loading={isSubmitting || mutation.isPending}
+              loadingText="Procesando...">
               Guardar
             </Button>
-            <Button onClick={onClose}>Cancelar</Button>
+            {!(isSubmitting || mutation.isPending) && (
+              <Button onClick={onClose}>Cancelar</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </DialogRoot>
