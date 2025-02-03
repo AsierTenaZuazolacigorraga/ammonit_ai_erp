@@ -2,8 +2,8 @@
 
 source .env
 
-# Bring the .env to: pi
-scp .env ${DEVICE_USER}@${DEVICE_HOST}:${DEVICE_CLONED_IN}/
+# # Bring the .env to: pi
+# scp .env ${DEVICE_USER}@${DEVICE_HOST}:${DEVICE_CLONED_IN}/
 
 # Bring the .env to: aws
 scp -i ${AWS_KEY_PATH} .env ${AWS_USER}@${AWS_HOST}:${AWS_CLONED_IN}/

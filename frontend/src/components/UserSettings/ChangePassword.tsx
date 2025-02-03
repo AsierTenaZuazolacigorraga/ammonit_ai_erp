@@ -105,7 +105,6 @@ const ChangePassword = () => {
               <Input
                 {...register("new_password", passwordRules())}
                 placeholder="Password"
-                type="password"
                 type={showPasswordNew ? "text" : "password"}
                 w="auto"
               />
