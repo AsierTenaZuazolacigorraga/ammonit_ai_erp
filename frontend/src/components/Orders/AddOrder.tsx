@@ -40,7 +40,7 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
 
   const mutation = useMutation({
     mutationFn: (data: OrderCreate) =>
-      OrdersService.createAndProcessOrder({ requestBody: data }),
+      OrdersService.createOrder({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Pedido creado correctamente.")
       reset()

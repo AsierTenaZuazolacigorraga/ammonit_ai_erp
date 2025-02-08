@@ -24,6 +24,8 @@ dependencies = [
     "openai==1.60.2",
     "pdfplumber==0.11.5",
     "pandas==2.2.3",
+    "o365>=2.0.38",
+    "starlette-context>=0.3.6",
 ]
 
 [tool.uv]

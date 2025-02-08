@@ -2,16 +2,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "refresh-env",
+            "label": "refresh-openapi-client",
             "type": "shell",
-            "command": "source .env",
+            "command": "source .env && source ${workspaceFolder}/backend/.venv/bin/activate && scripts/generate-client.sh",
             "problemMatcher": []
         },
         {
-            "label": "refresh-client",
+            "label": "build-frontend",
             "type": "shell",
-            "command": "source ${workspaceFolder}/backend/.venv/bin/activate && scripts/generate-client.sh",
+            "command": "cd ${workspaceFolder}/frontend/ && npm run build",
             "problemMatcher": []
-        }
+        },
     ]
 }

@@ -33,7 +33,7 @@ const Delete = ({ type, id, open, onClose }: DeleteProps) => {
     if (type === "Pedido") {
       await OrdersService.deleteOrder({ id })
     } else if (type === "Usuario") {
-      await UsersService.deleteUser({ userId: id })
+      await UsersService.deleteUser({ id })
     } else {
       throw new Error(`Unexpected type: ${type}`)
     }

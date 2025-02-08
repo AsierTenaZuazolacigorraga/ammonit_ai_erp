@@ -16,21 +16,6 @@
             }
         },
         {
-            "name": "Device",
-            "type": "debugpy",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/device",
-            "python": "${workspaceFolder}/device/.venv/bin/python",
-            "envFile": "${workspaceFolder}/.env",
-            "program": "${workspaceFolder}/device/src/__main__.py",
-            "justMyCode": false,
-            "jinja": true,
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "preLaunchTask": "refresh-env"
-        },
-        {
             "name": "Backend",
             "type": "debugpy",
             "request": "launch",
@@ -48,7 +33,7 @@
             ],
             "justMyCode": false,
             "jinja": true,
-            "preLaunchTask": "refresh-env"
+            "preLaunchTask": "refresh-openapi-client"
         },
         {
             "name": "Frontend",
@@ -56,7 +41,19 @@
             "request": "launch",
             "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}/frontend",
-            "preLaunchTask": "refresh-client"
+            "preLaunchTask": "build-frontend"
         },
+        {
+            "name": "Frontend Dev Server",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/frontend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "console": "integratedTerminal"
+        }
     ]
 }

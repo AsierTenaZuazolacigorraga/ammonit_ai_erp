@@ -2,35 +2,40 @@ from collections.abc import Generator
 from typing import Annotated
 
 import jwt
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordBearer
+from jwt.exceptions import InvalidTokenError
+from pydantic import ValidationError
+from sqlmodel import Session
+
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
-from fastapi import Depends, HTTPException, WebSocket, status
-from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
-from openai import OpenAI
-from pydantic import ValidationError
-from sqlmodel import Session
+from app.repositories.orders import OrderRepository
+from app.repositories.users import UserRepository
+from app.services.orders import OrderService
+from app.services.users import UserService
 
-# Token dependency
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
 
+
+def get_session(request: Request) -> Generator[Session, None, None]:
+    """reuses the session if it already exists in the request/response cycle"""
+    request_db_session = getattr(request.state, "db_session", None)
+    if request_db_session and isinstance(request_db_session, Session):
+        yield request_db_session
+    else:
+        with Session(engine) as session:
+            yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
 
-# Db dependency
-def get_db() -> Generator[Session, None, None]:
-    with Session(engine) as session:
-        yield session
-
-
-SessionDep = Annotated[Session, Depends(get_db)]
-
-
-# Current user dependency
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
         payload = jwt.decode(
@@ -40,13 +45,13 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
     except (InvalidTokenError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No se pudieron validar las credenciales",
+            detail="No se pudo validar las credenciales",
         )
     user = session.get(User, token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Usuario no activo")
+        raise HTTPException(status_code=400, detail="Usuario inactivo")
     return user
 
 
@@ -56,43 +61,37 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 def get_current_active_superuser(current_user: CurrentUser) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=403, detail="El usuario no tiene permisos suficientes"
+            status_code=403, detail="El usuario no tiene suficientes privilegios"
         )
     return current_user
 
 
-# Current ai client dependency
-def get_current_ai_client(session: SessionDep, token: TokenDep) -> OpenAI:
-
-    # Get user and its correspondent api key
-    user = get_current_user(session, token)
-    api_key = f"OPENAI_API_KEY_{user.full_name}"
-    if hasattr(settings, api_key):
-        return OpenAI(api_key=getattr(settings, api_key))
-    else:
-        raise HTTPException(
-            status_code=403,
-            detail="El usuario no se asocia a un cliente de inteligencia artificial",
-        )
+## Entities
 
 
-CurrentAIClient = Annotated[User, Depends(get_current_ai_client)]
+def user_repository(session: SessionDep) -> UserRepository:
+    return UserRepository(session)
 
 
-# class WebSocketManager:
-#     def __init__(self):
-#         self.active_connections: list[WebSocket] = []
+UserRepositoryDep = Annotated[UserRepository, Depends(user_repository)]
 
-#     async def connect(self, websocket: WebSocket):
-#         await websocket.accept()
-#         self.active_connections.append(websocket)
 
-#     def disconnect(self, websocket: WebSocket):
-#         self.active_connections.remove(websocket)
+def user_service(user_repository: UserRepositoryDep) -> UserService:
+    return UserService(user_repository)
 
-#     async def send(self, message: dict, websocket: WebSocket):
-#         await websocket.send_json(message)
 
-#     async def send_broadcast(self, message: dict):
-#         for connection in self.active_connections:
-#             await connection.send_json(message)
+UserServiceDep = Annotated[UserService, Depends(user_service)]
+
+
+def order_repository(session: SessionDep) -> OrderRepository:
+    return OrderRepository(session)
+
+
+OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
+
+
+def order_service(order_repository: OrderRepositoryDep) -> OrderService:
+    return OrderService(order_repository)
+
+
+OrderServiceDep = Annotated[OrderService, Depends(order_service)]

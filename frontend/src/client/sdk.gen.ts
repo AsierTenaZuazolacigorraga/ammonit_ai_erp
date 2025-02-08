@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateAndProcessOrderData, OrdersCreateAndProcessOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersReadUserMeResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersUpdateOrderData, OrdersUpdateOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class LoginService {
     /**
@@ -53,14 +53,14 @@ export class OrdersService {
     }
     
     /**
-     * Create And Process Order
-     * Create and Process new order.
+     * Create Order
+     * Create new order.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns OrderPublic Successful Response
      * @throws ApiError
      */
-    public static createAndProcessOrder(data: OrdersCreateAndProcessOrderData): CancelablePromise<OrdersCreateAndProcessOrderResponse> {
+    public static createOrder(data: OrdersCreateOrderData): CancelablePromise<OrdersCreateOrderResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/orders/',
@@ -74,7 +74,7 @@ export class OrdersService {
     
     /**
      * Read Order
-     * Get order by ID.
+     * Get order by id.
      * @param data The data for the request.
      * @param data.id
      * @returns OrderPublic Successful Response
@@ -87,6 +87,30 @@ export class OrdersService {
             path: {
                 id: data.id
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Order
+     * Update an order.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns OrderPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateOrder(data: OrdersUpdateOrderData): CancelablePromise<OrdersUpdateOrderResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/orders/{id}',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -161,26 +185,6 @@ export class UsersService {
     }
     
     /**
-     * Update Password Me
-     * Update own password.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
-        return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/v1/users/me/password',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
      * Read User Me
      * Get current user.
      * @returns UserPublic Successful Response
@@ -194,20 +198,19 @@ export class UsersService {
     }
     
     /**
-     * Read User By Id
-     * Get a specific user by id.
+     * Update User Me
+     * Update own user.
      * @param data The data for the request.
-     * @param data.userId
+     * @param data.requestBody
      * @returns UserPublic Successful Response
      * @throws ApiError
      */
-    public static readUserById(data: UsersReadUserByIdData): CancelablePromise<UsersReadUserByIdResponse> {
+    public static updateUserMe(data: UsersUpdateUserMeData): CancelablePromise<UsersUpdateUserMeResponse> {
         return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/users/{user_id}',
-            path: {
-                user_id: data.userId
-            },
+            method: 'PATCH',
+            url: '/api/v1/users/me',
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -218,7 +221,7 @@ export class UsersService {
      * Update User
      * Update a user.
      * @param data The data for the request.
-     * @param data.userId
+     * @param data.id
      * @param data.requestBody
      * @returns UserPublic Successful Response
      * @throws ApiError
@@ -226,9 +229,9 @@ export class UsersService {
     public static updateUser(data: UsersUpdateUserData): CancelablePromise<UsersUpdateUserResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/{user_id}',
+            url: '/api/v1/users/{id}',
             path: {
-                user_id: data.userId
+                id: data.id
             },
             body: data.requestBody,
             mediaType: 'application/json',
@@ -242,17 +245,37 @@ export class UsersService {
      * Delete User
      * Delete a user.
      * @param data The data for the request.
-     * @param data.userId
+     * @param data.id
      * @returns Message Successful Response
      * @throws ApiError
      */
     public static deleteUser(data: UsersDeleteUserData): CancelablePromise<UsersDeleteUserResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/users/{user_id}',
+            url: '/api/v1/users/{id}',
             path: {
-                user_id: data.userId
+                id: data.id
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Password Me
+     * Update own password.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/users/me/password',
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }

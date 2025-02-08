@@ -43,6 +43,15 @@ export type OrdersPublic = {
     count: number;
 };
 
+export type OrderUpdate = {
+    date_local: string;
+    date_utc: string;
+    in_document?: ((Blob | File) | null);
+    in_document_name?: (string | null);
+    out_document?: ((Blob | File) | null);
+    out_document_name?: (string | null);
+};
+
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -82,6 +91,11 @@ export type UserUpdate = {
     password?: (string | null);
 };
 
+export type UserUpdateMe = {
+    full_name?: (string | null);
+    email?: (string | null);
+};
+
 export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
@@ -101,17 +115,24 @@ export type OrdersReadOrdersData = {
 
 export type OrdersReadOrdersResponse = (OrdersPublic);
 
-export type OrdersCreateAndProcessOrderData = {
+export type OrdersCreateOrderData = {
     requestBody: OrderCreate;
 };
 
-export type OrdersCreateAndProcessOrderResponse = (OrderPublic);
+export type OrdersCreateOrderResponse = (OrderPublic);
 
 export type OrdersReadOrderData = {
     id: string;
 };
 
 export type OrdersReadOrderResponse = (OrderPublic);
+
+export type OrdersUpdateOrderData = {
+    id: string;
+    requestBody: OrderUpdate;
+};
+
+export type OrdersUpdateOrderResponse = (OrderPublic);
 
 export type OrdersDeleteOrderData = {
     id: string;
@@ -132,31 +153,31 @@ export type UsersCreateUserData = {
 
 export type UsersCreateUserResponse = (UserPublic);
 
-export type UsersUpdatePasswordMeData = {
-    requestBody: UpdatePassword;
-};
-
-export type UsersUpdatePasswordMeResponse = (Message);
-
 export type UsersReadUserMeResponse = (UserPublic);
 
-export type UsersReadUserByIdData = {
-    userId: string;
+export type UsersUpdateUserMeData = {
+    requestBody: UserUpdateMe;
 };
 
-export type UsersReadUserByIdResponse = (UserPublic);
+export type UsersUpdateUserMeResponse = (UserPublic);
 
 export type UsersUpdateUserData = {
+    id: string;
     requestBody: UserUpdate;
-    userId: string;
 };
 
 export type UsersUpdateUserResponse = (UserPublic);
 
 export type UsersDeleteUserData = {
-    userId: string;
+    id: string;
 };
 
 export type UsersDeleteUserResponse = (Message);
+
+export type UsersUpdatePasswordMeData = {
+    requestBody: UpdatePassword;
+};
+
+export type UsersUpdatePasswordMeResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);

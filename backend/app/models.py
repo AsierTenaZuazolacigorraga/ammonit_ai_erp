@@ -10,6 +10,10 @@ from sqlmodel import Field, Relationship, SQLModel
 ##########################################################################################
 
 
+class Entity(SQLModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     is_active: bool = True
@@ -42,7 +46,7 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-class User(UserBase, table=True):
+class User(Entity, UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
@@ -89,7 +93,7 @@ class OrderUpdate(OrderBase):
     pass
 
 
-class Order(OrderBase, table=True):
+class Order(Entity, OrderBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"

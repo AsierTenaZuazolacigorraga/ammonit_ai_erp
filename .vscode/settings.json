@@ -1,4 +1,4 @@
 {
     "python.analysis.extraPaths": [],
-    "python.analysis.typeCheckingMode": "standard"
+    "python.analysis.typeCheckingMode": "basic"
 }
