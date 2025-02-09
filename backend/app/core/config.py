@@ -118,9 +118,15 @@ class Settings(BaseSettings):
 
         return self
 
-    # OpenAI relateds
+    # OpenAI
     OPENAI_API_KEY_Alberdi: str | None = None
     OPENAI_API_KEY_Asier: str | None = None
+
+    # Outlook
+    OUTLOOK_ID: str | None = None
+    OUTLOOK_SECRET: str | None = None
+    OUTLOOK_EMAIL: str | None = None
+    OUTLOOK_SCOPES: Annotated[list[str] | str, BeforeValidator(parse_cors)] = []
 
 
 settings = Settings()  # type: ignore

@@ -26,6 +26,7 @@ dependencies = [
     "pandas==2.2.3",
     "o365>=2.0.38",
     "starlette-context>=0.3.6",
+    "apscheduler>=3.11.0",
 ]
 
 [tool.uv]

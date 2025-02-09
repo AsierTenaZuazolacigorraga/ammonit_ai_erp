@@ -43,15 +43,6 @@ export type OrdersPublic = {
     count: number;
 };
 
-export type OrderUpdate = {
-    date_local: string;
-    date_utc: string;
-    in_document?: ((Blob | File) | null);
-    in_document_name?: (string | null);
-    out_document?: ((Blob | File) | null);
-    out_document_name?: (string | null);
-};
-
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -126,13 +117,6 @@ export type OrdersReadOrderData = {
 };
 
 export type OrdersReadOrderResponse = (OrderPublic);
-
-export type OrdersUpdateOrderData = {
-    id: string;
-    requestBody: OrderUpdate;
-};
-
-export type OrdersUpdateOrderResponse = (OrderPublic);
 
 export type OrdersDeleteOrderData = {
     id: string;

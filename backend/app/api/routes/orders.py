@@ -1,17 +1,9 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
-
 from app.api.deps import CurrentUser, OrderServiceDep
-from app.models import (
-    Order,
-    OrderCreate,
-    OrderPublic,
-    OrdersPublic,
-    OrderUpdate,
-    Message,
-)
+from app.models import Message, Order, OrderCreate, OrderPublic, OrdersPublic
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -67,27 +59,6 @@ def create_order(
     Create new order.
     """
     order = order_service.create(order_create=order_in, owner_id=current_user.id)
-    return order
-
-
-@router.put("/{id}", response_model=OrderPublic)
-def update_order(
-    *,
-    order_service: OrderServiceDep,
-    current_user: CurrentUser,
-    id: uuid.UUID,
-    order_in: OrderUpdate,
-) -> Any:
-    """
-    Update an order.
-    """
-    order = order_service.repository.get_by_id(id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    if not current_user.is_superuser and (order.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Permisos insuficientes")
-    update_dict = order_in.model_dump(exclude_unset=True)
-    order = order_service.repository.update(order, update=update_dict)
     return order
 
 

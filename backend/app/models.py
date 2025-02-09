@@ -89,10 +89,6 @@ class OrderCreate(OrderBase):
         return values
 
 
-class OrderUpdate(OrderBase):
-    pass
-
-
 class Order(Entity, OrderBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
