@@ -51,6 +51,7 @@ def schedules_start(scheduler: AsyncIOScheduler) -> None:
                     "interval",
                     seconds=10,
                     kwargs={"owner_id": user.id},
+                    max_instances=1,
                 )
             else:
                 logger.warn(
