@@ -80,6 +80,8 @@ class OrderService:
             base_model = EnergyBill
         elif "invoice" in in_document_text.lower():
             base_model = InvoiceData
+        else:
+            base_model = InvoiceData
 
         # Process document
         completion = self.ai_client.beta.chat.completions.parse(

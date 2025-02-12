@@ -50,6 +50,7 @@ class User(Entity, UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
+    emails: list["Email"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class UserPublic(UserBase):
@@ -117,6 +118,38 @@ class OrderPublic(OrderBase):
 
 class OrdersPublic(SQLModel):
     data: list[OrderPublic]
+    count: int
+
+
+##########################################################################################
+# Emails
+##########################################################################################
+
+
+class EmailBase(SQLModel):
+    email_id: str = Field(nullable=False)
+    is_processed: bool = Field(default=False)
+
+
+class EmailCreate(EmailBase):
+    pass
+
+
+class Email(Entity, EmailBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="emails")
+
+
+class EmailPublic(OrderBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+
+
+class EmailsPublic(SQLModel):
+    data: list[EmailPublic]
     count: int
 
 

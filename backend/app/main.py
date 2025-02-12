@@ -1,4 +1,3 @@
-import logging
 from contextlib import asynccontextmanager
 
 import sentry_sdk
@@ -6,6 +5,7 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.exceptions import exception_handler
 from app.middleware import DBSessionMiddleware
+from app.schedules import schedules_finish, schedules_start
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -21,22 +21,17 @@ if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
 
-def print_a():
-    print("a")
-
-
 # Add lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
     # Do something when api goes up
-    logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    scheduler.start()
-    scheduler.add_job(print_a, "interval", seconds=2)
+    schedules_start(scheduler)
 
     yield
 
     # Do something when api goes down
+    schedules_finish(scheduler)
 
 
 scheduler = AsyncIOScheduler()

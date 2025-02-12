@@ -2,7 +2,6 @@ from collections.abc import Generator
 from typing import Annotated
 
 import jwt
-from app.clients import OutlookClient
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
@@ -101,23 +100,6 @@ def get_ai_client(session: SessionDep, token: TokenDep) -> OpenAI:
 
 AIClientDep = Annotated[OpenAI, Depends(get_ai_client)]
 
-##########################################################################################
-# Email
-##########################################################################################
-
-
-def get_email_client(session: SessionDep, token: TokenDep) -> OutlookClient:
-
-    user = get_current_user(session, token)
-    return OutlookClient(
-        settings.OUTLOOK_ID,
-        settings.OUTLOOK_SECRET,
-        user.email,
-        settings.OUTLOOK_SCOPES,
-    )
-
-
-EmailClientDep = Annotated[OutlookClient, Depends(get_email_client)]
 
 ##########################################################################################
 # Users
@@ -151,7 +133,8 @@ OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
 
 
 def order_service(
-    order_repository: OrderRepositoryDep, ai_client: AIClientDep
+    order_repository: OrderRepositoryDep,
+    ai_client: AIClientDep,
 ) -> OrderService:
     return OrderService(order_repository, ai_client)
 
