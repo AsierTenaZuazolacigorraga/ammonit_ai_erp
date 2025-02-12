@@ -1,24 +1,16 @@
-import logging
-
+from app.app_logging import get_logger
+from app.core.db import engine
 from sqlalchemy import Engine
 from sqlmodel import Session, select
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
-from app.core.db import engine
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 max_tries = 60 * 5  # 5 minutes
 wait_seconds = 1
 
 
-@retry(
-    stop=stop_after_attempt(max_tries),
-    wait=wait_fixed(wait_seconds),
-    before=before_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
-)
+@retry(stop=stop_after_attempt(max_tries), wait=wait_fixed(wait_seconds))
 def init(db_engine: Engine) -> None:
     try:
         with Session(db_engine) as session:

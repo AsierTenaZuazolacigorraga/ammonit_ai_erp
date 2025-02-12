@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List
 
-from app.logging import get_logger
+from app.app_logging import get_logger
 from app.models import Email, EmailCreate, Order, OrderCreate
 from app.repositories.emails import EmailRepository
 from app.services.orders import OrderService

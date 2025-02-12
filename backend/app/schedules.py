@@ -1,8 +1,8 @@
 import logging
 
+from app.app_logging import get_logger
 from app.core.config import settings
 from app.core.db import engine
-from app.logging import get_logger
 from app.repositories.emails import EmailRepository
 from app.repositories.orders import OrderRepository
 from app.repositories.users import UserRepository
