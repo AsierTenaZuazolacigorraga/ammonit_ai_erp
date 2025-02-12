@@ -32,13 +32,15 @@ class EmailService:
         self.secret = secret
         self.email = email
         self.scopes = scopes
-        self.token_backend = FileSystemTokenBackend(
-            token_path=os.path.join(
+
+        token_path=os.path.join(
                 os.getcwd(),
-                "..",
                 ".gitignores",
                 "azure_tokens",
-            ),
+            )
+        logger.info(f"Token path is: {token_path}")
+        self.token_backend = FileSystemTokenBackend(
+            token_path=token_path,
             token_filename=self.email,
         )
         self.account = Account(
