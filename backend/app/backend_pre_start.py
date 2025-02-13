@@ -1,10 +1,10 @@
-from app.app_logging import get_logger
 from app.core.db import engine
+from app.logger import get_logger
 from sqlalchemy import Engine
 from sqlmodel import Session, select
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 max_tries = 60 * 5  # 5 minutes
 wait_seconds = 1

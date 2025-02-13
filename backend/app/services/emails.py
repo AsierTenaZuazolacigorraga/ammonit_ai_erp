@@ -7,13 +7,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import List
 
-from app.app_logging import get_logger
+from app.logger import get_logger
 from app.models import Email, EmailCreate, Order, OrderCreate
 from app.repositories.emails import EmailRepository
 from app.services.orders import OrderService
 from O365 import Account, FileSystemTokenBackend
 
-logger = get_logger()
+logger = get_logger(__name__)
 
 
 class EmailService:
@@ -33,11 +33,11 @@ class EmailService:
         self.email = email
         self.scopes = scopes
 
-        token_path=os.path.join(
-                os.getcwd(),
-                ".gitignores",
-                "azure_tokens",
-            )
+        token_path = os.path.join(
+            os.getcwd(),
+            ".gitignores",
+            "azure_tokens",
+        )
         logger.info(f"Token path is: {token_path}")
         self.token_backend = FileSystemTokenBackend(
             token_path=token_path,

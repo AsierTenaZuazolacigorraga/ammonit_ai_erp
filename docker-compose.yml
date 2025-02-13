@@ -139,6 +139,19 @@ services:
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.middlewares=https-redirect
 
+  scheduler:
+    image: '${DOCKER_IMAGE_BACKEND}:${TAG-latest}'
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+    # command: sleep infinity # Infinite loop to keep container alive doing nothing
+    command: python app/scheduler.py
+
   frontend:
     image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
     restart: always

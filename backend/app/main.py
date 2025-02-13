@@ -5,7 +5,6 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.exceptions import exception_handler
 from app.middleware import DBSessionMiddleware
-from app.schedules import schedules_finish, schedules_start
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -26,12 +25,8 @@ if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
 async def lifespan(app: FastAPI):
 
     # Do something when api goes up
-    schedules_start(scheduler)
-
     yield
-
     # Do something when api goes down
-    schedules_finish(scheduler)
 
 
 scheduler = AsyncIOScheduler()
