@@ -66,7 +66,7 @@ def schedules_finish(scheduler: AsyncIOScheduler) -> None:
     pass
 
 
-if __name__ == "__main__":
+def main():
     logger.info("Starting scheduler process.")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -78,3 +78,7 @@ if __name__ == "__main__":
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
         schedules_finish(scheduler)
+
+
+if __name__ == "__main__":
+    main()

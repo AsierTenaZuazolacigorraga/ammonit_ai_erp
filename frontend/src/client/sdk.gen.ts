@@ -17,7 +17,7 @@ export class LoginService {
     public static loginAccessToken(data: LoginLoginAccessTokenData): CancelablePromise<LoginLoginAccessTokenResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/login/access-token',
+            url: '/api/v1/login/access-token/',
             formData: data.formData,
             mediaType: 'application/x-www-form-urlencoded',
             errors: {
@@ -83,7 +83,7 @@ export class OrdersService {
     public static readOrder(data: OrdersReadOrderData): CancelablePromise<OrdersReadOrderResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/orders/{id}',
+            url: '/api/v1/orders/{id}/',
             path: {
                 id: data.id
             },
@@ -104,7 +104,7 @@ export class OrdersService {
     public static deleteOrder(data: OrdersDeleteOrderData): CancelablePromise<OrdersDeleteOrderResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/orders/{id}',
+            url: '/api/v1/orders/{id}/',
             path: {
                 id: data.id
             },
@@ -169,7 +169,7 @@ export class UsersService {
     public static readUserMe(): CancelablePromise<UsersReadUserMeResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/users/me'
+            url: '/api/v1/users/me/'
         });
     }
     
@@ -184,7 +184,7 @@ export class UsersService {
     public static updateUserMe(data: UsersUpdateUserMeData): CancelablePromise<UsersUpdateUserMeResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/me',
+            url: '/api/v1/users/me/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -205,7 +205,7 @@ export class UsersService {
     public static updateUser(data: UsersUpdateUserData): CancelablePromise<UsersUpdateUserResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/{id}',
+            url: '/api/v1/users/{id}/',
             path: {
                 id: data.id
             },
@@ -228,7 +228,7 @@ export class UsersService {
     public static deleteUser(data: UsersDeleteUserData): CancelablePromise<UsersDeleteUserResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/users/{id}',
+            url: '/api/v1/users/{id}/',
             path: {
                 id: data.id
             },
@@ -249,7 +249,7 @@ export class UsersService {
     public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/me/password',
+            url: '/api/v1/users/me/password/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
