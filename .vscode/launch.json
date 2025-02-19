@@ -16,6 +16,28 @@
             }
         },
         {
+            "name": "Python With Args",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYDEVD_CONTAINER_RANDOM_ACCESS_MAX_ITEMS": "15000",
+                "PYDEVD_WARN_EVALUATION_TIMEOUT": "30",
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--db_path",
+                "C:\\CAF\\CAFRepository\\my_projects\\iot_bind\\backend\\.gitignores\\db.accdb",
+                "--username",
+                "${env:FIRST_SUPERUSER}",
+                "--password",
+                "${env:FIRST_SUPERUSER_PASSWORD}",
+            ]
+        },
+        {
             "name": "Backend",
             "type": "debugpy",
             "request": "launch",
