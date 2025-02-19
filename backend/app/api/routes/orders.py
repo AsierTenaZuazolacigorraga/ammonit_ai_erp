@@ -32,7 +32,7 @@ def read_orders(
     return OrdersPublic(data=orders, count=count)
 
 
-@router.get("/{id}", response_model=OrderPublic)
+@router.get("/{id}/", response_model=OrderPublic)
 def read_order(
     order_service: OrderServiceDep,
     current_user: CurrentUser,
@@ -62,7 +62,7 @@ def create_order(
     return order
 
 
-@router.delete("/{id}")
+@router.delete("/{id}/")
 def delete_order(
     order_service: OrderServiceDep,
     current_user: CurrentUser,

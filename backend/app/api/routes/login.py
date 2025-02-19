@@ -19,7 +19,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter(tags=["login"])
 
 
-@router.post("/login/access-token")
+@router.post("/login/access-token/")
 def login_access_token(
     user_service: UserServiceDep,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

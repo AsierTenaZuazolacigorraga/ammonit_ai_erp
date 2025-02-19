@@ -42,7 +42,7 @@ def read_users(user_service: UserServiceDep, skip: int = 0, limit: int = 100) ->
     return UsersPublic(data=users, count=count)
 
 
-@router.get("/me", response_model=UserPublic)
+@router.get("/me/", response_model=UserPublic)
 def read_user_me(current_user: CurrentUser) -> Any:
     """
     Get current user.
@@ -80,7 +80,7 @@ def create_user(*, user_service: UserServiceDep, user_in: UserCreate) -> Any:
 
 
 @router.patch(
-    "/{id}",
+    "/{id}/",
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UserPublic,
 )
@@ -111,7 +111,7 @@ def update_user(
     return user
 
 
-@router.patch("/me", response_model=UserPublic)
+@router.patch("/me/", response_model=UserPublic)
 def update_user_me(
     *, user_service: UserServiceDep, user_in: UserUpdateMe, current_user: CurrentUser
 ) -> Any:
@@ -131,7 +131,7 @@ def update_user_me(
     return current_user
 
 
-@router.patch("/me/password", response_model=Message)
+@router.patch("/me/password/", response_model=Message)
 def update_password_me(
     *, user_service: UserServiceDep, body: UpdatePassword, current_user: CurrentUser
 ) -> Any:
@@ -153,7 +153,7 @@ def update_password_me(
     return Message(message="Contraseña actualizada con éxito")
 
 
-@router.delete("/{id}", dependencies=[Depends(get_current_active_superuser)])
+@router.delete("/{id}/", dependencies=[Depends(get_current_active_superuser)])
 def delete_user(
     user_service: UserServiceDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Message:
