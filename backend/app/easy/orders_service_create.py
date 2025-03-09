@@ -1,4 +1,3 @@
-# app/scheduler_main.py
 import asyncio
 import base64
 import datetime
@@ -89,12 +88,7 @@ def main():
                         df.to_dict(orient="records")
                     )  # Convert DataFrame to a list of dictionaries
                     print(pretty_df)
-            else:
-                logger.warning(
-                    "El usuario no se asocia a un cliente de inteligencia artificial"
-
 
 
 if __name__ == "__main__":
     main()
-

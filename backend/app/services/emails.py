@@ -93,19 +93,24 @@ class EmailService:
                         .inbox_folder()
                         .get_message(msg.object_id, download_attachments=True)
                     )
-                    in_document_name = msg.attachments[0].name
-                    in_document = base64.b64decode(msg.attachments[0].content)
+                    if msg and msg.attachments:
+                        in_document_name = msg.attachments[0].name
+                        in_document = base64.b64decode(msg.attachments[0].content)
 
-                    # Create the order
-                    self.order_service.create(
-                        order_create=OrderCreate(
-                            date_local=datetime.now(),
-                            date_utc=datetime.now(timezone.utc),
-                            in_document=in_document or None,
-                            in_document_name=in_document_name or None,
-                        ),
-                        owner_id=owner_id,
-                    )
+                        # Create the order
+                        self.order_service.create(
+                            order_create=OrderCreate(
+                                date_local=datetime.now(),
+                                date_utc=datetime.now(timezone.utc),
+                                in_document=in_document or None,
+                                in_document_name=in_document_name or None,
+                            ),
+                            owner_id=owner_id,
+                        )
+                    else:
+                        logger.warning(
+                            f"Failed to retrieve message or no attachments found for ID: {msg.object_id}"
+                        )
 
                 # Save it for tracing
                 new_messages.append(msg)

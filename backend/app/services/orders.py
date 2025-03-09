@@ -178,6 +178,8 @@ def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
             api_key=api_key,
             result_type=ResultType.MD,
             premium_mode=True,
+            do_not_cache=True,
+            invalidate_cache=True,
         )
 
         documents = parser.load_data(f.name)
@@ -254,6 +256,7 @@ Which client does this order come from? Select from the following list and only 
         raise ValueError("Failed to extract the client from the order.")
 
     # Decide the model
+    client = client.lower()
     match client:
         case "danobat":
             base_model = OrderDanobat

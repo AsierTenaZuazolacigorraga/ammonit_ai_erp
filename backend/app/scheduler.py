@@ -1,4 +1,3 @@
-# app/scheduler_main.py
 import asyncio
 import logging
 
@@ -12,6 +11,7 @@ from app.services.emails import EmailService
 from app.services.orders import OrderService
 from app.services.users import UserService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from groq import Groq
 from openai import OpenAI
 from sqlmodel import Session
 
@@ -28,38 +28,33 @@ def schedules_start(scheduler: AsyncIOScheduler) -> None:
         user_service = UserService(UserRepository(session))
         for user in user_service.repository.get_all():
 
-            # Define the services
-            api_key = f"OPENAI_API_KEY_{user.full_name}"
-            if hasattr(settings, api_key):
+            # Define orders service
+            order_service = OrderService(
+                OrderRepository(session),
+                OpenAI(api_key=settings.OPENAI_API_KEY),
+                Groq(api_key=settings.GROQ_API_KEY),
+            )
 
-                # Define orders service
-                ai_client = OpenAI(api_key=getattr(settings, api_key))
-                order_service = OrderService(OrderRepository(session), ai_client)
+            # Define emails service
+            email_service = EmailService(
+                EmailRepository(session),
+                order_service,
+                settings.OUTLOOK_ID,
+                settings.OUTLOOK_SECRET,
+                user.email,
+                settings.OUTLOOK_SCOPES,
+            )
 
-                # Define emails service
-                email_service = EmailService(
-                    EmailRepository(session),
-                    order_service,
-                    settings.OUTLOOK_ID,
-                    settings.OUTLOOK_SECRET,
-                    user.email,
-                    settings.OUTLOOK_SCOPES,
-                )
+            email_service.fetch(owner_id=user.id)
 
-                email_service.fetch(owner_id=user.id)
-
-                # Add jobs
-                scheduler.add_job(
-                    email_service.fetch,
-                    "interval",
-                    seconds=10,
-                    kwargs={"owner_id": user.id},
-                    max_instances=1,
-                )
-            else:
-                logger.warning(
-                    "El usuario no se asocia a un cliente de inteligencia artificial"
-                )
+            # Add jobs
+            scheduler.add_job(
+                email_service.fetch,
+                "interval",
+                seconds=10,
+                kwargs={"owner_id": user.id},
+                max_instances=1,
+            )
 
 
 def schedules_finish(scheduler: AsyncIOScheduler) -> None:

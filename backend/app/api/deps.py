@@ -12,6 +12,7 @@ from app.services.orders import OrderService
 from app.services.users import UserService
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
+from groq import Groq
 from jwt.exceptions import InvalidTokenError
 from openai import OpenAI
 from pydantic import ValidationError
@@ -85,20 +86,18 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
 ##########################################################################################
 
 
-def get_ai_client(session: SessionDep, token: TokenDep) -> OpenAI:
-
-    user = get_current_user(session, token)
-    api_key = f"OPENAI_API_KEY_{user.full_name}"
-    if hasattr(settings, api_key):
-        return OpenAI(api_key=getattr(settings, api_key))
-    else:
-        raise HTTPException(
-            status_code=403,
-            detail="El usuario no se asocia a un cliente de inteligencia artificial",
-        )
+def get_ai_client() -> OpenAI:
+    return OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
 AIClientDep = Annotated[OpenAI, Depends(get_ai_client)]
+
+
+def get_groq_client() -> Groq:
+    return Groq(api_key=settings.GROQ_API_KEY)
+
+
+GroqClientDep = Annotated[Groq, Depends(get_groq_client)]
 
 
 ##########################################################################################
@@ -135,8 +134,9 @@ OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
 def order_service(
     order_repository: OrderRepositoryDep,
     ai_client: AIClientDep,
+    groq_client: GroqClientDep,
 ) -> OrderService:
-    return OrderService(order_repository, ai_client)
+    return OrderService(order_repository, ai_client, groq_client)
 
 
 OrderServiceDep = Annotated[OrderService, Depends(order_service)]
