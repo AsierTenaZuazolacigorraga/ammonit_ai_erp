@@ -27,6 +27,9 @@ dependencies = [
     "o365>=2.0.38",
     "starlette-context>=0.3.6",
     "apscheduler>=3.11.0",
+    "llama-parse>=0.6.1",
+    "groq>=0.18.0",
+    "pypdf2>=3.0.1",
 ]
 
 [tool.uv]
