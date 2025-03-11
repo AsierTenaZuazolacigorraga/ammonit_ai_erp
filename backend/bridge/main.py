@@ -6,6 +6,7 @@ import pyodbc
 
 import argparse
 
+import os
 
 API_URL = "https://api.ammonit.es/api/v1/"
 ACCESS_TOKEN_POST_URL = f"{API_URL}login/access-token/"
@@ -57,6 +58,11 @@ def main() -> None:
             parser.add_argument("--username", type=str, help="Username for API access")
             parser.add_argument("--password", type=str, help="Password for API access")
             args = parser.parse_args()
+
+            if args.username == "":
+                args.username = os.getenv("FIRST_SUPERUSER")
+            if args.password == "":
+                args.password = os.getenv("FIRST_SUPERUSER_PASSWORD")
 
             # Get access db class
             access_db = AccessDB(args.db_path)

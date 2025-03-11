@@ -9,6 +9,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false,
+            "envFile": "${workspaceFolder}/.env",
             "env": {
                 "PYDEVD_CONTAINER_RANDOM_ACCESS_MAX_ITEMS": "15000",
                 "PYDEVD_WARN_EVALUATION_TIMEOUT": "30",
@@ -23,6 +24,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false,
+            "envFile": "${workspaceFolder}/.env",
             "env": {
                 "PYDEVD_CONTAINER_RANDOM_ACCESS_MAX_ITEMS": "15000",
                 "PYDEVD_WARN_EVALUATION_TIMEOUT": "30",
@@ -34,7 +36,7 @@
                 "--username",
                 "${env:FIRST_SUPERUSER}",
                 "--password",
-                "${env:FIRST_SUPERUSER_PASSWORD}",
+                "${env:FIRST_SUPERUSER_PASSWORD}"
             ]
         },
         {
@@ -51,7 +53,7 @@
                 "--host",
                 "localhost",
                 "--port",
-                "8000",
+                "8000"
             ],
             "justMyCode": false,
             "jinja": true,
