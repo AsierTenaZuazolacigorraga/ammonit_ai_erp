@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+import nest_asyncio
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
@@ -65,6 +66,9 @@ def main():
     logger.info("Starting scheduler process.")
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+
+    # Apply nest_asyncio to allow nested event loops
+    nest_asyncio.apply(loop)
 
     # Schedule starting the scheduler after the loop starts running.
     loop.call_soon(lambda: schedules_start(scheduler))
