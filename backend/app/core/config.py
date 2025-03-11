@@ -120,8 +120,13 @@ class Settings(BaseSettings):
         return self
 
     # OpenAI
-    OPENAI_API_KEY_Alberdi: str | None = None
-    OPENAI_API_KEY_Asier: str | None = None
+    OPENAI_API_KEY: str | None = None
+
+    # Llama parse
+    LLAMACLOUD_API_KEY: str | None = None
+
+    # Groq
+    GROQ_API_KEY: str | None = None
 
     # Outlook
     OUTLOOK_ID: str | None = None
