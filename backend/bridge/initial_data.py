@@ -21,13 +21,13 @@ def create_access_db(db_path):
 
     # Create tables
     conn.Execute(
-        "CREATE TABLE Orders (id TEXT, in_document_name TEXT, out_document_name TEXT);"
+        "CREATE TABLE Orders (id TEXT, NUMERO_PEDIDO TEXT, CODIGO TEXT, DESCRIPCION TEXT, CANTIDAD TEXT, PRECIO_UNITARIO TEXT, PLAZO TEXT);"
     )
     print("Table created.")
 
     # Add a row
     conn.Execute(
-        "INSERT INTO Orders (id, in_document_name, out_document_name) VALUES ('0', 'in_document_name', 'out_document_name');"
+        "INSERT INTO Orders (id, NUMERO_PEDIDO, CODIGO, DESCRIPCION, CANTIDAD, PRECIO_UNITARIO, PLAZO) VALUES ('0', '', '', '', '', '', '');"
     )
     print("Row added to table.")
 

@@ -1,8 +1,11 @@
 import requests
 import time
 import pyodbc
+import pandas as pd  # Import pandas for CSV handling
+import io
+import base64  # For decoding base64 encoded strings
 
-# from backend.app.logger import get_logger
+from backend.app.logger import get_logger
 
 import argparse
 
@@ -12,12 +15,7 @@ API_URL = "https://api.ammonit.es/api/v1/"
 ACCESS_TOKEN_POST_URL = f"{API_URL}login/access-token/"
 ORDERS_GET_URL = f"{API_URL}orders/"
 
-# logger = get_logger(__name__)
-
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class AccessDB:
@@ -47,12 +45,15 @@ class AccessDB:
 
 def main() -> None:
 
+    logger.info(f"Getting into the loop")
+
     while True:
 
         try:
             time.sleep(2)
 
             # Get input arguments
+            logger.info(f"Getting input arguments")
             parser = argparse.ArgumentParser(description="Process some integers.")
             parser.add_argument("--db_path", type=str, help="Path to the database file")
             parser.add_argument("--username", type=str, help="Username for API access")
@@ -65,9 +66,12 @@ def main() -> None:
                 args.password = os.getenv("FIRST_SUPERUSER_PASSWORD")
 
             # Get access db class
+            logger.info(f"Getting access db class")
             access_db = AccessDB(args.db_path)
 
             # Get token
+            logger.info(f"Getting token")
+            logger.info(f"  - Username: {args.username}")
             response = requests.post(
                 ACCESS_TOKEN_POST_URL,
                 data={
@@ -90,6 +94,7 @@ def main() -> None:
                     time.sleep(2)
 
                     # Get orders
+                    logger.info(f"Getting orders")
                     response = requests.get(
                         ORDERS_GET_URL,
                         params={"skip": 0, "limit": 100},
@@ -106,20 +111,50 @@ def main() -> None:
                         for order in orders:
                             if order["id"] not in [o[0] for o in db_orders]:
 
-                                logger.info(f"Id: {order['id']}")
-                                logger.info(f"In document: {order['in_document_name']}")
-                                logger.info(
-                                    f"Out document: {order['out_document_name']}"
+                                # Read the CSV data from the out_document string
+                                csv_data_str = order["out_document"]
+
+                                # Decode if it's base64 encoded
+                                decoded_data = base64.b64decode(csv_data_str).decode(
+                                    "utf-8"
                                 )
 
-                                # Write it into access
-                                access_db.write_order(
-                                    {
-                                        "id": order["id"],
-                                        "in_document_name": order["in_document_name"],
-                                        "out_document_name": order["out_document_name"],
-                                    }
-                                )
+                                # Use StringIO to create a file-like object from the string
+                                csv_file = io.StringIO(decoded_data)
+
+                                # Read the CSV data, iterate and write it into access
+                                csv_data = pd.read_csv(csv_file, sep=";")
+                                for _, row in csv_data.iterrows():
+                                    logger.info(f"Order ID: {order['id']}")
+                                    logger.info(
+                                        f"  - Número de Pedido: {row['Número de Pedido']}"
+                                    )
+                                    logger.info(f"  - Código: {row['Código']}")
+                                    logger.info(
+                                        f"  - Descripción: {row['Descripción']}"
+                                    )
+                                    logger.info(f"  - Cantidad: {row['Cantidad']}")
+                                    logger.info(
+                                        f"  - Precio Unitario: {row['Precio Unitario']}"
+                                    )
+                                    logger.info(f"  - Plazo: {row['Plazo']}")
+
+                                    # Write it into access
+                                    access_db.write_order(
+                                        {
+                                            "id": str(order["id"]),
+                                            "NUMERO_PEDIDO": str(
+                                                row["Número de Pedido"]
+                                            ),
+                                            "CODIGO": str(row["Código"]),
+                                            "DESCRIPCION": str(row["Descripción"]),
+                                            "CANTIDAD": str(row["Cantidad"]),
+                                            "PRECIO_UNITARIO": str(
+                                                row["Precio Unitario"]
+                                            ),
+                                            "PLAZO": str(row["Plazo"]),
+                                        }
+                                    )
 
         except Exception as e:
             print(f"An error occurred: {e}")

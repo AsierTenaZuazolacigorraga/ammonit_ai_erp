@@ -3,11 +3,11 @@
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['..\\..'],
     binaries=[],
     datas=[],
     hiddenimports=[],
-    hookspath=[],
+    hookspath=['.'],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
