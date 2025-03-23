@@ -8,21 +8,25 @@ from datetime import datetime, timezone
 from typing import List
 
 from app.logger import get_logger
+from dotenv import load_dotenv
 from O365 import Account, FileSystemTokenBackend
 
 logger = get_logger(__name__)
 
 ################################################################
 
-OUTLOOK_ID = "x"
-OUTLOOK_SECRET = "x"
+load_dotenv()
 
-OUTLOOK_EMAIL = "asier.tena.zu@outlook.com"
+OUTLOOK_ID = os.getenv("OUTLOOK_ID")
+OUTLOOK_SECRET = os.getenv("OUTLOOK_SECRET")
+
+OUTLOOK_EMAIL = "alberdimek.autom@outlook.com"
 OUTLOOK_SCOPES = "Mail.Read,offline_access"
 
 ################################################################
 token_path = os.path.join(
     os.getcwd(),
+    "backend",
     ".gitignores",
     "azure_tokens",
 )
@@ -53,11 +57,11 @@ messages = list(
 )
 
 if messages:
-    first_message = messages[0]
-    print(f"Email read:\n\n")
-    print(f"Subject: {first_message.subject}")
-    print(f"Sender: {first_message.sender}")
-    print(f"Date: {first_message.created}")
-    print(f"Content: {first_message.body}")
+    for message in messages[:5]:  # Limit to the first 5 messages
+        print(f"Email read:\n\n")
+        print(f"Subject: {message.subject}")
+        print(f"Sender: {message.sender}")
+        print(f"Date: {message.created}")
+        print(f"Content: {message.body}")
 else:
     print("No messages found.")
