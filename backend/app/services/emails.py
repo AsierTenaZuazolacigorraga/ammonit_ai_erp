@@ -61,6 +61,7 @@ class EmailService:
                 logger.info("Authentication failed")
 
     def fetch(self, *, owner_id: uuid.UUID) -> None:
+        logger.info(f"Fetching emails for: {self.email}")
 
         messages = list(
             self.account.mailbox()
@@ -77,40 +78,52 @@ class EmailService:
                 m.email_id for m in db_messages if not m.is_processed
             ]:  # Check if email is not on db or was not processed
 
-                # By now, only allow valid emails for order creation:
-                # - Emails sent from atena@caf.net
-                # - Emails with attachment
-                # - Emails with only 1 attachment
-                if msg.has_attachments and msg.sender.address == "atena@caf.net":
+                # Only process emails with attachments
+                if msg.has_attachments:
 
                     logger.info(f"From: {msg.sender}")
+                    for to in msg.to:
+                        logger.info(f"To: {to.name} <{to.address}>")
                     logger.info(f"Subject: {msg.subject}")
                     logger.info(f"Received: {msg.received}")
                     logger.info(f"Body: {msg.body_preview}")
 
-                    msg = (
+                    msg_complete = (
                         self.account.mailbox()
                         .inbox_folder()
                         .get_message(msg.object_id, download_attachments=True)
                     )
-                    if msg and msg.attachments:
-                        in_document_name = msg.attachments[0].name
-                        in_document = base64.b64decode(msg.attachments[0].content)
+                    if msg_complete:
 
-                        # Create the order
-                        self.order_service.create(
-                            order_create=OrderCreate(
-                                date_local=datetime.now(),
-                                date_utc=datetime.now(timezone.utc),
-                                in_document=in_document or None,
-                                in_document_name=in_document_name or None,
-                            ),
-                            owner_id=owner_id,
-                        )
+                        for attachment in msg_complete.attachments:
+                            if attachment.name.endswith(".pdf"):
+
+                                in_document_name = attachment.name
+                                in_document = base64.b64decode(attachment.content)
+
+                                try:
+                                    # Create the order
+                                    self.order_service.create(
+                                        order_create=OrderCreate(
+                                            date_local=datetime.now(),
+                                            date_utc=datetime.now(timezone.utc),
+                                            in_document=in_document or None,
+                                            in_document_name=in_document_name or None,
+                                        ),
+                                        owner_id=owner_id,
+                                    )
+                                except Exception as e:
+                                    logger.error(f"Failed to create order: {e}")
+                            else:
+                                logger.warning(
+                                    f"Non .pdf attachment found for ID: {msg.object_id}"
+                                )
                     else:
                         logger.warning(
-                            f"Failed to retrieve message or no attachments found for ID: {msg.object_id}"
+                            f"Failed to retrieve message for ID: {msg.object_id}"
                         )
+                else:
+                    logger.warning(f"No attachments found for ID: {msg.object_id}")
 
                 # Save it for tracing
                 new_messages.append(msg)

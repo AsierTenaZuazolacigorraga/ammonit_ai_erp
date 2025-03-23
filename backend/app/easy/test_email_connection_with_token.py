@@ -20,7 +20,7 @@ load_dotenv()
 OUTLOOK_ID = os.getenv("OUTLOOK_ID")
 OUTLOOK_SECRET = os.getenv("OUTLOOK_SECRET")
 
-OUTLOOK_EMAIL = "alberdimek.autom@outlook.com"
+OUTLOOK_EMAIL = "alberdi.autom@outlook.com"
 OUTLOOK_SCOPES = "Mail.Read,offline_access"
 
 ################################################################

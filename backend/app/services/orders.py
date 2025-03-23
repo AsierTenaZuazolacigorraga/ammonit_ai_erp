@@ -13,6 +13,7 @@ import PyPDF2
 from app.models import Order, OrderCreate
 from app.repositories.orders import OrderRepository
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from groq import Groq
 from llama_parse import LlamaParse, ResultType
 from openai import OpenAI
@@ -169,6 +170,13 @@ def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
         f.write(filtered_pdf_binary)
         f.flush()
 
+        pdf_reader = PyPDF2.PdfReader(f.name)
+        if len(pdf_reader.pages) > 8:
+            raise HTTPException(
+                status_code=500,
+                detail="El archivo PDF excede el límite máximo permitido de 8 páginas.",
+            )
+
         # Add a check to ensure the API key is not None
         api_key = os.getenv("LLAMACLOUD_API_KEY")
         if api_key is None:
@@ -238,7 +246,8 @@ def parse_md_2_order(
             {
                 "role": "system",
                 "content": """
-Which client does this order come from? Select from the following list and only respond with the client name as is specified in the list:
+Which client does this order come from? Select from the following list. Only respond with the client name as is specified in the list.
+If you cannot identify the client, respond with "unknown":
 [
 "danobat",
 "fagor",
@@ -253,7 +262,7 @@ Which client does this order come from? Select from the following list and only 
     )
     client = completion.choices[0].message.content
     if client is None:
-        raise ValueError("Failed to extract the client from the order.")
+        raise ValueError("Failed to extract the client info from the order.")
 
     # Decide the model
     client = client.lower()
@@ -268,6 +277,11 @@ Which client does this order come from? Select from the following list and only 
             base_model = OrderMatisa
         case "ulma":
             base_model = OrderUlma
+        case "unknown":
+            raise HTTPException(
+                status_code=500,
+                detail="Cliente desconocido para este pedido, ocurrió un error",
+            )
         case _:
             raise ValueError(f"Unknown client: {client}")
 
