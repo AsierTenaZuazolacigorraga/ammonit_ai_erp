@@ -31,6 +31,8 @@ def check_for_new_users():
         all_active_users = [
             user.id for user in user_service.repository.get_all() if user.is_active
         ]
+        for user in all_active_users:
+            print(f"Active user with ID: {user}")
 
         # Find users that don't have jobs yet
         new_users = [
@@ -40,6 +42,7 @@ def check_for_new_users():
         # Set up jobs for new users
         if new_users:
             for user_id in new_users:
+                print(f"New active user with ID: {user_id}")
                 setup_user_job(session, user_id)
 
         # Clean up jobs for deactivated users
