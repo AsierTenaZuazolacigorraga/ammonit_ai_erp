@@ -1,5 +1,11 @@
+# Change to root
 cd "$(dirname "$0")"
 cd ..
+
+# Stop docker
+docker compose down
+
+# Remove all docker info
 if [ "$(docker ps -aq)" ]; then
     docker stop $(docker ps -aq)
 fi
@@ -8,3 +14,7 @@ docker rmi $(docker images -q)
 # docker volume rm $(docker volume ls -q) 
 # docker network rm $(docker network ls -q) 
 docker builder prune --all --force
+
+# Up docker
+docker compose -f docker-compose.yml up -d --build
+docker compose -f docker-compose.traefik.yml up -d --build
