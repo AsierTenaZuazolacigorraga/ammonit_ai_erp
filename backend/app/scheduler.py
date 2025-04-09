@@ -1,11 +1,7 @@
-import asyncio
-import logging
-import signal
 import threading
 import time
 import traceback
 
-import nest_asyncio
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
@@ -15,7 +11,6 @@ from app.repositories.users import UserRepository
 from app.services.emails import EmailService
 from app.services.orders import OrderService
 from app.services.users import UserService
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from groq import Groq
 from openai import OpenAI
 from sqlmodel import Session
@@ -53,41 +48,48 @@ def task_health_check(session):
     logger.info("task_health_check: Running")
 
 
-def task_email_service_fetch(session):
+def task_for_each_user_email_service_fetch(session, user):
 
-    # Get active users
-    user_service = UserService(UserRepository(session))
-    for user in [user for user in user_service.repository.get_all() if user.is_active]:
+    logger.info(
+        f"task_email_service_fetch: {user.full_name} | email: {user.email} | id: {user.id}"
+    )
 
-        logger.info(
-            f"task_email_service_fetch: {user.full_name} | email: {user.email} | id: {user.id}"
-        )
+    # Define orders service
+    order_service = OrderService(
+        OrderRepository(session),
+        OpenAI(api_key=settings.OPENAI_API_KEY),
+        Groq(api_key=settings.GROQ_API_KEY),
+    )
 
-        # Define orders service
-        order_service = OrderService(
-            OrderRepository(session),
-            OpenAI(api_key=settings.OPENAI_API_KEY),
-            Groq(api_key=settings.GROQ_API_KEY),
-        )
+    # Define emails service
+    email_service = EmailService(
+        EmailRepository(session),
+        order_service,
+        settings.OUTLOOK_ID,
+        settings.OUTLOOK_SECRET,
+        user.email,
+        settings.OUTLOOK_SCOPES,
+    )
 
-        # Define emails service
-        email_service = EmailService(
-            EmailRepository(session),
-            order_service,
-            settings.OUTLOOK_ID,
-            settings.OUTLOOK_SECRET,
-            user.email,
-            settings.OUTLOOK_SCOPES,
-        )
-
-        # Fetch emails
-        email_service.fetch(owner_id=user.id)
+    # Fetch emails
+    email_service.fetch(owner_id=user.id)
 
 
-if __name__ == "__main__":
+def main():
     sched = Scheduler()
-    sched.add_task(task_email_service_fetch, 10)
+
+    # Add tasks
     sched.add_task(task_health_check, 15)
+
+    # Add tasks for each user
+    with Session(engine) as session:
+        user_service = UserService(UserRepository(session))
+        for user in [
+            user for user in user_service.repository.get_all() if user.is_active
+        ]:
+            sched.add_task(
+                lambda s, u=user: task_for_each_user_email_service_fetch(s, u), 10
+            )
 
     # Keep the main thread running for further task additions or a graceful exit.
     try:
@@ -95,3 +97,7 @@ if __name__ == "__main__":
             time.sleep(1)
     except KeyboardInterrupt:
         logger.info("Scheduler stopped.")
+
+
+if __name__ == "__main__":
+    main()
