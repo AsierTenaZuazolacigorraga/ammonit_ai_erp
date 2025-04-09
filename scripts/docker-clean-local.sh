@@ -20,5 +20,4 @@ docker rmi $(docker images -q)
 docker builder prune --all --force
 
 # Up docker
-docker compose -f docker-compose.yml up -d --build
-docker compose -f docker-compose.traefik.yml up -d --build
+docker compose up -d --build
