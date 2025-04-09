@@ -5,7 +5,6 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.exceptions import exception_handler
 from app.middleware import DBSessionMiddleware
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
@@ -29,7 +28,6 @@ async def lifespan(app: FastAPI):
     # Do something when api goes down
 
 
-scheduler = AsyncIOScheduler()
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",

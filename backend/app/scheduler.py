@@ -1,5 +1,9 @@
 import asyncio
 import logging
+import signal
+import threading
+import time
+import traceback
 
 import nest_asyncio
 from app.core.config import settings
@@ -17,130 +21,77 @@ from openai import OpenAI
 from sqlmodel import Session
 
 logger = get_logger(__name__)
-scheduler = AsyncIOScheduler()
-
-# Store active job IDs by user ID to avoid duplicates
-user_jobs = {}
 
 
-def check_for_new_users():
-    """Check for new users and set up email fetch jobs for them."""
-    logger.info("Checking for new users...")
-    with Session(engine) as session:
-        user_service = UserService(UserRepository(session))
-        all_active_users = [
-            user.id for user in user_service.repository.get_all() if user.is_active
-        ]
-        for user in all_active_users:
-            print(f"Active user with ID: {user}")
+class Scheduler:
+    def __init__(self):
+        self.tasks = []
+        self.lock = threading.Lock()
 
-        # Find users that don't have jobs yet
-        new_users = [
-            user_id for user_id in all_active_users if user_id not in user_jobs
-        ]
+    def add_task(self, func, period):
+        """Adds a new task that will run every 'period' seconds. The task should accept a session parameter."""
+        thread = threading.Thread(target=self._run_task, args=(func, period))
+        thread.daemon = True
+        with self.lock:
+            self.tasks.append(thread)
+        thread.start()
+        logger.info("Task %s added with period %s sec.", func.__name__, period)
 
-        # Set up jobs for new users
-        if new_users:
-            for user_id in new_users:
-                print(f"New active user with ID: {user_id}")
-                setup_user_job(session, user_id)
-
-        # Clean up jobs for deactivated users
-        users_to_remove = [
-            user_id for user_id in user_jobs if user_id not in all_active_users
-        ]
-        for user_id in users_to_remove:
-            job_id = user_jobs[user_id]
-            scheduler.remove_job(job_id)
-            del user_jobs[user_id]
-            logger.info(f"Removed job for deactivated user ID: {user_id}")
+    def _run_task(self, func, period):
+        """Runs the given task in an infinite loop with a database session, handling exceptions."""
+        while True:
+            with Session(engine) as session:
+                try:
+                    func(session)
+                except Exception as e:
+                    logger.error("Error in task %s: %s", func.__name__, e)
+                    logger.debug("Traceback: %s", traceback.format_exc())
+            time.sleep(period)
 
 
-def setup_user_job(session, user_id):
-    """Set up an email fetch job for a specific user."""
-    try:
-        user_repository = UserRepository(session)
-        user = user_repository.get_by_id(user_id)
-
-        if user and user.is_active:
-            logger.info(f"Setting up job for user: {user.full_name}")
-            logger.info(f"Setting up job for user email: {user.email}")
-            logger.info(f"Setting up job for user id: {user.id}")
-
-            # Define orders service
-            order_service = OrderService(
-                OrderRepository(session),
-                OpenAI(api_key=settings.OPENAI_API_KEY),
-                Groq(api_key=settings.GROQ_API_KEY),
-            )
-
-            # Define emails service
-            email_service = EmailService(
-                EmailRepository(session),
-                order_service,
-                settings.OUTLOOK_ID,
-                settings.OUTLOOK_SECRET,
-                user.email,
-                settings.OUTLOOK_SCOPES,
-            )
-
-            # Initial fetch
-            email_service.fetch(owner_id=user.id)
-
-            # Add scheduled job
-            job = scheduler.add_job(
-                email_service.fetch,
-                "interval",
-                seconds=10,
-                kwargs={"owner_id": user.id},
-                max_instances=1,
-                id=f"email_fetch_{user.id}",  # Use a predictable ID for the job
-            )
-
-            # Store the job ID for future reference
-            user_jobs[user.id] = job.id
-            logger.info(f"Added job for user ID: {user.id}")
-    except Exception as e:
-        logger.error(f"Error setting up job for user ID {user_id}: {e}")
+def task_health_check(session):
+    logger.info("task_health_check: Running")
 
 
-def schedules_start(scheduler: AsyncIOScheduler) -> None:
-    logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    scheduler.start()
+def task_email_service_fetch(session):
 
-    # Add job to check for new users every minute
-    scheduler.add_job(
-        check_for_new_users,
-        "interval",
-        minutes=1,
-        id="check_new_users",
-        max_instances=1,
-    )
+    # Get active users
+    user_service = UserService(UserRepository(session))
+    for user in [user for user in user_service.repository.get_all() if user.is_active]:
 
-    # Initial check for users
-    check_for_new_users()
+        logger.info(
+            f"task_email_service_fetch: {user.full_name} | email: {user.email} | id: {user.id}"
+        )
 
+        # Define orders service
+        order_service = OrderService(
+            OrderRepository(session),
+            OpenAI(api_key=settings.OPENAI_API_KEY),
+            Groq(api_key=settings.GROQ_API_KEY),
+        )
 
-def schedules_finish(scheduler: AsyncIOScheduler) -> None:
-    scheduler.shutdown()
+        # Define emails service
+        email_service = EmailService(
+            EmailRepository(session),
+            order_service,
+            settings.OUTLOOK_ID,
+            settings.OUTLOOK_SECRET,
+            user.email,
+            settings.OUTLOOK_SCOPES,
+        )
 
-
-def main():
-    logger.info("Starting scheduler process.")
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    # Apply nest_asyncio to allow nested event loops
-    nest_asyncio.apply(loop)
-
-    # Schedule starting the scheduler after the loop starts running.
-    loop.call_soon(lambda: schedules_start(scheduler))
-
-    try:
-        loop.run_forever()
-    except (KeyboardInterrupt, SystemExit):
-        schedules_finish(scheduler)
+        # Fetch emails
+        email_service.fetch(owner_id=user.id)
 
 
 if __name__ == "__main__":
-    main()
+    sched = Scheduler()
+    sched.add_task(task_email_service_fetch, 10)
+    sched.add_task(task_health_check, 15)
+
+    # Keep the main thread running for further task additions or a graceful exit.
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Scheduler stopped.")

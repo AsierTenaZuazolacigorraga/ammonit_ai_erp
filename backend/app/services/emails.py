@@ -38,7 +38,7 @@ class EmailService:
             ".gitignores",
             "azure_tokens",
         )
-        logger.info(f"Token path is: {token_path}")
+        # logger.info(f"Token path is: {token_path}")
         self.token_backend = FileSystemTokenBackend(
             token_path=token_path,
             token_filename=self.email,
@@ -49,14 +49,12 @@ class EmailService:
             tenant_id="consumers",
         )
         if self.account.is_authenticated:
-            pass
-            # logger.info("Token loaded successfully.")
+            logger.info("Token loaded successfully.")
         else:
             if self.account.authenticate(
                 scopes=self.scopes if isinstance(self.scopes, list) else [self.scopes]
             ):
-                pass
-                # logger.info("Authenticated successfully")
+                logger.info("Authenticated successfully")
             else:
                 logger.info("Authentication failed")
 
@@ -66,12 +64,12 @@ class EmailService:
         messages = list(
             self.account.mailbox()
             .inbox_folder()
-            .get_messages(limit=50, order_by="receivedDateTime asc")
+            .get_messages(limit=50, order_by="receivedDateTime desc")
         )
-        new_messages = []
         db_messages = self.repository.get_all()
 
         # Identify new emails
+        new_messages = []
         for msg in messages:
             email_id = msg.object_id
             if email_id not in [m.email_id for m in db_messages] or email_id in [
@@ -133,3 +131,5 @@ class EmailService:
                         update={"owner_id": owner_id},
                     )
                 )
+        if not new_messages:
+            logger.info(f"No new messages found for {self.email}")
