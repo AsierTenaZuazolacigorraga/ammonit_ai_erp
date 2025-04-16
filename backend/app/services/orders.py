@@ -10,8 +10,9 @@ from typing import List, Union
 
 import pandas as pd
 import PyPDF2
-from app.models import Order, OrderCreate
+from app.models import Client, Order, OrderCreate
 from app.repositories.orders import OrderRepository
+from app.services.clients import ClientService
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from groq import Groq
@@ -20,140 +21,6 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 
 load_dotenv()
-
-GENERIC_NUMBER_DESC = "The number of the order"
-GENERIC_ITEMS_DESC = "The items in the order"
-GENERIC_CODE_DESC = "The code of the item"
-GENERIC_DESCRIPTION_DESC = "The description of the item"
-GENERIC_QUANTITY_DESC = "The quantity of items to order"
-GENERIC_UNIT_PRICE_DESC = "The unit price of the item"
-GENERIC_DEADLINE_DESC = "The deadline or due date for the item"
-
-
-class ItemDanobat(BaseModel):
-    code: str = Field(
-        ...,
-        description=f"{GENERIC_CODE_DESC}",
-    )
-    description: str = Field(
-        ...,
-        description=f"{GENERIC_DESCRIPTION_DESC}",
-    )
-    quantity: int = Field(
-        ...,
-        description=f"{GENERIC_QUANTITY_DESC}",
-    )
-    unit_price: float = Field(..., description=f"{GENERIC_UNIT_PRICE_DESC}")
-    deadline: str = Field(
-        ...,
-        description=f"{GENERIC_DEADLINE_DESC}",
-    )
-
-
-class OrderDanobat(BaseModel):
-    number: str = Field(
-        ...,
-        description=f"{GENERIC_NUMBER_DESC}",
-    )
-    items: List[ItemDanobat] = Field(
-        ...,
-        description=f"{GENERIC_ITEMS_DESC}",
-    )
-
-
-class ItemFagor(BaseModel):
-    code: str = Field(
-        ..., description=f"{GENERIC_CODE_DESC}. The code is usually repeated two times."
-    )
-    description: str = Field(
-        ...,
-        description=f"{GENERIC_DESCRIPTION_DESC}",
-    )
-    quantity: int = Field(
-        ...,
-        description=f"{GENERIC_QUANTITY_DESC}",
-    )
-    unit_price: float = Field(
-        ...,
-        description=f"{GENERIC_UNIT_PRICE_DESC}. Be careful, report only the unit price (sometimes are provided both the unit price and the total price).",
-    )
-    deadline: str = Field(
-        ...,
-        description=f"{GENERIC_DEADLINE_DESC}",
-    )
-
-
-class OrderFagor(BaseModel):
-    number: str = Field(
-        ...,
-        description=f"{GENERIC_NUMBER_DESC}. Usually is provided as 'Eskari'.",
-    )
-    items: List[ItemFagor] = Field(
-        ...,
-        description=f"{GENERIC_ITEMS_DESC}",
-    )
-
-
-class ItemInola(BaseModel):
-    code: str = Field(..., description=f"{GENERIC_CODE_DESC}")
-    description: str = Field(..., description=f"{GENERIC_DESCRIPTION_DESC}")
-    quantity: int = Field(..., description=f"{GENERIC_QUANTITY_DESC}")
-    unit_price: float = Field(..., description=f"{GENERIC_UNIT_PRICE_DESC}")
-    deadline: str = Field(
-        ...,
-        description=f"{GENERIC_DEADLINE_DESC}. Usually the deadline is provided for the entire order (as F.ENTREGA) rather than for each item independently",
-    )
-
-
-class OrderInola(BaseModel):
-    number: str = Field(..., description=f"{GENERIC_NUMBER_DESC}")
-    items: List[ItemInola] = Field(..., description=f"{GENERIC_ITEMS_DESC}")
-
-
-class ItemMatisa(BaseModel):
-    code: str = Field(
-        ...,
-        description=f"{GENERIC_CODE_DESC}. Usually provided as 'Référence article et désignation'. The code is provided in digits in this format: XX-XX-XXX-XXXXX.",
-    )
-    description: str = Field(
-        ...,
-        description=f"{GENERIC_DESCRIPTION_DESC}. Usually provided as 'Référence article et désignation'. Consider description all but the code.",
-    )
-    quantity: int = Field(..., description=f"{GENERIC_QUANTITY_DESC}")
-    unit_price: float = Field(..., description=f"{GENERIC_UNIT_PRICE_DESC}")
-    deadline: str = Field(..., description=f"{GENERIC_DEADLINE_DESC}")
-
-
-class OrderMatisa(BaseModel):
-    number: str = Field(
-        ...,
-        description=f"{GENERIC_NUMBER_DESC}. Usually provided as 'COMMANDE ACHAT'.",
-    )
-    items: List[ItemMatisa] = Field(..., description=f"{GENERIC_ITEMS_DESC}")
-
-
-class ItemUlma(BaseModel):
-    code: str = Field(
-        ..., description=f"{GENERIC_CODE_DESC}. Usually provided as 'Proyecto Código'."
-    )
-    description: str = Field(..., description=f"{GENERIC_DESCRIPTION_DESC}")
-    quantity: int = Field(..., description=f"{GENERIC_QUANTITY_DESC}")
-    unit_price: float = Field(
-        ...,
-        description=f"{GENERIC_UNIT_PRICE_DESC}. Usually provided as 'Precio'.",
-    )
-    deadline: str = Field(
-        ...,
-        description=f"{GENERIC_DEADLINE_DESC}. Usually provided as 'Entrega'.",
-    )
-
-
-class OrderUlma(BaseModel):
-    number: str = Field(
-        ...,
-        description=f"{GENERIC_NUMBER_DESC}. Usually provided in a table called 'Pedido de compra', in the field names as 'Num.'.",
-    )
-    items: List[ItemUlma] = Field(..., description=f"{GENERIC_ITEMS_DESC}")
 
 
 def in_name_2_out_name(name: str) -> str:
@@ -237,23 +104,20 @@ def _preprocess_pdf(pdf_binary: bytes) -> bytes:
 
 
 def parse_md_2_order(
-    md: str, ai_client: OpenAI, groq_client: Groq
-) -> Union[OrderDanobat, OrderFagor, OrderInola, OrderMatisa, OrderUlma]:
+    md: str, ai_client: OpenAI, groq_client: Groq, clients: list[Client]
+) -> dict:
+
     # Extract client
     completion = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "system",
-                "content": """
+                "content": f"""
 Which client does this order come from? Select from the following list. Only respond with the client name as is specified in the list.
 If you cannot identify the client, respond with "unknown":
 [
-"danobat",
-"fagor",
-"inola",
-"matisa",
-"ulma"
+{", ".join(f'"{client.name}"' for client in clients)}
 ]
 """,
             },
@@ -266,52 +130,42 @@ If you cannot identify the client, respond with "unknown":
 
     # Decide the model
     client = client.lower()
-    match client:
-        case "danobat":
-            base_model = OrderDanobat
-        case "fagor":
-            base_model = OrderFagor
-        case "inola":
-            base_model = OrderInola
-        case "matisa":
-            base_model = OrderMatisa
-        case "ulma":
-            base_model = OrderUlma
-        case "unknown":
-            raise HTTPException(
-                status_code=500,
-                detail="Cliente desconocido para este pedido, ocurrió un error",
-            )
-        case _:
-            raise ValueError(f"Unknown client: {client}")
+    possible_clients = [c for c in clients if c.name.lower() == client]
+    if len(possible_clients) == 0:
+        raise ValueError(f"Unknown client: {client}")
+    if len(possible_clients) > 1:
+        raise ValueError(f"Multiple clients found for {client}: {possible_clients}")
+    client = possible_clients[0]
 
     # Extract info
-    completion = ai_client.beta.chat.completions.parse(
+    response = ai_client.responses.create(
         model="gpt-4o-mini",
-        messages=[
+        input=[
             {
                 "role": "system",
                 "content": "Extract the order information",
             },
             {"role": "user", "content": md},
         ],
-        response_format=base_model,
+        text=json.loads(client.structure),
     )
-    order = completion.choices[0].message.parsed
-    if order is None:
+
+    if response.output_text is None:
         raise ValueError("Failed to parse the order information from the markdown.")
 
-    return order
+    return json.loads(response.output_text)
 
 
 class OrderService:
     def __init__(
         self,
         repository: OrderRepository,
+        clients_service: ClientService,
         ai_client: OpenAI,
         groq_client: Groq,
     ) -> None:
         self.repository = repository
+        self.clients_service = clients_service
         self.ai_client = ai_client
         self.groq_client = groq_client
 
@@ -332,20 +186,23 @@ class OrderService:
             raise ValueError("Input document cannot be None")
         md = parse_pdf_binary_2_md(db_obj.in_document)
 
+        # Get all possible clients
+        clients = self.clients_service.get_all_by_owner_id(owner_id=owner_id)
+
         # Use the new parse_md_2_order function with ai_client
-        order = parse_md_2_order(md, self.ai_client, self.groq_client)
+        order = parse_md_2_order(md, self.ai_client, self.groq_client, clients)
 
         # Convert into a DataFrame
         data = []
-        for item in order.items:
+        for item in order["items"]:
             data.append(
                 {
-                    "Número de Pedido": order.number,
-                    "Código": item.code,
-                    "Descripción": item.description,
-                    "Cantidad": item.quantity,
-                    "Precio Unitario": item.unit_price,
-                    "Plazo": item.deadline,
+                    "Número de Pedido": order["number"],
+                    "Código": item["code"],
+                    "Descripción": item["description"],
+                    "Cantidad": item["quantity"],
+                    "Precio Unitario": item["unit_price"],
+                    "Plazo": item["deadline"],
                 }
             )
         df = pd.DataFrame(data)

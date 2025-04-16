@@ -18,17 +18,10 @@ def read_orders(
     """
     Retrieve orders.
     """
-    count: int
-    orders: list[Order]
-    if current_user.is_superuser:
-        count = order_service.repository.count()
-        orders = order_service.repository.get_all(skip=skip, limit=limit)
-    else:
-        count = order_service.repository.count_by_owner_id(owner_id=current_user.id)
-        orders = order_service.repository.get_all_by_owner_id(
-            owner_id=current_user.id, skip=skip, limit=limit
-        )
-
+    count = order_service.repository.count_by_owner_id(owner_id=current_user.id)
+    orders = order_service.repository.get_all_by_owner_id(
+        owner_id=current_user.id, skip=skip, limit=limit
+    )
     return OrdersPublic(data=orders, count=count)
 
 

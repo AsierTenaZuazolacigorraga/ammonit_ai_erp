@@ -132,7 +132,6 @@ class Settings(BaseSettings):
     OUTLOOK_ID: str | None = None
     OUTLOOK_SECRET: str | None = None
     OUTLOOK_EMAIL: str | None = None
-    OUTLOOK_SCOPES: Annotated[list[str] | str, BeforeValidator(parse_cors)] = []
 
 
 settings = Settings()  # type: ignore

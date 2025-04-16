@@ -11,18 +11,11 @@ from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
 from app.models import OrderCreate
-from app.repositories.emails import EmailRepository
+from app.repositories.clients import ClientRepository
 from app.repositories.orders import OrderRepository
 from app.repositories.users import UserRepository
-from app.services.emails import EmailService
-from app.services.orders import (
-    OrderDanobat,
-    OrderFagor,
-    OrderInola,
-    OrderMatisa,
-    OrderService,
-    OrderUlma,
-)
+from app.services.clients import ClientService
+from app.services.orders import OrderService
 from app.services.users import UserService
 from groq import Groq
 from openai import OpenAI
@@ -57,8 +50,9 @@ def main():
                 # Define orders service
                 order_service = OrderService(
                     OrderRepository(session),
-                    OpenAI(api_key=getattr(settings, "OPENAI_API_KEY")),
-                    Groq(api_key=getattr(settings, "GROQ_API_KEY")),
+                    ClientService(ClientRepository(session)),
+                    OpenAI(api_key=settings.OPENAI_API_KEY),
+                    Groq(api_key=settings.GROQ_API_KEY),
                 )
                 with open(ORDER, "rb") as f:
                     in_document = f.read()

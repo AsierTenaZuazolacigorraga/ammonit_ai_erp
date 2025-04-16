@@ -6,8 +6,10 @@ from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
+from app.repositories.clients import ClientRepository
 from app.repositories.orders import OrderRepository
 from app.repositories.users import UserRepository
+from app.services.clients import ClientService
 from app.services.orders import OrderService
 from app.services.users import UserService
 from fastapi import Depends, HTTPException, Request, status
@@ -101,22 +103,24 @@ GroqClientDep = Annotated[Groq, Depends(get_groq_client)]
 
 
 ##########################################################################################
-# Users
+# Clients
 ##########################################################################################
 
 
-def user_repository(session: SessionDep) -> UserRepository:
-    return UserRepository(session)
+def client_repository(session: SessionDep) -> ClientRepository:
+    return ClientRepository(session)
 
 
-UserRepositoryDep = Annotated[UserRepository, Depends(user_repository)]
+ClientRepositoryDep = Annotated[ClientRepository, Depends(client_repository)]
 
 
-def user_service(user_repository: UserRepositoryDep) -> UserService:
-    return UserService(user_repository)
+def client_service(
+    client_repository: ClientRepositoryDep,
+) -> ClientService:
+    return ClientService(client_repository)
 
 
-UserServiceDep = Annotated[UserService, Depends(user_service)]
+ClientServiceDep = Annotated[ClientService, Depends(client_service)]
 
 
 ##########################################################################################
@@ -133,10 +137,29 @@ OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
 
 def order_service(
     order_repository: OrderRepositoryDep,
+    client_service: ClientServiceDep,
     ai_client: AIClientDep,
     groq_client: GroqClientDep,
 ) -> OrderService:
-    return OrderService(order_repository, ai_client, groq_client)
+    return OrderService(order_repository, client_service, ai_client, groq_client)
 
 
 OrderServiceDep = Annotated[OrderService, Depends(order_service)]
+
+##########################################################################################
+# Users
+##########################################################################################
+
+
+def user_repository(session: SessionDep) -> UserRepository:
+    return UserRepository(session)
+
+
+UserRepositoryDep = Annotated[UserRepository, Depends(user_repository)]
+
+
+def user_service(user_repository: UserRepositoryDep) -> UserService:
+    return UserService(user_repository)
+
+
+UserServiceDep = Annotated[UserService, Depends(user_service)]

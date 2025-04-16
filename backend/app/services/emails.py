@@ -24,14 +24,20 @@ class EmailService:
         id: str | None,
         secret: str | None,
         email: str,
-        scopes: List[str] | str,
     ) -> None:
         self.repository = repository
         self.order_service = order_service
         self.id = id
         self.secret = secret
         self.email = email
-        self.scopes = scopes
+
+        if self.email.endswith("@outlook.com"):
+            outlook_tenant_id = "consumers"
+            outlook_scopes = "Mail.Read,offline_access"  # This works
+            # outlook_scopes = "https://outlook.office.com/Mail.Read offline_access" # This does not work
+        else:
+            outlook_tenant_id = "common"
+            outlook_scopes = "https://graph.microsoft.com/Mail.Read offline_access"
 
         token_path = os.path.join(
             os.getcwd(),
@@ -46,13 +52,17 @@ class EmailService:
         self.account = Account(
             (self.id or "", self.secret or ""),
             token_backend=self.token_backend,
-            tenant_id="consumers",
+            tenant_id=outlook_tenant_id,
         )
         if self.account.is_authenticated:
             logger.info("Token loaded successfully.")
         else:
             if self.account.authenticate(
-                scopes=self.scopes if isinstance(self.scopes, list) else [self.scopes]
+                scopes=(
+                    outlook_scopes
+                    if isinstance(outlook_scopes, list)
+                    else [outlook_scopes]
+                )
             ):
                 logger.info("Authenticated successfully")
             else:

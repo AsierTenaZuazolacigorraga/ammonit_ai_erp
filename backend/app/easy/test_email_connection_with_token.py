@@ -1,15 +1,19 @@
-import base64
-import io
-import json
-import logging
 import os
 import uuid
-from datetime import datetime, timezone
-from typing import List
 
+from app.core.config import settings
+from app.core.db import engine
 from app.logger import get_logger
+from app.repositories.clients import ClientRepository
+from app.repositories.emails import EmailRepository
+from app.repositories.orders import OrderRepository
+from app.services.clients import ClientService
+from app.services.emails import EmailService
+from app.services.orders import OrderService
 from dotenv import load_dotenv
-from O365 import Account, FileSystemTokenBackend
+from groq import Groq
+from openai import OpenAI
+from sqlmodel import Session
 
 logger = get_logger(__name__)
 
@@ -19,49 +23,53 @@ load_dotenv()
 
 OUTLOOK_ID = os.getenv("OUTLOOK_ID")
 OUTLOOK_SECRET = os.getenv("OUTLOOK_SECRET")
-
+# OUTLOOK_EMAIL = "asier.tena.zu@outlook.com"
 OUTLOOK_EMAIL = "alberdi.autom@outlook.com"
-OUTLOOK_SCOPES = "Mail.Read,offline_access"
+# OUTLOOK_EMAIL = "asier.tena.zu@ammonitammonit.onmicrosoft.com"
 
 ################################################################
-token_path = os.path.join(
-    os.getcwd(),
-    "backend",
-    ".gitignores",
-    "azure_tokens",
-)
-logger.info(f"Token path is: {token_path}")
-token_backend = FileSystemTokenBackend(
-    token_path=token_path,
-    token_filename=OUTLOOK_EMAIL,
-)
-account = Account(
-    (OUTLOOK_ID, OUTLOOK_SECRET),
-    token_backend=token_backend,
-    tenant_id="consumers",
-)
-if account.is_authenticated:
-    logger.info("Token loaded successfully.")
-else:
-    if account.authenticate(
-        scopes=OUTLOOK_SCOPES if isinstance(OUTLOOK_SCOPES, list) else [OUTLOOK_SCOPES]
-    ):
-        logger.info("Authenticated successfully")
-    else:
-        raise Exception("Authentication failed")
 
-messages = list(
-    account.mailbox()
-    .inbox_folder()
-    .get_messages(limit=50, order_by="receivedDateTime desc")
-)
 
-if messages:
-    for message in messages[:5]:  # Limit to the first 5 messages
-        print(f"Email read:\n\n")
-        print(f"Subject: {message.subject}")
-        print(f"Sender: {message.sender}")
-        print(f"Date: {message.created}")
-        print(f"Content: {message.body}")
-else:
-    print("No messages found.")
+def main():
+
+    # Create a database session
+    with Session(engine) as session:
+
+        # Initialize required services
+        email_repository = EmailRepository(session)
+        client_service = ClientService(ClientRepository(session))
+        order_service = OrderService(
+            repository=OrderRepository(session),
+            clients_service=client_service,
+            ai_client=OpenAI(api_key=settings.OPENAI_API_KEY),
+            groq_client=Groq(api_key=settings.GROQ_API_KEY),
+        )
+
+        # Create email service instance
+        email_service = EmailService(
+            repository=email_repository,
+            order_service=order_service,
+            id=OUTLOOK_ID,
+            secret=OUTLOOK_SECRET,
+            email=OUTLOOK_EMAIL,
+        )
+
+        messages = list(
+            email_service.account.mailbox()
+            .inbox_folder()
+            .get_messages(limit=50, order_by="receivedDateTime desc")
+        )
+
+        if messages:
+            for message in messages[:5]:  # Limit to the first 5 messages
+                print(f"Email read:\n\n")
+                print(f"Subject: {message.subject}")
+                print(f"Sender: {message.sender}")
+                print(f"Date: {message.created}")
+                print(f"Content: {message.body}")
+        else:
+            print("No messages found.")
+
+
+if __name__ == "__main__":
+    main()

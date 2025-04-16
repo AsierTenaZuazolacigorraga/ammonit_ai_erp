@@ -9,6 +9,23 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type ClientCreate = {
+    name: string;
+    structure: string;
+};
+
+export type ClientPublic = {
+    name: string;
+    structure: string;
+    id: string;
+    owner_id: string;
+};
+
+export type ClientsPublic = {
+    data: Array<ClientPublic>;
+    count: number;
+};
+
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
@@ -92,6 +109,19 @@ export type ValidationError = {
     msg: string;
     type: string;
 };
+
+export type ClientsReadClientsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type ClientsReadClientsResponse = (ClientsPublic);
+
+export type ClientsCreateClientData = {
+    requestBody: ClientCreate;
+};
+
+export type ClientsCreateClientResponse = (ClientPublic);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;

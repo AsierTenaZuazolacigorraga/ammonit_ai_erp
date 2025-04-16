@@ -5,9 +5,11 @@ import traceback
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
+from app.repositories.clients import ClientRepository
 from app.repositories.emails import EmailRepository
 from app.repositories.orders import OrderRepository
 from app.repositories.users import UserRepository
+from app.services.clients import ClientService
 from app.services.emails import EmailService
 from app.services.orders import OrderService
 from app.services.users import UserService
@@ -57,6 +59,7 @@ def task_for_each_user_email_service_fetch(session, user):
     # Define orders service
     order_service = OrderService(
         OrderRepository(session),
+        ClientService(ClientRepository(session)),
         OpenAI(api_key=settings.OPENAI_API_KEY),
         Groq(api_key=settings.GROQ_API_KEY),
     )
