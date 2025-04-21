@@ -1,19 +1,14 @@
-import {
-  MenuContent,
-  MenuItem,
-  MenuRoot,
-  MenuTrigger,
-} from "@/components/ui/menu"
-import { Box, IconButton, Theme } from "@chakra-ui/react"
-
-import { Link as RouteLink } from "@tanstack/react-router"
+import { Box, Button, Flex } from "@chakra-ui/react"
+import { Link } from "@tanstack/react-router"
 import { FaUserAstronaut } from "react-icons/fa"
 import { FiLogOut, FiUser } from "react-icons/fi"
 
 import useAuth from "@/hooks/useAuth"
+import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "../ui/menu"
 
 const UserMenu = () => {
   const { logout } = useAuth()
+  // const { user, logout } = useAuth()
 
   const handleLogout = async () => {
     logout()
@@ -21,43 +16,43 @@ const UserMenu = () => {
 
   return (
     <>
+      {/* Desktop */}
+      <Flex>
+        <MenuRoot>
+          <MenuTrigger asChild p={2}>
+            <Button data-testid="user-menu" variant="solid" maxW="sm" truncate rounded="full" m={2}>
+              <FaUserAstronaut fontSize="18" />
+              {/* <Text>{user?.full_name || "User"}</Text> */}
+            </Button>
+          </MenuTrigger>
 
-      <Box>
-        <Theme appearance="light">
-          <MenuRoot>
-            <MenuTrigger asChild>
-              <IconButton
-                m={2}
-                aria-label="Options"
-                size="xs"
-                rounded="full"
-                data-testid="user-menu"
-                colorPalette="green"
-              >
-                <FaUserAstronaut color="white" />
-              </IconButton>
-            </MenuTrigger>
-            <MenuContent>
-              <MenuItem value="profile" asChild>
-                <RouteLink to="/settings">
-                  <FiUser fontSize="18px" />
-                  <Box flex="1">Mi perfil</Box>
-                </RouteLink>
-              </MenuItem>
+          <MenuContent>
+            <Link to="settings">
               <MenuItem
-                value="logout"
-                onClick={handleLogout}
-                fontWeight="bold"
-                color="red"
+                closeOnSelect
+                value="user-settings"
+                gap={2}
+                py={2}
+                style={{ cursor: "pointer" }}
               >
-                <FiLogOut fontSize="18px" />
-                <Box flex="1" >Log out</Box>
+                <FiUser fontSize="18px" />
+                <Box flex="1">Mi Perfil</Box>
               </MenuItem>
-            </MenuContent>
-          </MenuRoot>
-        </Theme>
-      </Box>
+            </Link>
 
+            <MenuItem
+              value="logout"
+              gap={2}
+              py={2}
+              onClick={handleLogout}
+              style={{ cursor: "pointer" }}
+            >
+              <FiLogOut />
+              Log Out
+            </MenuItem>
+          </MenuContent>
+        </MenuRoot>
+      </Flex>
     </>
   )
 }

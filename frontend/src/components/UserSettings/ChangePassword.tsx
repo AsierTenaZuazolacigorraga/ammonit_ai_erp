@@ -1,33 +1,25 @@
-import { type ApiError, type UpdatePassword, UsersService } from "@/client"
-import { Button } from "@/components/ui/button"
-import { Field } from "@/components/ui/field"
-import { ReactIcon } from "@/components/ui/icon"
-import { InputGroup } from "@/components/ui/input-group"
-import useCustomToast from "@/hooks/useCustomToast"
-import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
-import { Box, Container, Heading, Input } from "@chakra-ui/react"
+import { Box, Button, Container, Heading, VStack } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
-import { useBoolean } from "usehooks-ts"
+import { FiLock } from "react-icons/fi"
+
+import { type ApiError, type UpdatePassword, UsersService } from "@/client"
+import { PasswordInput } from "@/components/ui/password-input"
+import useCustomToast from "@/hooks/useCustomToast"
+import { confirmPasswordRules, handleError, passwordRules } from "@/utils"
 
 interface UpdatePasswordForm extends UpdatePassword {
   confirm_password: string
 }
 
 const ChangePassword = () => {
-
   const { showSuccessToast } = useCustomToast()
-  const { value: showPasswordActual, toggle: togglePasswordActual } = useBoolean()
-  const { value: showPasswordNew, toggle: togglePasswordNew } = useBoolean()
-  const { value: showPasswordConf, toggle: togglePasswordConf } = useBoolean()
-
   const {
     register,
     handleSubmit,
     reset,
     getValues,
-    formState: { errors, isSubmitting },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<UpdatePasswordForm>({
     mode: "onBlur",
     criteriaMode: "all",
@@ -37,7 +29,7 @@ const ChangePassword = () => {
     mutationFn: (data: UpdatePassword) =>
       UsersService.updatePasswordMe({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Password actualizado correctamente.")
+      showSuccessToast("Contraseña actualizada correctamente")
       reset()
     },
     onError: (err: ApiError) => {
@@ -53,98 +45,43 @@ const ChangePassword = () => {
     <>
       <Container maxW="full">
         <Heading size="sm" py={4}>
-          Cambiar Password
+          Cambiar contraseña
         </Heading>
-        <Box
-          w={{ sm: "full", md: "50%" }}
-          as="form"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <Field
-            label="Password Actual"
-            required
-            invalid={!!errors.current_password}
-            errorText={errors.current_password?.message}
-          >
-            <InputGroup
-              endElement={
-                <ReactIcon
-                  icon={showPasswordActual ? FaEyeSlash : FaEye}
-                  cursor="pointer"
-                  onClick={togglePasswordActual}
-                  aria-label={showPasswordActual ? "Hide password" : "Show password"}
-                />
-              }
-            >
-              <Input
-                {...register("current_password")}
-                placeholder="Password"
-                type={showPasswordActual ? "text" : "password"}
-                w="auto"
-              />
-            </InputGroup>
-          </Field>
-
-          <Field
-            mt={4}
-            label="Nuevo Password"
-            required
-            invalid={!!errors.new_password}
-            errorText={errors.new_password?.message}
-          >
-            <InputGroup
-              endElement={
-                <ReactIcon
-                  icon={showPasswordNew ? FaEyeSlash : FaEye}
-                  cursor="pointer"
-                  onClick={togglePasswordNew}
-                  aria-label={showPasswordNew ? "Hide password" : "Show password"}
-                />
-              }
-            >
-              <Input
-                {...register("new_password", passwordRules())}
-                placeholder="Password"
-                type={showPasswordNew ? "text" : "password"}
-                w="auto"
-              />
-            </InputGroup>
-          </Field>
-          <Field
-            mt={4}
-            label="Nuevo Password Confirmado"
-            required
-            invalid={!!errors.confirm_password}
-            errorText={errors.confirm_password?.message}
-          >
-            <InputGroup
-              endElement={
-                <ReactIcon
-                  icon={showPasswordConf ? FaEyeSlash : FaEye}
-                  cursor="pointer"
-                  onClick={togglePasswordConf}
-                  aria-label={showPasswordConf ? "Hide password" : "Show password"}
-                />
-              }
-            >
-              <Input
-                {...register("confirm_password", confirmPasswordRules(getValues))}
-                placeholder="Password"
-                type={showPasswordConf ? "text" : "password"}
-                w="auto"
-              />
-            </InputGroup>
-          </Field>
+        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
+          <VStack gap={4} w={{ base: "100%", md: "sm" }}>
+            <PasswordInput
+              type="current_password"
+              startElement={<FiLock />}
+              {...register("current_password", passwordRules())}
+              placeholder="Contraseña actual"
+              errors={errors}
+            />
+            <PasswordInput
+              type="new_password"
+              startElement={<FiLock />}
+              {...register("new_password", passwordRules())}
+              placeholder="Nueva contraseña"
+              errors={errors}
+            />
+            <PasswordInput
+              type="confirm_password"
+              startElement={<FiLock />}
+              {...register("confirm_password", confirmPasswordRules(getValues))}
+              placeholder="Confirmar contraseña"
+              errors={errors}
+            />
+          </VStack>
           <Button
-            colorPalette="green"
+            variant="solid"
             mt={4}
             type="submit"
             loading={isSubmitting}
+            disabled={!isValid}
           >
             Guardar
           </Button>
         </Box>
-      </Container >
+      </Container>
     </>
   )
 }

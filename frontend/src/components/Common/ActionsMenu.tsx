@@ -1,18 +1,8 @@
-import { Box, IconButton, useDisclosure } from "@chakra-ui/react"
-
-import {
-  MenuContent,
-  MenuItem,
-  MenuRoot,
-  MenuTrigger,
-} from "@/components/ui/menu"
-import { BsThreeDotsVertical } from "react-icons/bs"
-import { FiEdit, FiTrash } from "react-icons/fi"
-
 import type { OrderPublic, UserPublic } from "@/client"
-import EditUser from "../Admin/EditUser"
-// import EditOrder from "../Orders/EditOrder"
-import Delete from "./DeleteAlert"
+import { IconButton } from "@chakra-ui/react"
+import { BsThreeDotsVertical } from "react-icons/bs"
+import { MenuContent, MenuRoot, MenuTrigger } from "../ui/menu"
+
 
 interface ActionsMenuProps {
   type: string
@@ -20,53 +10,20 @@ interface ActionsMenuProps {
   disabled?: boolean
 }
 
-const ActionsMenu = ({ type, value, disabled }: ActionsMenuProps) => {
-  const editUserModal = useDisclosure()
-  const deleteModal = useDisclosure()
-
+export const ActionsMenu = ({ type }: ActionsMenuProps) => {
+  console.log(type)
   return (
-    <>
-      <MenuRoot>
-        <MenuTrigger asChild>
-          <IconButton size="sm" variant="ghost" disabled={disabled}>
-            <BsThreeDotsVertical />
-          </IconButton>
-        </MenuTrigger>
-        <MenuContent>
-          {type === "Usuario" ? (
-            <MenuItem value="edit" onClick={editUserModal.onOpen}>
-              <FiEdit fontSize="16px" />
-              <Box flex="1">Editar {type}</Box>
-            </MenuItem>
-          ) : null}
-          <MenuItem value="delete" onClick={deleteModal.onOpen} color="red">
-            <FiTrash fontSize="16px" />
-            <Box flex="1">Eliminar {type}</Box>
-          </MenuItem>
-          {type === "Usuario" ? (
-            <EditUser
-              user={value as UserPublic}
-              open={editUserModal.open}
-              onClose={editUserModal.onClose}
-            />
-          ) : (
-            null
-            // <EditOrder
-            //   order={value as OrderPublic}
-            //   open={editUserModal.open}
-            //   onClose={editUserModal.onClose}
-            // />
-          )}
-          <Delete
-            type={type}
-            id={value.id}
-            open={deleteModal.open}
-            onClose={deleteModal.onClose}
-          />
-        </MenuContent>
-      </MenuRoot>
-    </>
+    <MenuRoot>
+      <MenuTrigger asChild>
+        <IconButton variant="ghost" color="inherit">
+          <BsThreeDotsVertical />
+        </IconButton>
+      </MenuTrigger>
+      <MenuContent>
+        {/* <Edit item={type} />
+        <Delete id={type.id} /> */}
+      </MenuContent>
+    </MenuRoot>
   )
 }
-
 export default ActionsMenu

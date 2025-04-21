@@ -1,14 +1,13 @@
 import { Container, Heading, Tabs } from "@chakra-ui/react"
-import { useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 
-import type { UserPublic } from "@/client"
 import ChangePassword from "@/components/UserSettings/ChangePassword"
 import UserInformation from "@/components/UserSettings/UserInformation"
+import useAuth from "@/hooks/useAuth"
 
 const tabsConfig = [
-  { title: "Mi perfil", component: UserInformation },
-  { title: "Password", component: ChangePassword },
+  { value: "my-profile", title: "Mi perfil", component: UserInformation },
+  { value: "password", title: "Password", component: ChangePassword },
 ]
 
 export const Route = createFileRoute("/_layout/settings")({
@@ -16,27 +15,31 @@ export const Route = createFileRoute("/_layout/settings")({
 })
 
 function UserSettings() {
-  const queryClient = useQueryClient()
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const { user: currentUser } = useAuth()
   const finalTabs = currentUser?.is_superuser
     ? tabsConfig.slice(0, 3)
     : tabsConfig
 
+  if (!currentUser) {
+    return null
+  }
+
   return (
     <Container maxW="full">
-      <Heading size="lg" textAlign={{ base: "center", md: "left" }}>
-        Configuración de Usuario
+      <Heading size="lg" textAlign={{ base: "center", md: "left" }} py={12}>
+        Ajustes de Usuario
       </Heading>
-      <Tabs.Root color="enclosed" defaultValue={finalTabs[0].title}>
+
+      <Tabs.Root defaultValue="my-profile" variant="subtle">
         <Tabs.List>
-          {finalTabs.map((tab, index) => (
-            <Tabs.Trigger key={index} value={tab.title}>
+          {finalTabs.map((tab) => (
+            <Tabs.Trigger key={tab.value} value={tab.value}>
               {tab.title}
             </Tabs.Trigger>
           ))}
         </Tabs.List>
-        {finalTabs.map((tab, index) => (
-          <Tabs.Content key={index} value={tab.title}>
+        {finalTabs.map((tab) => (
+          <Tabs.Content key={tab.value} value={tab.value}>
             <tab.component />
           </Tabs.Content>
         ))}

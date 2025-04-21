@@ -1,45 +1,49 @@
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DialogBackdrop,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle
-} from "@/components/ui/dialog"
-import { Field } from "@/components/ui/field"
-import { Flex, Input } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 
 import {
-  type ApiError,
-  type UserPublic,
-  type UserUpdate,
-  UsersService,
-} from "@/client"
+  Button,
+  DialogActionTrigger,
+  DialogRoot,
+  DialogTrigger,
+  Flex,
+  Input,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
+import { useState } from "react"
+import { FaExchangeAlt } from "react-icons/fa"
+
+import { type UserPublic, type UserUpdate, UsersService } from "@/client"
+import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern, handleError } from "@/utils"
+import { Checkbox } from "../ui/checkbox"
+import {
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog"
+import { Field } from "../ui/field"
 
 interface EditUserProps {
   user: UserPublic
-  open: boolean
-  onClose: () => void
 }
 
 interface UserUpdateForm extends UserUpdate {
-  confirm_password: string
+  confirm_password?: string
 }
 
-const EditUser = ({ user, open, onClose }: EditUserProps) => {
+const EditUser = ({ user }: EditUserProps) => {
+  const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
-
   const {
-    register,
     control,
+    register,
     handleSubmit,
     reset,
     getValues,
@@ -55,7 +59,8 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
       UsersService.updateUser({ id: user.id, requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Usuario actualizado correctamente.")
-      onClose()
+      reset()
+      setIsOpen(false)
     },
     onError: (err: ApiError) => {
       handleError(err)
@@ -72,91 +77,104 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
     mutation.mutate(data)
   }
 
-  const onCancel = () => {
-    reset()
-    onClose()
-  }
-
   return (
-    <>
-      <DialogRoot
-        open={open}
-        onExitComplete={onClose}
-        size={{ base: "sm", md: "md" }}
-        role="alertdialog"
-      >
-        <DialogBackdrop />
-        <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
+    <DialogRoot
+      size={{ base: "xs", md: "md" }}
+      placement="center"
+      open={isOpen}
+      onOpenChange={({ open }) => setIsOpen(open)}
+    >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <FaExchangeAlt fontSize="16px" />
+          Editar Usuario
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Editar Usuario</DialogTitle>
-            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
-          <DialogBody pb={6}>
-            <Field
-              label="Email"
-              invalid={!!errors.email}
-              errorText={errors.email?.message}
-            >
-              <Input
-                {...register("email", {
-                  required: "Se requiere email",
-                  pattern: emailPattern,
-                })}
-                placeholder="Email"
-                type="email"
-              />
-            </Field>
-            <Field mt={4} label="Nombre completo">
-              <Input {...register("full_name")} type="text" />
-            </Field>
-            <Field
-              mt={4}
-              label="Nuevo Password"
-              invalid={!!errors.password}
-              errorText={errors.password?.message}
-            >
-              <Input
-                {...register("password", {
-                  minLength: {
-                    value: 8,
-                    message: "El password debe de tener al menos 8 caracteres",
-                  },
-                })}
-                placeholder="Password"
-                type="password"
-              />
-            </Field>
-            <Field
-              mt={4}
-              label="Nuevo Password Confirmado"
-              invalid={!!errors.confirm_password}
-              errorText={errors.confirm_password?.message}
-            >
-              <Input
-                {...register("confirm_password", {
-                  validate: (value) =>
-                    value === getValues().password ||
-                    "Las contraseñas no coinciden",
-                })}
-                placeholder="Password"
-                type="password"
-              />
-            </Field>
-            <Flex mt={4}>
+          <DialogBody>
+            <Text mb={4}>Actualiza los detalles del usuario abajo.</Text>
+            <VStack gap={4}>
+              <Field
+                required
+                invalid={!!errors.email}
+                errorText={errors.email?.message}
+                label="Email"
+              >
+                <Input
+                  id="email"
+                  {...register("email", {
+                    required: "El email se requiere",
+                    pattern: emailPattern,
+                  })}
+                  placeholder="Email"
+                  type="email"
+                />
+              </Field>
+
+              <Field
+                invalid={!!errors.full_name}
+                errorText={errors.full_name?.message}
+                label="Nombre completo"
+              >
+                <Input
+                  id="name"
+                  {...register("full_name")}
+                  placeholder="Nombre completo"
+                  type="text"
+                />
+              </Field>
+
+              <Field
+                invalid={!!errors.password}
+                errorText={errors.password?.message}
+                label="Establecer contraseña"
+              >
+                <Input
+                  id="password"
+                  {...register("password", {
+                    minLength: {
+                      value: 8,
+                      message: "La contraseña debe tener al menos 8 caracteres",
+                    },
+                  })}
+                  placeholder="Password"
+                  type="password"
+                />
+              </Field>
+
+              <Field
+                invalid={!!errors.confirm_password}
+                errorText={errors.confirm_password?.message}
+                label="Confirmar contraseña"
+              >
+                <Input
+                  id="confirm_password"
+                  {...register("confirm_password", {
+                    validate: (value) =>
+                      value === getValues().password ||
+                      "Las contraseñas no coinciden",
+                  })}
+                  placeholder="Password"
+                  type="password"
+                />
+              </Field>
+            </VStack>
+
+            <Flex mt={4} direction="column" gap={4}>
               <Controller
                 control={control}
                 name="is_superuser"
                 render={({ field }) => (
-                  <Field
-                    disabled={field.disabled}
-                    invalid={!!errors.is_superuser}
-                    errorText={errors.is_superuser?.message}
-                  >
+                  <Field disabled={field.disabled} colorPalette="teal">
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Es superuser?
+                      Es Superuser?
                     </Checkbox>
                   </Field>
                 )}
@@ -165,16 +183,12 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
                 control={control}
                 name="is_active"
                 render={({ field }) => (
-                  <Field
-                    disabled={field.disabled}
-                    invalid={!!errors.is_active}
-                    errorText={errors.is_active?.message}
-                  >
+                  <Field disabled={field.disabled} colorPalette="teal">
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={({ checked }) => field.onChange(checked)}
                     >
-                      Es active?
+                      Es Activo?
                     </Checkbox>
                   </Field>
                 )}
@@ -182,19 +196,24 @@ const EditUser = ({ user, open, onClose }: EditUserProps) => {
             </Flex>
           </DialogBody>
 
-          <DialogFooter gap={3}>
-            <Button
-              colorPalette="green"
-              type="submit"
-              loading={isSubmitting}
-            >
+          <DialogFooter gap={2}>
+            <DialogActionTrigger asChild>
+              <Button
+                variant="subtle"
+                colorPalette="gray"
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+            </DialogActionTrigger>
+            <Button variant="solid" type="submit" loading={isSubmitting}>
               Guardar
             </Button>
-            <Button onClick={onCancel}>Cancelar</Button>
           </DialogFooter>
-        </DialogContent>
-      </DialogRoot>
-    </>
+          <DialogCloseTrigger />
+        </form>
+      </DialogContent>
+    </DialogRoot>
   )
 }
 

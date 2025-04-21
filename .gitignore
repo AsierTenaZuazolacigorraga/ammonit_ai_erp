@@ -3,6 +3,8 @@ mysql-data/
 
 # customs
 __pycache__/
+ai_experiments/
+.cursor/
 .olds/
 .venv/
 .gitignores/

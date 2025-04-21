@@ -1,29 +1,31 @@
-import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react"
+import { createSystem, defaultConfig } from "@chakra-ui/react"
+import { buttonRecipe } from "./theme/button.recipe"
 
-// If you update this, run `npx chakra typegen ./theme.ts` to generate the types
-
-// TODO reimplement component styles
-// const disabledStyles = {
-//   _disabled: {
-//     backgroundColor: "ui.main",
-//   },
-// }
-
-const config = defineConfig({
+export const system = createSystem(defaultConfig, {
+  globalCss: {
+    html: {
+      fontSize: "16px",
+    },
+    body: {
+      fontSize: "0.875rem",
+      margin: 0,
+      padding: 0,
+    },
+    ".main-link": {
+      color: "ui.main",
+      fontWeight: "bold",
+    },
+  },
   theme: {
     tokens: {
       colors: {
-        main: { value: "#009688" },
-        secondary: { value: "#EDF2F7" },
-        success: { value: "#48BB78" },
-        danger: { value: "#E53E3E" },
-        light: { value: "#FAFAFA" },
-        dark: { value: "#1A202C" },
-        darkSlate: { value: "#252D3D" },
-        dim: { value: "#A0AEC0" }
-      }
-    }
-  }
+        ui: {
+          main: { value: "#009688" },
+        },
+      },
+    },
+    recipes: {
+      button: buttonRecipe,
+    },
+  },
 })
-
-export const system = createSystem(defaultConfig, config)

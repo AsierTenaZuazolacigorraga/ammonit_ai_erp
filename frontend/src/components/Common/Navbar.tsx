@@ -1,36 +1,36 @@
-import { Flex, Image } from "@chakra-ui/react"
+import { Box, Flex, Image, useBreakpointValue } from "@chakra-ui/react"
+import { Link } from "@tanstack/react-router"
+
+import UserMenu from "./UserMenu"
 import Logo from "/assets/images/ammonit_generic_logo.svg"
 
-import { RouterLink } from "../ui/router-link"
-import { SidebarMobile } from "./Sidebar"
-import UserMenu from "./UserMenu"
+function Navbar() {
+  const display = useBreakpointValue({ base: "none", md: "flex" })
 
-export const NAVBAR_HEIGHT = 12
-
-const Navbar = () => {
   return (
-    <>
-
-      <Flex
-        position="fixed"
-        top={0}
-        left={0}
-        height={NAVBAR_HEIGHT}
-        width="100%"
-        alignItems="center"
-        bg="white"
-        zIndex={100}
-        boxShadow="md"
-      >
-        <SidebarMobile />
-        <RouterLink to={"/"} asChild>
-          <Image src={Logo} alt="logo" h="100%" p={3} />
-        </RouterLink>
-        <Flex justifyContent="end" flex={1}>
-          <UserMenu />
-        </Flex>
+    <Flex
+      display={display}
+      justify="space-between"
+      position="sticky"
+      color="white"
+      align="center"
+      bg="bg.muted"
+      w="100%"
+      top={0}
+      left={0}
+      height={12}
+      boxShadow="md"
+      zIndex={100}
+    >
+      <Box h="full" p={1}>
+        <Link to="/">
+          <Image src={Logo} alt="Logo" h="full" />
+        </Link>
+      </Box>
+      <Flex gap={2} alignItems="center">
+        <UserMenu />
       </Flex>
-    </>
+    </Flex >
   )
 }
 

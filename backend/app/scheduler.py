@@ -71,7 +71,6 @@ def task_for_each_user_email_service_fetch(session, user):
         settings.OUTLOOK_ID,
         settings.OUTLOOK_SECRET,
         user.email,
-        settings.OUTLOOK_SCOPES,
     )
 
     # Fetch emails

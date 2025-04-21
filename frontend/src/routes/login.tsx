@@ -1,16 +1,18 @@
+import { Container, Image, Input } from "@chakra-ui/react"
+import {
+  createFileRoute,
+  redirect
+} from "@tanstack/react-router"
+import { type SubmitHandler, useForm } from "react-hook-form"
+import { FiLock, FiMail } from "react-icons/fi"
+
+import type { Body_login_login_access_token as AccessToken } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
-import { ReactIcon } from "@/components/ui/icon"
 import { InputGroup } from "@/components/ui/input-group"
-import { Container, Image, Input } from "@chakra-ui/react"
-import { createFileRoute, redirect } from "@tanstack/react-router"
-import { type SubmitHandler, useForm } from "react-hook-form"
-
-import { FaEye, FaEyeSlash } from "react-icons/fa"
-import { useBoolean } from "usehooks-ts"
-import type { Body_login_login_access_token as AccessToken } from "../client"
-import useAuth, { isLoggedIn } from "../hooks/useAuth"
-import { emailPattern } from "../utils"
+import { PasswordInput } from "@/components/ui/password-input"
+import useAuth, { isLoggedIn } from "@/hooks/useAuth"
+import { emailPattern, passwordRules } from "../utils"
 import Logo from "/assets/images/ammonit_generic_logo.svg"
 
 export const Route = createFileRoute("/login")({
@@ -25,7 +27,6 @@ export const Route = createFileRoute("/login")({
 })
 
 function Login() {
-  const { value: show, toggle } = useBoolean()
   const { loginMutation, error, resetError } = useAuth()
   const {
     register,
@@ -73,51 +74,38 @@ function Login() {
           mb={4}
         />
         <Field
-          invalid={!!errors.username || !!error}
-          errorText={errors.username?.message}
+          invalid={!!errors.username}
+          errorText={errors.username?.message || !!error}
         >
-          <Input
-            {...register("username", {
-              required: "Se requiere email",
-              pattern: emailPattern,
-            })}
-            placeholder="Email"
-            type="email"
-            required
-          />
-        </Field>
-        <Field invalid={!!error} errorText={error}>
-          <InputGroup
-            width="100%"
-            endElement={
-              <ReactIcon
-                icon={show ? FaEyeSlash : FaEye}
-                cursor="pointer"
-                onClick={toggle}
-                aria-label={show ? "Hide password" : "Show password"}
-              />
-            }
-          >
+          <InputGroup w="100%" startElement={<FiMail />}>
             <Input
-              {...register("password", {
-                required: "Se requiere password",
+              id="username"
+              {...register("username", {
+                required: "Se requiere nombre de usuario",
+                pattern: emailPattern,
               })}
-              type={show ? "text" : "password"}
-              placeholder="Password"
-              required
+              placeholder="Email"
+              type="email"
             />
           </InputGroup>
         </Field>
-        {/* <RouterLink to="/recover-password" color="blue.500">
-          Forgot password?
+        <PasswordInput
+          type="password"
+          startElement={<FiLock />}
+          {...register("password", passwordRules())}
+          placeholder="Password"
+          errors={errors}
+        />
+        {/* <RouterLink to="/recover-password" className="main-link">
+          Forgot Password?
         </RouterLink> */}
-        <Button colorPalette="green" type="submit" loading={isSubmitting}>
+        <Button variant="solid" type="submit" loading={isSubmitting} size="md">
           Log In
         </Button>
         {/* <Text>
           Don't have an account?{" "}
-          <RouterLink to="/signup" color="blue.500">
-            Sign up
+          <RouterLink to="/signup" className="main-link">
+            Sign Up
           </RouterLink>
         </Text> */}
       </Container>

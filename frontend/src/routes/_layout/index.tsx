@@ -1,12 +1,8 @@
-import { Box, Text } from "@chakra-ui/react"
+import { Box, Container, Text } from "@chakra-ui/react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { z } from 'zod'
 
 import useAuth from "@/hooks/useAuth"
 
-const ordersSearchSchema = z.object({
-  page: z.number().catch(1),
-})
 
 
 export const Route = createFileRoute("/_layout/")({
@@ -14,7 +10,6 @@ export const Route = createFileRoute("/_layout/")({
   beforeLoad: async () => {
     throw redirect({
       to: "/orders",
-      search: (search) => ordersSearchSchema.parse(search),
 
     })
   }
@@ -25,12 +20,14 @@ function Dashboard() {
 
   return (
     <>
-      <Box>
-        <Text fontSize="2xl">
-          Hi, {currentUser?.full_name || currentUser?.email} 👋🏼
-        </Text>
-        <Text>Welcome back, nice to see you again!</Text>
-      </Box>
+      <Container maxW="full">
+        <Box pt={12} m={4}>
+          <Text fontSize="2xl" truncate maxW="sm">
+            Hi, {currentUser?.full_name || currentUser?.email} 👋🏼
+          </Text>
+          <Text>Welcome back, nice to see you again!</Text>
+        </Box>
+      </Container>
     </>
   )
 }

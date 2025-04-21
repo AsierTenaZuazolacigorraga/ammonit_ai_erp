@@ -1,43 +1,48 @@
-import { Box, Flex, Text } from "@chakra-ui/react"
+import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
+import { Link as RouterLink } from "@tanstack/react-router"
 import { FiHome, FiSettings, FiUsers } from "react-icons/fi"
-
-import { RouterLink } from "@/components/ui/router-link"
-
-import type { UserPublic } from "@/client"
-import { ReactIcon } from "@/components/ui/icon"
 import type { IconType } from "react-icons/lib"
 
-interface SidebarItemProps {
-  icon: IconType
-  title: string
-  path: string
-}
-const items: SidebarItemProps[] = [
+import type { UserPublic } from "@/client"
+
+const items = [
   { icon: FiHome, title: "Gestión de Pedidos", path: "/orders" },
   { icon: FiSettings, title: "Configuración de Usuario", path: "/settings" },
 ]
 
+
 interface SidebarItemsProps {
   onClose?: () => void
+}
+
+interface Item {
+  icon: IconType
+  title: string
+  path: string
 }
 
 const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   const queryClient = useQueryClient()
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
 
-  const finalItems: SidebarItemProps[] = currentUser?.is_superuser
+  const finalItems: Item[] = currentUser?.is_superuser
     ? [...items, { icon: FiUsers, title: "Administrador", path: "/admin" }]
     : items
 
   const listItems = finalItems.map(({ icon, title, path }) => (
-    <RouterLink to={path} key={title} asChild>
+    <RouterLink key={title} to={path} onClick={onClose}>
       <Flex
-        w="100%"
-        p={2}
-        onClick={onClose}
+        gap={4}
+        px={4}
+        py={2}
+        _hover={{
+          background: "gray.subtle",
+        }}
+        alignItems="center"
+        fontSize="sm"
       >
-        <ReactIcon icon={icon} alignSelf="center" />
+        <Icon as={icon} alignSelf="center" />
         <Text ml={2}>{title}</Text>
       </Flex>
     </RouterLink>
@@ -45,6 +50,9 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
 
   return (
     <>
+      <Text fontSize="xs" px={4} py={2} fontWeight="bold">
+        {/* Menu */}
+      </Text>
       <Box>{listItems}</Box>
     </>
   )

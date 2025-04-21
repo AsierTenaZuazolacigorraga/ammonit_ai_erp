@@ -1,50 +1,55 @@
-import { type ApiError, type OrderCreate, OrdersService } from "@/client"
-import { Button } from "@/components/ui/button"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { type SubmitHandler, useForm } from "react-hook-form"
+
 import {
-  DialogBackdrop,
+  Button,
+  DialogActionTrigger,
+  DialogTitle,
+  Input,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
+import { useState } from "react"
+import { FaPlus } from "react-icons/fa"
+
+import { type OrderCreate, OrdersService } from "@/client"
+import type { ApiError } from "@/client/core/ApiError"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
+import { useDropzone } from "react-dropzone"
+import {
   DialogBody,
+  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle
-} from "@/components/ui/dialog"
-import { Field } from "@/components/ui/field"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
-import { Input } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useDropzone } from "react-dropzone"
-import { type SubmitHandler, useForm } from "react-hook-form"
+  DialogTrigger,
+} from "../ui/dialog"
+import { Field } from "../ui/field"
 
-interface AddOrderProps {
-  open: boolean
-  onClose: () => void
-}
-
-const AddOrder = ({ open, onClose }: AddOrderProps) => {
-
+const AddOrder = () => {
+  const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
-
   const {
     register,
     handleSubmit,
     reset,
     setValue,
-    formState: { isSubmitting, errors },
+    formState: { errors, isSubmitting },
   } = useForm<OrderCreate>({
     mode: "onBlur",
-    criteriaMode: "all",
+    criteriaMode: "all"
   })
 
   const mutation = useMutation({
     mutationFn: (data: OrderCreate) =>
       OrdersService.createOrder({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Pedido creado correctamente.")
+      showSuccessToast("Order created successfully.")
       reset()
-      onClose()
+      setIsOpen(false)
     },
     onError: (err: ApiError) => {
       handleError(err)
@@ -55,7 +60,6 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
   })
 
   const onSubmit: SubmitHandler<OrderCreate> = async (data) => {
-
     // Set the current date
     const dateUtc = new Date().toISOString()
     const dateLocalRaw = new Date();
@@ -99,61 +103,80 @@ const AddOrder = ({ open, onClose }: AddOrderProps) => {
   })
 
   return (
-    <>
-      <DialogRoot
-        open={open}
-        onExitComplete={onClose}
-        size={{ base: "sm", md: "md" }}
-      >
-        <DialogBackdrop />
-        <DialogContent as="form" onSubmit={handleSubmit(onSubmit)}>
+    <DialogRoot
+      size={{ base: "xs", md: "md" }}
+      placement="center"
+      open={isOpen}
+      onOpenChange={({ open }) => setIsOpen(open)}
+    >
+      <DialogTrigger asChild>
+        <Button value="add-order" my={4}>
+          <FaPlus fontSize="16px" />
+          Añadir Pedido
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Añadir Pedido</DialogTitle>
-            {/* <DialogCloseTrigger /> */}
           </DialogHeader>
-          <DialogBody pb={6}>
-            <Field
-              required
-              label="Documento de Pedido"
-              invalid={!!errors.in_document_name}
-              errorText={errors.in_document_name?.message}
-            >
-              <div {...getRootProps()} style={{
-                border: "2px dashed #ccc",
-                padding: "10px",
-                backgroundColor: isSubmitting || mutation.isPending ? "#f5f5f5" : "transparent",
-                opacity: isSubmitting || mutation.isPending ? 0.6 : 1,
-                cursor: isSubmitting || mutation.isPending ? "not-allowed" : "pointer",
-              }}>
-                <input {...getInputProps()} />
-                <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
-              </div>
-              <Input
-                {...register("in_document_name", {
-                  required: "Se requiere el documento de pedido.",
-                })}
-                placeholder="Documento de Pedido"
-                type="text"
-                readOnly
-                variant="subtle"
-              />
-            </Field>
+          <DialogBody>
+            <Text mb={4}>Rellena los detalles para añadir un nuevo pedido.</Text>
+            <VStack gap={4}>
+              <Field
+                required
+                label="Documento de Pedido"
+                invalid={!!errors.in_document_name}
+                errorText={errors.in_document_name?.message}
+              >
+                <div {...getRootProps()} style={{
+                  border: "2px dashed #ccc",
+                  padding: "10px",
+                  backgroundColor: isSubmitting || mutation.isPending ? "#f5f5f5" : "transparent",
+                  opacity: isSubmitting || mutation.isPending ? 0.6 : 1,
+                  cursor: isSubmitting || mutation.isPending ? "not-allowed" : "pointer",
+                }}>
+                  <input {...getInputProps()} />
+                  <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
+                </div>
+                <Input
+                  {...register("in_document_name", {
+                    required: "Se requiere el documento de pedido.",
+                  })}
+                  placeholder="Documento de Pedido"
+                  type="text"
+                  readOnly
+                  variant="subtle"
+                />
+              </Field>
+            </VStack>
           </DialogBody>
-          <DialogFooter gap={3}>
+
+          <DialogFooter gap={2}>
+            {!(isSubmitting || mutation.isPending) && (
+              <DialogActionTrigger asChild>
+                <Button
+                  variant="subtle"
+                  colorPalette="gray"
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </Button>
+              </DialogActionTrigger>
+            )}
             <Button
-              colorPalette="green"
+              variant="solid"
               type="submit"
               loading={isSubmitting || mutation.isPending}
-              loadingText="Procesando...">
+              loadingText="Procesando..."
+            >
               Guardar
             </Button>
-            {!(isSubmitting || mutation.isPending) && (
-              <Button onClick={onClose}>Cancelar</Button>
-            )}
           </DialogFooter>
-        </DialogContent>
-      </DialogRoot>
-    </>
+        </form>
+        <DialogCloseTrigger />
+      </DialogContent>
+    </DialogRoot>
   )
 }
 

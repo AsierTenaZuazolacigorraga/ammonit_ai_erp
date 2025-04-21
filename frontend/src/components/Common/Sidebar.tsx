@@ -1,3 +1,11 @@
+import { Box, Flex, IconButton, Text } from "@chakra-ui/react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { FaBars } from "react-icons/fa"
+import { FiLogOut } from "react-icons/fi"
+
+import type { UserPublic } from "@/client"
+import useAuth from "@/hooks/useAuth"
 import {
   DrawerBackdrop,
   DrawerBody,
@@ -5,100 +13,85 @@ import {
   DrawerContent,
   DrawerRoot,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { Box, Flex, Image, Text, useDisclosure } from "@chakra-ui/react"
-import { useQueryClient } from "@tanstack/react-query"
-import { FiLogOut, FiMenu } from "react-icons/fi"
-
-import type { UserPublic } from "@/client"
-import useAuth from "@/hooks/useAuth"
-import { Button } from "../ui/button"
-import { NAVBAR_HEIGHT } from "./Navbar"
+} from "../ui/drawer"
 import SidebarItems from "./SidebarItems"
-import Logo from "/assets/images/ammonit_generic_logo.svg"
 
-export const SidebarMobile = () => {
+const Sidebar = () => {
   const queryClient = useQueryClient()
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
-  const { open, onClose, onToggle } = useDisclosure()
   const { logout } = useAuth()
-
-  const handleLogout = async () => {
-    logout()
-  }
+  const [open, setOpen] = useState(false)
 
   return (
     <>
       {/* Mobile */}
-      <DrawerRoot open={open} placement="start" onOpenChange={onToggle}>
+      <DrawerRoot
+        placement="start"
+        open={open}
+        onOpenChange={(e) => setOpen(e.open)}
+      >
         <DrawerBackdrop />
-        <DrawerTrigger asChild display={{ base: "flex", md: "none" }}>
-          <Button aria-label="Open Menu" variant="ghost" fontSize="20px" m={2}>
-            <FiMenu />
-          </Button>
+        <DrawerTrigger asChild>
+          <IconButton
+            variant="ghost"
+            color="inherit"
+            display={{ base: "flex", md: "none" }}
+            aria-label="Open Menu"
+            position="absolute"
+            zIndex="100"
+            m={4}
+          >
+            <FaBars />
+          </IconButton>
         </DrawerTrigger>
-        <DrawerContent maxW="250px" display={{ base: "flex", md: "none" }}>
+        <DrawerContent maxW="xs">
           <DrawerCloseTrigger />
-          <DrawerBody py={8}>
+          <DrawerBody>
             <Flex flexDir="column" justify="space-between">
               <Box>
-                <Image src={Logo} alt="logo" p={6} />
-                <SidebarItems onClose={onClose} />
+                <SidebarItems onClose={() => setOpen(false)} />
                 <Flex
                   as="button"
-                  onClick={handleLogout}
-                  p={2}
-                  colorPalette="red"
-                  fontWeight="bold"
+                  onClick={() => {
+                    logout()
+                  }}
                   alignItems="center"
+                  gap={4}
+                  px={4}
+                  py={2}
                 >
                   <FiLogOut />
-                  <Text ml={2}>Log out</Text>
+                  <Text>Log Out</Text>
                 </Flex>
               </Box>
               {currentUser?.email && (
-                <Text lineClamp={2} fontSize="sm" p={2}>
+                <Text fontSize="sm" p={2} truncate maxW="sm">
                   Logged in as: {currentUser.email}
                 </Text>
               )}
             </Flex>
           </DrawerBody>
+          <DrawerCloseTrigger />
         </DrawerContent>
       </DrawerRoot>
-    </>
-  )
-}
 
-export const SidebarDesktop = () => {
-  // const queryClient = useQueryClient()
-  // const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+      {/* Desktop */}
 
-  return (
-    <>
       <Box
-        p={3}
-        h="100vh"
-        position="sticky"
-        top="0"
         display={{ base: "none", md: "flex" }}
+        position="sticky"
+        bg="bg.subtle"
+        top={0}
+        minW="xs"
+        h="100vh"
+        p={4}
       >
-        <Flex
-          flexDir="column"
-          justify="space-between"
-          mt={NAVBAR_HEIGHT}
-          p={4}
-          borderRadius={12}
-        >
-          <Box>
-            <SidebarItems />
-          </Box>
-          {/* {currentUser?.email && (
-            <Text lineClamp={2} fontSize="sm" p={2} maxW="180px">
-              Logged in as: {currentUser.email}
-            </Text>
-          )} */}
-        </Flex>
+        <Box w="100%">
+          <SidebarItems />
+        </Box>
       </Box>
     </>
   )
 }
+
+export default Sidebar
