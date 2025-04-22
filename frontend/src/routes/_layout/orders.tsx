@@ -3,53 +3,48 @@ import {
     Heading,
     Link,
 } from "@chakra-ui/react"
-import { useQuery } from "@tanstack/react-query"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import {
+    type UseQueryOptions,
+} from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { OrdersService } from "@/client"
-import { DataTable, type Column } from "@/components/Common/DataTable"
+import { ApiError, OrderPublic, OrdersService } from "@/client"
+import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 import { OrderActionsMenu } from "@/components/Common/OrderActionsMenu"
 import AddOrder from "@/components/Orders/AddOrder"
 import PendingOrders from "@/components/Pending/PendingOrders"
 
 const ordersSearchSchema = z.object({
-    page: z.number().catch(1),
+    page: z.number().int().positive().catch(1),
 })
+type OrdersSearch = z.infer<typeof ordersSearchSchema>
 
 const PER_PAGE = 10
 
-function getOrdersQueryOptions({ page }: { page: number }) {
+const baseOrdersQueryOptionsFn = (
+    search: OrdersSearch
+): Omit<
+    UseQueryOptions<PaginatedData<OrderPublic>, ApiError, PaginatedData<OrderPublic>>,
+    "queryKey"
+> => {
     return {
         queryFn: () =>
-            OrdersService.readOrders({ skip: (page - 1) * PER_PAGE, limit: PER_PAGE }),
-        queryKey: ["orders", { page }],
+            OrdersService.readOrders({
+                skip: (search.page - 1) * PER_PAGE,
+                limit: PER_PAGE,
+            }),
     }
 }
 
 export const Route = createFileRoute("/_layout/orders")({
     component: Orders,
-    validateSearch: (search) => ordersSearchSchema.parse(search),
+    validateSearch: (search: Record<string, unknown>): OrdersSearch =>
+        ordersSearchSchema.parse(search),
 })
 
-function OrdersTable() {
-    const navigate = useNavigate({ from: Route.fullPath })
-    const { page } = Route.useSearch()
-
-    const { data, isLoading, isPlaceholderData } = useQuery({
-        ...getOrdersQueryOptions({ page }),
-        placeholderData: (prevData) => prevData,
-    })
-
-    const setPage = (page: number) =>
-        navigate({
-            search: (prev: { [key: string]: string }) => ({ ...prev, page }),
-        })
-
-    const orders = data?.data.slice(0, PER_PAGE) ?? []
-    const count = data?.count ?? 0
-
-    const columns: Column<typeof orders[0]>[] = [
+function Orders() {
+    const columns: Column<OrderPublic>[] = [
         {
             header: "Fecha",
             accessor: (order) => order.date_local,
@@ -87,29 +82,22 @@ function OrdersTable() {
     ]
 
     return (
-        <DataTable
-            data={orders}
-            columns={columns}
-            isLoading={isLoading}
-            isPlaceholderData={isPlaceholderData}
-            count={count}
-            pageSize={PER_PAGE}
-            onPageChange={setPage}
-            emptyStateTitle="No tienes ningún pedido"
-            emptyStateDescription="Agrega un nuevo pedido para empezar, bien por email o bien por el botón para añadir un pedido desde un archivo .pdf"
-            LoadingComponent={PendingOrders}
-        />
-    )
-}
-
-function Orders() {
-    return (
         <Container maxW="full">
             <Heading size="lg" pt={12}>
                 Gestión de Pedidos
             </Heading>
             <AddOrder />
-            <OrdersTable />
+            <DataTable
+                queryKeyBase="orders"
+                baseQueryOptionsFn={baseOrdersQueryOptionsFn}
+                searchSchema={ordersSearchSchema}
+                route={Route}
+                columns={columns}
+                LoadingComponent={PendingOrders}
+                emptyStateTitle="No tienes ningún pedido"
+                emptyStateDescription="Agrega un nuevo pedido para empezar, bien por email o bien por el botón para añadir un pedido desde un archivo .pdf"
+                pageSize={PER_PAGE}
+            />
         </Container>
     )
 }
