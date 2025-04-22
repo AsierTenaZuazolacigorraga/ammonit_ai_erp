@@ -10,7 +10,6 @@ import { ApiError, UsersService, type UserPublic } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
-import PendingUsers from "@/components/Pending/PendingUsers"
 
 // Schema
 const usersSearchSchema = z.object({
@@ -100,7 +99,6 @@ function Admin() {
         searchSchema={usersSearchSchema}
         route={Route}
         columns={columns}
-        LoadingComponent={PendingUsers}
         emptyStateTitle="No hay usuarios"
         emptyStateDescription="No hay usuarios registrados en el sistema"
         pageSize={PER_PAGE}

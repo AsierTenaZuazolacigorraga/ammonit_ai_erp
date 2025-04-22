@@ -13,7 +13,6 @@ import { ApiError, OrderPublic, OrdersService } from "@/client"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 import { OrderActionsMenu } from "@/components/Common/OrderActionsMenu"
 import AddOrder from "@/components/Orders/AddOrder"
-import PendingOrders from "@/components/Pending/PendingOrders"
 
 const ordersSearchSchema = z.object({
     page: z.number().int().positive().catch(1),
@@ -47,7 +46,9 @@ function Orders() {
     const columns: Column<OrderPublic>[] = [
         {
             header: "Fecha",
-            accessor: (order) => order.date_local,
+            accessor: (order) => order.date_local
+                ? order.date_local.replace("T", " ").split(".")[0]
+                : "N/A",
         },
         {
             header: "Documento de Pedido",
@@ -93,7 +94,6 @@ function Orders() {
                 searchSchema={ordersSearchSchema}
                 route={Route}
                 columns={columns}
-                LoadingComponent={PendingOrders}
                 emptyStateTitle="No tienes ningún pedido"
                 emptyStateDescription="Agrega un nuevo pedido para empezar, bien por email o bien por el botón para añadir un pedido desde un archivo .pdf"
                 pageSize={PER_PAGE}

@@ -8,11 +8,10 @@ import {
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { ApiError, ClientPublic, ClientsService, PaginatedData } from "@/client"
+import { ApiError, ClientPublic, ClientsService } from "@/client"
 import AddClient from "@/components/Clients/AddClient"
 import { ClientActionsMenu } from "@/components/Common/ClientActionsMenu"
-import { DataTable, type Column } from "@/components/Common/DataTable"
-import PendingClients from "@/components/Pending/PendingClients"
+import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 
 const clientsSearchSchema = z.object({
     page: z.number().int().positive().catch(1),
@@ -78,7 +77,6 @@ function Clients() {
                 searchSchema={clientsSearchSchema}
                 route={Route}
                 columns={columns}
-                LoadingComponent={PendingClients}
                 emptyStateTitle="No tienes ningún cliente"
                 emptyStateDescription="Agrega un nuevo cliente para empezar"
                 pageSize={PER_PAGE}
