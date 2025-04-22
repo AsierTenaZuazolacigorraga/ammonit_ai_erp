@@ -1,18 +1,13 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { Badge, Container, Heading } from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { type UserPublic, UsersService } from "@/client"
+import { UsersService, type UserPublic } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
+import { DataTable, type Column } from "@/components/Common/DataTable"
 import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
 import PendingUsers from "@/components/Pending/PendingUsers"
-import {
-  PaginationItems,
-  PaginationNextTrigger,
-  PaginationPrevTrigger,
-  PaginationRoot,
-} from "@/components/ui/pagination.tsx"
 
 const usersSearchSchema = z.object({
   page: z.number().catch(1),
@@ -52,64 +47,58 @@ function UsersTable() {
   const users = data?.data.slice(0, PER_PAGE) ?? []
   const count = data?.count ?? 0
 
-  if (isLoading) {
-    return <PendingUsers />
-  }
+  const columns: Column<typeof users[0]>[] = [
+    {
+      header: "Nombre",
+      accessor: (user) => (
+        <>
+          <span style={{ color: !user.full_name ? "gray" : "inherit" }}>
+            {user.full_name || "N/A"}
+          </span>
+          {currentUser?.id === user.id && (
+            <Badge ml="1" colorScheme="teal">
+              Tú
+            </Badge>
+          )}
+        </>
+      ),
+    },
+    {
+      header: "Email",
+      accessor: (user) => user.email,
+    },
+    {
+      header: "Rol",
+      accessor: (user) => user.is_superuser ? "Superuser" : "Usuario",
+    },
+    {
+      header: "Estado",
+      accessor: (user) => user.is_active ? "Activo" : "Inactivo",
+    },
+    {
+      header: "Acciones",
+      accessor: (user) => (
+        <UserActionsMenu
+          user={user}
+          disabled={currentUser?.id === user.id}
+        />
+      ),
+    },
+  ]
 
   return (
-    <>
-      <Table.Root size={{ base: "sm", md: "md" }}>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader w="sm">Nombre</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Email</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Rol</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Estado</Table.ColumnHeader>
-            <Table.ColumnHeader w="sm">Acciones</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {users?.map((user) => (
-            <Table.Row key={user.id} opacity={isPlaceholderData ? 0.5 : 1}>
-              <Table.Cell color={!user.full_name ? "gray" : "inherit"}>
-                {user.full_name || "N/A"}
-                {currentUser?.id === user.id && (
-                  <Badge ml="1" colorScheme="teal">
-                    Tú
-                  </Badge>
-                )}
-              </Table.Cell>
-              <Table.Cell truncate maxW="sm">
-                {user.email}
-              </Table.Cell>
-              <Table.Cell>
-                {user.is_superuser ? "Superuser" : "Usuario"}
-              </Table.Cell>
-              <Table.Cell>{user.is_active ? "Activo" : "Inactivo"}</Table.Cell>
-              <Table.Cell>
-                <UserActionsMenu
-                  user={user}
-                  disabled={currentUser?.id === user.id}
-                />
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-      <Flex justifyContent="flex-end" mt={4}>
-        <PaginationRoot
-          count={count}
-          pageSize={PER_PAGE}
-          onPageChange={({ page }) => setPage(page)}
-        >
-          <Flex>
-            <PaginationPrevTrigger />
-            <PaginationItems />
-            <PaginationNextTrigger />
-          </Flex>
-        </PaginationRoot>
-      </Flex>
-    </>
+    <DataTable
+      data={users}
+      columns={columns}
+      isLoading={isLoading}
+      isPlaceholderData={isPlaceholderData}
+      count={count}
+      pageSize={PER_PAGE}
+      onPageChange={setPage}
+      emptyStateTitle="No hay usuarios"
+      emptyStateDescription="No hay usuarios registrados en el sistema"
+      LoadingComponent={PendingUsers}
+    />
   )
 }
 

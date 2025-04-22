@@ -11,20 +11,18 @@ import {
   DialogTitle,
   Flex,
   Input,
-  Text,
-  VStack,
+  VStack
 } from "@chakra-ui/react"
 import { useState } from "react"
 import { FaPlus } from "react-icons/fa"
 import { Checkbox } from "../ui/checkbox"
 import {
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTrigger,
+  DialogTrigger
 } from "../ui/dialog"
 import { Field } from "../ui/field"
 
@@ -95,9 +93,9 @@ const AddUser = () => {
             <DialogTitle>Agregar Usuario</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <Text mb={4}>
+            {/* <Text mb={4}>
               Rellena el formulario para agregar un nuevo usuario al sistema.
-            </Text>
+            </Text> */}
             <VStack gap={4}>
               <Field
                 required
@@ -221,7 +219,7 @@ const AddUser = () => {
             </Button>
           </DialogFooter>
         </form>
-        <DialogCloseTrigger />
+        {/* <DialogCloseTrigger /> */}
       </DialogContent>
     </DialogRoot>
   )

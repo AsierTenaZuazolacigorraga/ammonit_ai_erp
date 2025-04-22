@@ -14,21 +14,6 @@
                 "PYDEVD_CONTAINER_RANDOM_ACCESS_MAX_ITEMS": "15000",
                 "PYDEVD_WARN_EVALUATION_TIMEOUT": "30",
                 "PYTHONPATH": "${workspaceFolder}"
-            }
-        },
-        {
-            "name": "Python With Args",
-            "type": "debugpy",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "envFile": "${workspaceFolder}/.env",
-            "env": {
-                "PYDEVD_CONTAINER_RANDOM_ACCESS_MAX_ITEMS": "15000",
-                "PYDEVD_WARN_EVALUATION_TIMEOUT": "30",
-                "PYTHONPATH": "${workspaceFolder}"
             },
             "args": [
                 "--db_path",

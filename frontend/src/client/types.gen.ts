@@ -11,11 +11,13 @@ export type Body_login_login_access_token = {
 
 export type ClientCreate = {
     name: string;
+    clasifier: string;
     structure: string;
 };
 
 export type ClientPublic = {
     name: string;
+    clasifier: string;
     structure: string;
     id: string;
     owner_id: string;
@@ -24,6 +26,12 @@ export type ClientPublic = {
 export type ClientsPublic = {
     data: Array<ClientPublic>;
     count: number;
+};
+
+export type ClientUpdate = {
+    name: string;
+    clasifier: string;
+    structure: string;
 };
 
 export type HTTPValidationError = {
@@ -122,6 +130,19 @@ export type ClientsCreateClientData = {
 };
 
 export type ClientsCreateClientResponse = (ClientPublic);
+
+export type ClientsDeleteClientData = {
+    id: string;
+};
+
+export type ClientsDeleteClientResponse = (Message);
+
+export type ClientsUpdateClientData = {
+    id: string;
+    requestBody: ClientUpdate;
+};
+
+export type ClientsUpdateClientResponse = (ClientPublic);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;

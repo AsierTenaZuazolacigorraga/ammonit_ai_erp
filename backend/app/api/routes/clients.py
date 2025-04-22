@@ -2,8 +2,15 @@ import uuid
 from typing import Any
 
 from app.api.deps import ClientServiceDep, CurrentUser
-from app.models import Client, ClientCreate, ClientPublic, ClientsPublic
-from fastapi import APIRouter, HTTPException
+from app.models import (
+    Client,
+    ClientCreate,
+    ClientPublic,
+    ClientsPublic,
+    ClientUpdate,
+    Message,
+)
+from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -35,4 +42,47 @@ def create_client(
     Create new client.
     """
     client = client_service.create(client_create=client_in, owner_id=current_user.id)
+    return client
+
+
+@router.delete("/{id}/")
+def delete_client(
+    client_service: ClientServiceDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+) -> Message:
+    """
+    Delete an client.
+    """
+    client = client_service.repository.get_by_id(id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    if not current_user.is_superuser and (client.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+    client_service.repository.delete(id)
+    return Message(message="Cliente eliminado correctamente")
+
+
+@router.patch(
+    "/{id}/",
+    response_model=ClientPublic,
+)
+def update_client(
+    *,
+    client_service: ClientServiceDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+    client_in: ClientUpdate,
+) -> Any:
+    """
+    Update a client.
+    """
+
+    client = client_service.repository.get_by_id(id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    if not current_user.is_superuser and (client.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+
+    client = client_service.update(db_client=client, client_update=client_in)
     return client

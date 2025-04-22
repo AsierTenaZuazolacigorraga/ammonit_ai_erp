@@ -1,6 +1,6 @@
 import uuid
 
-from app.models import Client, ClientCreate
+from app.models import Client, ClientCreate, ClientUpdate
 from app.repositories.clients import ClientRepository
 
 
@@ -24,3 +24,7 @@ class ClientService:
 
     def count_by_owner_id(self, owner_id: uuid.UUID) -> int:
         return self.repository.count_by_owner_id(owner_id=owner_id)
+
+    def update(self, *, db_client: Client, client_update: ClientUpdate) -> Client:
+        db_obj = db_client.model_copy(update=client_update.model_dump())
+        return self.repository.update(db_obj, update=client_update)

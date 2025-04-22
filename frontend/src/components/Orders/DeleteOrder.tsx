@@ -8,12 +8,11 @@ import { OrdersService } from "@/client"
 import {
   DialogActionTrigger,
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import useCustomToast from "@/hooks/useCustomToast"
 
@@ -65,7 +64,7 @@ const DeleteOrder = ({ id }: { id: string }) => {
 
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogCloseTrigger />
+          {/* <DialogCloseTrigger /> */}
           <DialogHeader>
             <DialogTitle>Eliminar Pedido</DialogTitle>
           </DialogHeader>

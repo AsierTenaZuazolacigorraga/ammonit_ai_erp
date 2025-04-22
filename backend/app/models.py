@@ -159,16 +159,17 @@ class EmailsPublic(SQLModel):
 ##########################################################################################
 
 
-class ClientsBase(SQLModel):
+class ClientBase(SQLModel):
     name: str = Field(nullable=False)
+    clasifier: str = Field(nullable=False)
     structure: str = Field(nullable=False)
 
 
-class ClientCreate(ClientsBase):
+class ClientCreate(ClientBase):
     pass
 
 
-class Client(Entity, ClientsBase, table=True):
+class Client(Entity, ClientBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -176,7 +177,7 @@ class Client(Entity, ClientsBase, table=True):
     owner: User | None = Relationship(back_populates="clients")
 
 
-class ClientPublic(ClientsBase):
+class ClientPublic(ClientBase):
     id: uuid.UUID
     owner_id: uuid.UUID
 
@@ -184,6 +185,10 @@ class ClientPublic(ClientsBase):
 class ClientsPublic(SQLModel):
     data: list[ClientPublic]
     count: int
+
+
+class ClientUpdate(ClientBase):
+    pass
 
 
 ##########################################################################################

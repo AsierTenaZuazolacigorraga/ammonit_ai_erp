@@ -21,11 +21,10 @@ import { emailPattern, handleError } from "@/utils"
 import { Checkbox } from "../ui/checkbox"
 import {
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "../ui/dialog"
 import { Field } from "../ui/field"
 
@@ -210,7 +209,7 @@ const EditUser = ({ user }: EditUserProps) => {
               Guardar
             </Button>
           </DialogFooter>
-          <DialogCloseTrigger />
+          {/* <DialogCloseTrigger /> */}
         </form>
       </DialogContent>
     </DialogRoot>

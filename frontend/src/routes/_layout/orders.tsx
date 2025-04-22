@@ -1,27 +1,17 @@
 import {
     Container,
-    EmptyState,
-    Flex,
     Heading,
     Link,
-    Table,
-    VStack
 } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { FiSearch } from "react-icons/fi"
 import { z } from "zod"
 
 import { OrdersService } from "@/client"
+import { DataTable, type Column } from "@/components/Common/DataTable"
 import { OrderActionsMenu } from "@/components/Common/OrderActionsMenu"
 import AddOrder from "@/components/Orders/AddOrder"
 import PendingOrders from "@/components/Pending/PendingOrders"
-import {
-    PaginationItems,
-    PaginationNextTrigger,
-    PaginationPrevTrigger,
-    PaginationRoot,
-} from "@/components/ui/pagination.tsx"
 
 const ordersSearchSchema = z.object({
     page: z.number().catch(1),
@@ -59,87 +49,56 @@ function OrdersTable() {
     const orders = data?.data.slice(0, PER_PAGE) ?? []
     const count = data?.count ?? 0
 
-    if (isLoading) {
-        return <PendingOrders />
-    }
-
-    if (orders.length === 0) {
-        return (
-            <EmptyState.Root>
-                <EmptyState.Content>
-                    <EmptyState.Indicator>
-                        <FiSearch />
-                    </EmptyState.Indicator>
-                    <VStack textAlign="center">
-                        <EmptyState.Title>No tienes ningún pedido</EmptyState.Title>
-                        <EmptyState.Description>
-                            Agrega un nuevo pedido para empezar, bien por email o bien por el botón
-                            para añadir un pedido desde un archivo .pdf
-                        </EmptyState.Description>
-                    </VStack>
-                </EmptyState.Content>
-            </EmptyState.Root>
-        )
-    }
+    const columns: Column<typeof orders[0]>[] = [
+        {
+            header: "Fecha",
+            accessor: (order) => order.date_local,
+        },
+        {
+            header: "Documento de Pedido",
+            accessor: (order) => (
+                <Link
+                    href={`data:application/pdf;base64,${order.in_document}`}
+                    download={order.in_document_name}
+                    color="blue.500"
+                    textDecoration="underline"
+                >
+                    {order.in_document_name}
+                </Link>
+            ),
+        },
+        {
+            header: "Documento Procesado",
+            accessor: (order) => (
+                <Link
+                    href={`data:application/pdf;base64,${order.out_document}`}
+                    download={order.out_document_name}
+                    color="blue.500"
+                    textDecoration="underline"
+                >
+                    {order.out_document_name}
+                </Link>
+            ),
+        },
+        {
+            header: "Acciones",
+            accessor: (order) => <OrderActionsMenu order={order} />,
+        },
+    ]
 
     return (
-        <>
-            <Table.Root size={{ base: "sm", md: "md" }}>
-                <Table.Header>
-                    <Table.Row>
-                        <Table.ColumnHeader w="sm">Fecha</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Documento de Pedido</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Documento Procesado</Table.ColumnHeader>
-                        <Table.ColumnHeader w="sm">Acciones</Table.ColumnHeader>
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {orders?.map((order) => (
-                        <Table.Row key={order.id} opacity={isPlaceholderData ? 0.5 : 1}>
-                            <Table.Cell>
-                                {order.date_local}
-                            </Table.Cell>
-                            <Table.Cell truncate maxWidth="sm">
-                                <Link
-                                    href={`data:application/pdf;base64,${order.in_document}`}
-                                    download={order.in_document_name}
-                                    color="blue.500"
-                                    textDecoration="underline"
-                                >
-                                    {order.in_document_name}
-                                </Link>
-                            </Table.Cell>
-                            <Table.Cell truncate maxWidth="sm">
-                                <Link
-                                    href={`data:application/pdf;base64,${order.out_document}`}
-                                    download={order.out_document_name}
-                                    color="blue.500"
-                                    textDecoration="underline"
-                                >
-                                    {order.out_document_name}
-                                </Link>
-                            </Table.Cell>
-                            <Table.Cell>
-                                <OrderActionsMenu order={order} />
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
-                </Table.Body>
-            </Table.Root>
-            <Flex justifyContent="flex-end" mt={4}>
-                <PaginationRoot
-                    count={count}
-                    pageSize={PER_PAGE}
-                    onPageChange={({ page }) => setPage(page)}
-                >
-                    <Flex>
-                        <PaginationPrevTrigger />
-                        <PaginationItems />
-                        <PaginationNextTrigger />
-                    </Flex>
-                </PaginationRoot>
-            </Flex>
-        </>
+        <DataTable
+            data={orders}
+            columns={columns}
+            isLoading={isLoading}
+            isPlaceholderData={isPlaceholderData}
+            count={count}
+            pageSize={PER_PAGE}
+            onPageChange={setPage}
+            emptyStateTitle="No tienes ningún pedido"
+            emptyStateDescription="Agrega un nuevo pedido para empezar, bien por email o bien por el botón para añadir un pedido desde un archivo .pdf"
+            LoadingComponent={PendingOrders}
+        />
     )
 }
 

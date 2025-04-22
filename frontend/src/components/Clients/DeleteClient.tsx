@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { FiTrash2 } from "react-icons/fi"
 
-import { UsersService } from "@/client"
+import { ClientsService } from "@/client"
 import {
     DialogActionTrigger,
     DialogBody,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import useCustomToast from "@/hooks/useCustomToast"
 
-const DeleteUser = ({ id }: { id: string }) => {
+const DeleteClient = ({ id }: { id: string }) => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -25,18 +25,18 @@ const DeleteUser = ({ id }: { id: string }) => {
         formState: { isSubmitting },
     } = useForm()
 
-    const deleteUser = async (id: string) => {
-        await UsersService.deleteUser({ id })
+    const deleteClient = async (id: string) => {
+        await ClientsService.deleteClient({ id: id })
     }
 
     const mutation = useMutation({
-        mutationFn: deleteUser,
+        mutationFn: deleteClient,
         onSuccess: () => {
-            showSuccessToast("El usuario ha sido eliminado correctamente")
+            showSuccessToast("El cliente fue eliminado correctamente")
             setIsOpen(false)
         },
         onError: () => {
-            showErrorToast("Ha ocurrido un error al eliminar el usuario")
+            showErrorToast("Ocurrió un error al eliminar el cliente")
         },
         onSettled: () => {
             queryClient.invalidateQueries()
@@ -58,22 +58,17 @@ const DeleteUser = ({ id }: { id: string }) => {
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" colorPalette="red">
                     <FiTrash2 fontSize="16px" />
-                    Eliminar Usuario
+                    Eliminar Cliente
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogHeader>
-                        <DialogTitle>Eliminar Usuario</DialogTitle>
+                        <DialogTitle>Eliminar Cliente</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
-                        <Text mb={4}>
-                            Todos los elementos asociados con este usuario también serán{" "}
-                            <strong>eliminados permanentemente.</strong> ¿Estás seguro? No podrás
-                            deshacer esta acción.
-                        </Text>
+                        <Text>¿Estás seguro de que quieres eliminar este cliente?</Text>
                     </DialogBody>
-
                     <DialogFooter gap={2}>
                         <DialogActionTrigger asChild>
                             <Button
@@ -100,4 +95,4 @@ const DeleteUser = ({ id }: { id: string }) => {
     )
 }
 
-export default DeleteUser
+export default DeleteClient 

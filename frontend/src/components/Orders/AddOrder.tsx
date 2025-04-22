@@ -6,8 +6,7 @@ import {
   DialogActionTrigger,
   DialogTitle,
   Input,
-  Text,
-  VStack,
+  VStack
 } from "@chakra-ui/react"
 import { useState } from "react"
 import { FaPlus } from "react-icons/fa"
@@ -19,12 +18,11 @@ import { handleError } from "@/utils"
 import { useDropzone } from "react-dropzone"
 import {
   DialogBody,
-  DialogCloseTrigger,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTrigger,
+  DialogTrigger
 } from "../ui/dialog"
 import { Field } from "../ui/field"
 
@@ -121,7 +119,7 @@ const AddOrder = () => {
             <DialogTitle>Añadir Pedido</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <Text mb={4}>Rellena los detalles para añadir un nuevo pedido.</Text>
+            {/* <Text mb={4}>Rellena los detalles para añadir un nuevo pedido.</Text> */}
             <VStack gap={4}>
               <Field
                 required
@@ -174,7 +172,7 @@ const AddOrder = () => {
             </Button>
           </DialogFooter>
         </form>
-        <DialogCloseTrigger />
+        {/* <DialogCloseTrigger /> */}
       </DialogContent>
     </DialogRoot>
   )
