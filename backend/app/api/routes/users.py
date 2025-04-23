@@ -1,8 +1,6 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
-
 from app.api.deps import (
     CurrentUser,
     UserServiceDep,
@@ -23,6 +21,7 @@ from app.models import (
     UserUpdateMe,
 )
 from app.utils import generate_new_account_email, send_email
+from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter(prefix="/users", tags=["users"])
 

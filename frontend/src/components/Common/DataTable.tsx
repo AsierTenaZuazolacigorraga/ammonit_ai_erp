@@ -27,7 +27,6 @@ const defaultSearchSchema = z.object({
     page: z.number().int().positive().catch(1),
 })
 
-type DefaultSearch = z.infer<typeof defaultSearchSchema>;
 
 // Base query options function type
 type BaseQueryOptionsFn<T, TSearch> = (
@@ -100,13 +99,13 @@ export function DataTable<T, TSearch extends { page: number }>({
     if (isLoading && !isPlaceholderData) {
         const skeletonRowCount = pageSize / 2; // Show ~half page of skeletons
         return (
-            <Table.Root size={{ base: "sm", md: "md" }}>
+            <Table.Root size={{ base: "sm", md: "md" }} tableLayout="auto">
                 <Table.Header>
                     <Table.Row>
                         {columns.map((column, index) => (
                             <Table.ColumnHeader
                                 key={index}
-                                w={column.width || "sm"}
+                                w={column.width || "auto"}
                                 // Add border, except for the last header
                                 borderRightWidth={index === columns.length - 1 ? 0 : "1px"}
                                 borderRightColor="gray.200"
@@ -125,6 +124,7 @@ export function DataTable<T, TSearch extends { page: number }>({
                             {columns.map((_, colIndex) => (
                                 <Table.Cell
                                     key={colIndex}
+                                    w={columns[colIndex].width || "auto"}
                                     // Add border, except for the last cell
                                     borderRightWidth={colIndex === columns.length - 1 ? 0 : "1px"}
                                     borderRightColor="gray.200"
@@ -161,13 +161,13 @@ export function DataTable<T, TSearch extends { page: number }>({
     // --- Render actual data table ---
     return (
         <>
-            <Table.Root size={{ base: "sm", md: "md" }}>
+            <Table.Root size={{ base: "sm", md: "md" }} tableLayout="auto">
                 <Table.Header>
                     <Table.Row>
                         {columns.map((column, index) => (
                             <Table.ColumnHeader
                                 key={index}
-                                w={column.width || "sm"}
+                                w={column.width || "auto"}
                                 // Add border, except for the last header
                                 borderRightWidth={index === columns.length - 1 ? 0 : "1px"}
                                 borderRightColor="gray.200"
@@ -188,6 +188,7 @@ export function DataTable<T, TSearch extends { page: number }>({
                             {columns.map((column, colIndex) => (
                                 <Table.Cell
                                     key={colIndex}
+                                    w={columns[colIndex].width || "auto"}
                                     // Add border, except for the last cell
                                     borderRightWidth={colIndex === columns.length - 1 ? 0 : "1px"}
                                     borderRightColor="gray.200"

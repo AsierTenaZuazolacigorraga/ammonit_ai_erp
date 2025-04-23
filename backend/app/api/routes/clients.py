@@ -21,7 +21,7 @@ def read_clients(
     current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
-) -> Any:
+) -> ClientsPublic:
     """
     Retrieve clients.
     """
@@ -29,7 +29,9 @@ def read_clients(
     clients = client_service.repository.get_all_by_owner_id(
         owner_id=current_user.id, skip=skip, limit=limit
     )
-    return ClientsPublic(data=clients, count=count)
+    # Convert Client objects to ClientPublic objects
+    client_publics = [ClientPublic.model_validate(client) for client in clients]
+    return ClientsPublic(data=client_publics, count=count)
 
 
 @router.post("/", response_model=ClientPublic)
@@ -37,12 +39,12 @@ def create_client(
     client_service: ClientServiceDep,
     current_user: CurrentUser,
     client_in: ClientCreate,
-) -> Any:
+) -> ClientPublic:
     """
     Create new client.
     """
     client = client_service.create(client_create=client_in, owner_id=current_user.id)
-    return client
+    return ClientPublic.model_validate(client)
 
 
 @router.delete("/{id}/")
@@ -73,7 +75,7 @@ def update_client(
     current_user: CurrentUser,
     id: uuid.UUID,
     client_in: ClientUpdate,
-) -> Any:
+) -> ClientPublic:
     """
     Update a client.
     """
@@ -85,4 +87,4 @@ def update_client(
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
 
     client = client_service.update(db_client=client, client_update=client_in)
-    return client
+    return ClientPublic.model_validate(client)

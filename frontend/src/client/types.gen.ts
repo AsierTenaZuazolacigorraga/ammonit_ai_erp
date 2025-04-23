@@ -9,6 +9,10 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type Body_orders_create_order = {
+    base_document: (Blob | File);
+};
+
 export type ClientCreate = {
     name: string;
     clasifier: string;
@@ -42,23 +46,13 @@ export type Message = {
     message: string;
 };
 
-export type OrderCreate = {
-    date_local: string;
-    date_utc: string;
-    in_document?: ((Blob | File) | null);
-    in_document_name?: (string | null);
-    out_document?: ((Blob | File) | null);
-    out_document_name?: (string | null);
-    in_document_base64?: (string | null);
-};
-
 export type OrderPublic = {
-    date_local: string;
-    date_utc: string;
-    in_document?: (string | null);
-    in_document_name?: (string | null);
-    out_document?: (string | null);
-    out_document_name?: (string | null);
+    base_document?: (string | null);
+    base_document_name?: (string | null);
+    date_processed?: (string | null);
+    date_approved?: (string | null);
+    is_approved?: (boolean | null);
+    content_processed?: (string | null);
     id: string;
     owner_id: string;
 };
@@ -66,6 +60,15 @@ export type OrderPublic = {
 export type OrdersPublic = {
     data: Array<OrderPublic>;
     count: number;
+};
+
+export type OrderUpdate = {
+    base_document?: ((Blob | File) | null);
+    base_document_name?: (string | null);
+    date_processed?: (string | null);
+    date_approved?: (string | null);
+    is_approved?: (boolean | null);
+    content_processed?: (string | null);
 };
 
 export type Token = {
@@ -158,7 +161,7 @@ export type OrdersReadOrdersData = {
 export type OrdersReadOrdersResponse = (OrdersPublic);
 
 export type OrdersCreateOrderData = {
-    requestBody: OrderCreate;
+    formData: Body_orders_create_order;
 };
 
 export type OrdersCreateOrderResponse = (OrderPublic);
@@ -174,6 +177,13 @@ export type OrdersDeleteOrderData = {
 };
 
 export type OrdersDeleteOrderResponse = (Message);
+
+export type OrdersUpdateOrderData = {
+    id: string;
+    requestBody: OrderUpdate;
+};
+
+export type OrdersUpdateOrderResponse = (OrderPublic);
 
 export type UsersReadUsersData = {
     limit?: number;

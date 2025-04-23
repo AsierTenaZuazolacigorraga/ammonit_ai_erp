@@ -95,7 +95,7 @@ const UserInformation = () => {
                 truncate
                 maxW="sm"
               >
-                {currentUser?.full_name || "N/A"}
+                {currentUser?.full_name || "-"}
               </Text>
             )}
           </Field>

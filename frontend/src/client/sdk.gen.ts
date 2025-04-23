@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersUpdateOrderData, OrdersUpdateOrderResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ClientsService {
     /**
@@ -145,9 +145,9 @@ export class OrdersService {
     
     /**
      * Create Order
-     * Create new order.
+     * Create an order.
      * @param data The data for the request.
-     * @param data.requestBody
+     * @param data.formData
      * @returns OrderPublic Successful Response
      * @throws ApiError
      */
@@ -155,8 +155,8 @@ export class OrdersService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/orders/',
-            body: data.requestBody,
-            mediaType: 'application/json',
+            formData: data.formData,
+            mediaType: 'multipart/form-data',
             errors: {
                 422: 'Validation Error'
             }
@@ -199,6 +199,30 @@ export class OrdersService {
             path: {
                 id: data.id
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Order
+     * Update an order.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns OrderPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateOrder(data: OrdersUpdateOrderData): CancelablePromise<OrdersUpdateOrderResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/orders/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }

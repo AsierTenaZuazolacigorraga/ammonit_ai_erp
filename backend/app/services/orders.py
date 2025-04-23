@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import io
 import json
@@ -5,12 +6,13 @@ import os
 import pprint
 import tempfile
 import uuid
+from datetime import datetime, timezone
 from io import BytesIO, StringIO
 from typing import List, Union
 
 import pandas as pd
 import PyPDF2
-from app.models import Client, Order, OrderCreate
+from app.models import Client, Order, OrderCreate, OrderUpdate
 from app.repositories.orders import OrderRepository
 from app.services.clients import ClientService
 from dotenv import load_dotenv
@@ -23,12 +25,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 
-def in_name_2_out_name(name: str) -> str:
-    name, _ = name.rsplit(".", 1)
-    return f"{name}_ammonit_output.csv"
-
-
-def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
+async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
     # Preprocess PDF to remove irrelevant pages
     filtered_pdf_binary = _preprocess_pdf(pdf_binary)
 
@@ -57,7 +54,7 @@ def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
             invalidate_cache=True,
         )
 
-        documents = parser.load_data(f.name)
+        documents = await parser.aload_data(f.name)
         md = ""
         for document in documents:
             md = md + document.text
@@ -105,7 +102,7 @@ def _preprocess_pdf(pdf_binary: bytes) -> bytes:
 
 def parse_md_2_order(
     md: str, ai_client: OpenAI, groq_client: Groq, clients: list[Client]
-) -> dict:
+) -> tuple[dict, Client]:
 
     # Extract client
     completion = groq_client.chat.completions.create(
@@ -153,7 +150,7 @@ If you cannot identify the client, respond with "unknown":
     if response.output_text is None:
         raise ValueError("Failed to parse the order information from the markdown.")
 
-    return json.loads(response.output_text)
+    return json.loads(response.output_text), client
 
 
 class OrderService:
@@ -169,28 +166,23 @@ class OrderService:
         self.ai_client = ai_client
         self.groq_client = groq_client
 
-    def create(self, *, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
-        db_obj = self.process(order_create, owner_id)
+    async def create(self, *, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
+        db_obj = await self.process(order_create, owner_id)
         return self.repository.create(db_obj)
 
-    def process(self, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
+    async def process(self, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
         db_obj = Order.model_validate(order_create, update={"owner_id": owner_id})
 
-        # Process order name
-        if db_obj.in_document_name is None:
-            raise ValueError("Input document name cannot be None")
-        db_obj.out_document_name = in_name_2_out_name(db_obj.in_document_name)
-
         # Process parsing
-        if db_obj.in_document is None:
-            raise ValueError("Input document cannot be None")
-        md = parse_pdf_binary_2_md(db_obj.in_document)
+        if db_obj.base_document is None:
+            raise ValueError("Base document cannot be None")
+        md = await parse_pdf_binary_2_md(db_obj.base_document)
 
         # Get all possible clients
         clients = self.clients_service.get_all_by_owner_id(owner_id=owner_id)
 
         # Use the new parse_md_2_order function with ai_client
-        order = parse_md_2_order(md, self.ai_client, self.groq_client, clients)
+        order, client = parse_md_2_order(md, self.ai_client, self.groq_client, clients)
 
         # Convert into a DataFrame
         data = []
@@ -207,9 +199,18 @@ class OrderService:
             )
         df = pd.DataFrame(data)
 
-        # Export the DataFrame to CSV in binary format
-        csv_buffer = StringIO()
-        df.to_csv(csv_buffer, sep=";", index=False)
-        db_obj.out_document = csv_buffer.getvalue().encode("utf-8")
+        # Add values to db_obj
+        db_obj.content_processed = df.to_csv(sep=";", index=False)
+        db_obj.date_processed = datetime.now(timezone.utc)
+        if True:
+            db_obj.date_approved = None
+            db_obj.is_approved = None
+        else:
+            db_obj.date_approved = datetime.now(timezone.utc)
+            db_obj.is_approved = True
 
         return db_obj
+
+    def update(self, *, db_order: Order, order_update: OrderUpdate) -> Order:
+        db_obj = db_order.model_copy(update=order_update.model_dump())
+        return self.repository.update(db_obj, update=order_update)

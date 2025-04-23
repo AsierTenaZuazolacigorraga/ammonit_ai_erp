@@ -1,7 +1,7 @@
 import {
     Container,
     Heading,
-    Link,
+    HStack, Link
 } from "@chakra-ui/react"
 import {
     type UseQueryOptions,
@@ -11,8 +11,9 @@ import { z } from "zod"
 
 import { ApiError, OrderPublic, OrdersService } from "@/client"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
-import { OrderActionsMenu } from "@/components/Common/OrderActionsMenu"
 import AddOrder from "@/components/Orders/AddOrder"
+import ApproveOrder from "@/components/Orders/ApproveOrder"
+import DeleteOrder from "@/components/Orders/DeleteOrder"
 
 const ordersSearchSchema = z.object({
     page: z.number().int().positive().catch(1),
@@ -42,43 +43,80 @@ export const Route = createFileRoute("/_layout/orders")({
         ordersSearchSchema.parse(search),
 })
 
+// Updated helper function for specific date/time format
+const formatLocalDate = (dateString: string | null | undefined): string => {
+    if (!dateString) {
+        return "-";
+    }
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return "Invalid Date";
+        }
+
+        // Extract parts and pad with leading zeros
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        // Construct the desired format
+        return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    } catch (error) {
+        console.error("Error formatting date:", error);
+        return "Invalid Date";
+    }
+};
+
 function Orders() {
     const columns: Column<OrderPublic>[] = [
         {
-            header: "Fecha",
-            accessor: (order) => order.date_local
-                ? order.date_local.replace("T", " ").split(".")[0]
-                : "N/A",
+            header: "Acciones",
+            accessor: (order) => (
+                <HStack gap={2}>
+                    <DeleteOrder id={order.id} />
+                    <ApproveOrder order={order} />
+                </HStack>
+            )
         },
         {
-            header: "Documento de Pedido",
+            header: "Fecha de Procesado",
+            accessor: (order) => formatLocalDate(order.date_processed)
+        },
+        {
+            header: "Fecha de Aprobación",
+            accessor: (order) => formatLocalDate(order.date_approved)
+        },
+        {
+            header: "Documento Base",
             accessor: (order) => (
                 <Link
-                    href={`data:application/pdf;base64,${order.in_document}`}
-                    download={order.in_document_name}
+                    href={`data:application/pdf;base64,${order.base_document}`}
+                    download={order.base_document_name}
                     color="blue.500"
                     textDecoration="underline"
                 >
-                    {order.in_document_name}
+                    {order.base_document_name}
                 </Link>
-            ),
+            )
         },
         {
             header: "Documento Procesado",
-            accessor: (order) => (
-                <Link
-                    href={`data:application/pdf;base64,${order.out_document}`}
-                    download={order.out_document_name}
-                    color="blue.500"
-                    textDecoration="underline"
-                >
-                    {order.out_document_name}
-                </Link>
-            ),
-        },
-        {
-            header: "Acciones",
-            accessor: (order) => <OrderActionsMenu order={order} />,
+            accessor: (order) => {
+                if (!order.content_processed) return "-";
+                return (
+                    <Link
+                        href={`data:text/csv;charset=utf-8,${encodeURIComponent(order.content_processed)}`}
+                        download={order.base_document_name?.replace('.pdf', '_processed.csv')}
+                        color="blue.500"
+                        textDecoration="underline"
+                    >
+                        {order.base_document_name?.replace('.pdf', '_processed.csv')}
+                    </Link>
+                );
+            }
         },
     ]
 

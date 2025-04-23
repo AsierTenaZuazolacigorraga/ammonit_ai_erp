@@ -54,7 +54,7 @@ function Admin() {
       accessor: (user) => (
         <>
           <span style={{ color: !user.full_name ? "gray" : "inherit" }}>
-            {user.full_name || "N/A"}
+            {user.full_name || "-"}
           </span>
           {currentUser?.id === user.id && (
             <Badge ml="1" colorScheme="teal">
