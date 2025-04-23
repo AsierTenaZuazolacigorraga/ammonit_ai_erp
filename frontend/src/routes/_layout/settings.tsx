@@ -7,7 +7,7 @@ import useAuth from "@/hooks/useAuth"
 
 const tabsConfig = [
   { value: "my-profile", title: "Mi perfil", component: UserInformation },
-  { value: "password", title: "Password", component: ChangePassword },
+  { value: "password", title: "Contraseña", component: ChangePassword },
 ]
 
 export const Route = createFileRoute("/_layout/settings")({

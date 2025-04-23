@@ -86,6 +86,7 @@ export type UserCreate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    is_auto_approved?: boolean;
     password: string;
 };
 
@@ -94,6 +95,7 @@ export type UserPublic = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    is_auto_approved?: boolean;
     id: string;
 };
 
@@ -107,12 +109,14 @@ export type UserUpdate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    is_auto_approved?: boolean;
     password?: (string | null);
 };
 
 export type UserUpdateMe = {
     full_name?: (string | null);
     email?: (string | null);
+    is_auto_approved?: boolean;
 };
 
 export type ValidationError = {
@@ -185,19 +189,6 @@ export type OrdersUpdateOrderData = {
 
 export type OrdersUpdateOrderResponse = (OrderPublic);
 
-export type UsersReadUsersData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type UsersReadUsersResponse = (UsersPublic);
-
-export type UsersCreateUserData = {
-    requestBody: UserCreate;
-};
-
-export type UsersCreateUserResponse = (UserPublic);
-
 export type UsersReadUserMeResponse = (UserPublic);
 
 export type UsersUpdateUserMeData = {
@@ -205,6 +196,31 @@ export type UsersUpdateUserMeData = {
 };
 
 export type UsersUpdateUserMeResponse = (UserPublic);
+
+export type UsersUpdatePasswordMeData = {
+    requestBody: UpdatePassword;
+};
+
+export type UsersUpdatePasswordMeResponse = (Message);
+
+export type UsersCreateUserData = {
+    requestBody: UserCreate;
+};
+
+export type UsersCreateUserResponse = (UserPublic);
+
+export type UsersReadUsersData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type UsersReadUsersResponse = (UsersPublic);
+
+export type UsersReadUserData = {
+    id: string;
+};
+
+export type UsersReadUserResponse = (UserPublic);
 
 export type UsersUpdateUserData = {
     id: string;
@@ -218,11 +234,5 @@ export type UsersDeleteUserData = {
 };
 
 export type UsersDeleteUserResponse = (Message);
-
-export type UsersUpdatePasswordMeData = {
-    requestBody: UpdatePassword;
-};
-
-export type UsersUpdatePasswordMeResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);

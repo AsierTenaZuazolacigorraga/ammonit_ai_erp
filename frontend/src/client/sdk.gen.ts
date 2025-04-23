@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersUpdateOrderData, OrdersUpdateOrderResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersUpdateOrderData, OrdersUpdateOrderResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ClientsService {
     /**
@@ -233,22 +233,52 @@ export class OrdersService {
 
 export class UsersService {
     /**
-     * Read Users
-     * Retrieve users.
-     * @param data The data for the request.
-     * @param data.skip
-     * @param data.limit
-     * @returns UsersPublic Successful Response
+     * Read User Me
+     * Get current user.
+     * @returns UserPublic Successful Response
      * @throws ApiError
      */
-    public static readUsers(data: UsersReadUsersData = {}): CancelablePromise<UsersReadUsersResponse> {
+    public static readUserMe(): CancelablePromise<UsersReadUserMeResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/users/',
-            query: {
-                skip: data.skip,
-                limit: data.limit
-            },
+            url: '/api/v1/users/me'
+        });
+    }
+    
+    /**
+     * Update User Me
+     * Update own user.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns UserPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateUserMe(data: UsersUpdateUserMeData): CancelablePromise<UsersUpdateUserMeResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/users/me',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Password Me
+     * Update own password.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/users/me/password',
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -276,32 +306,43 @@ export class UsersService {
     }
     
     /**
-     * Read User Me
-     * Get current user.
-     * @returns UserPublic Successful Response
+     * Read Users
+     * Retrieve users.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns UsersPublic Successful Response
      * @throws ApiError
      */
-    public static readUserMe(): CancelablePromise<UsersReadUserMeResponse> {
+    public static readUsers(data: UsersReadUsersData = {}): CancelablePromise<UsersReadUsersResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/users/me/'
+            url: '/api/v1/users/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
     
     /**
-     * Update User Me
-     * Update own user.
+     * Read User
+     * Get a specific user by id.
      * @param data The data for the request.
-     * @param data.requestBody
+     * @param data.id
      * @returns UserPublic Successful Response
      * @throws ApiError
      */
-    public static updateUserMe(data: UsersUpdateUserMeData): CancelablePromise<UsersUpdateUserMeResponse> {
+    public static readUser(data: UsersReadUserData): CancelablePromise<UsersReadUserResponse> {
         return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/v1/users/me/',
-            body: data.requestBody,
-            mediaType: 'application/json',
+            method: 'GET',
+            url: '/api/v1/users/{id}',
+            path: {
+                id: data.id
+            },
             errors: {
                 422: 'Validation Error'
             }
@@ -320,7 +361,7 @@ export class UsersService {
     public static updateUser(data: UsersUpdateUserData): CancelablePromise<UsersUpdateUserResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/{id}/',
+            url: '/api/v1/users/{id}',
             path: {
                 id: data.id
             },
@@ -343,30 +384,10 @@ export class UsersService {
     public static deleteUser(data: UsersDeleteUserData): CancelablePromise<UsersDeleteUserResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/users/{id}/',
+            url: '/api/v1/users/{id}',
             path: {
                 id: data.id
             },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Update Password Me
-     * Update own password.
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns Message Successful Response
-     * @throws ApiError
-     */
-    public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
-        return __request(OpenAPI, {
-            method: 'PATCH',
-            url: '/api/v1/users/me/password/',
-            body: data.requestBody,
-            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }

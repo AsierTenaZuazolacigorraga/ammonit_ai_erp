@@ -1,28 +1,23 @@
 import { toaster } from "@/components/ui/toaster"
 
 const useCustomToast = () => {
-  const showToast = (
-    title: string,
-    description: string,
-    type: "success" | "error",
-  ) => {
+  const showSuccessToast = (description: string) => {
     toaster.create({
-      title,
+      title: "Éxito!",
       description,
-      type,
-      meta: { closable: true },
+      type: "success",
     })
   }
 
   const showErrorToast = (description: string) => {
-    showToast("Error!", description, "error")
+    toaster.create({
+      title: "Algo salió mal!",
+      description,
+      type: "error",
+    })
   }
 
-  const showSuccessToast = (description: string) => {
-    showToast("Éxito!", description, "success")
-  }
-
-  return { showToast, showSuccessToast, showErrorToast }
+  return { showSuccessToast, showErrorToast }
 }
 
 export default useCustomToast

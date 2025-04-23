@@ -1,17 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { AxiosError } from "axios"
 import {
   type Body_login_login_access_token as AccessToken,
   type ApiError,
   LoginService,
   type UserPublic,
-  // type UserRegister,
   UsersService,
-} from "../client"
-import useCustomToast from "./useCustomToast"
+} from "@/client"
+import { handleError } from "@/utils"
 
 const isLoggedIn = () => {
   return localStorage.getItem("access_token") !== null
@@ -20,38 +18,10 @@ const isLoggedIn = () => {
 const useAuth = () => {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
-  const { showToast, showErrorToast } = useCustomToast()
-  const queryClient = useQueryClient()
-  const { data: user, isLoading } = useQuery<UserPublic | null, Error>({
+  const { data: user } = useQuery<UserPublic | null, Error>({
     queryKey: ["currentUser"],
     queryFn: UsersService.readUserMe,
     enabled: isLoggedIn(),
-  })
-
-  const signUpMutation = useMutation({
-    // mutationFn: (data: UserRegister) =>
-    //   UsersService.registerUser({ requestBody: data }),
-
-    onSuccess: () => {
-      navigate({ to: "/login" })
-      showToast(
-        "Cuenta creada.",
-        "Tu cuenta se ha creado con éxito.",
-        "success",
-      )
-    },
-    onError: (err: ApiError) => {
-      let errDetail = (err.body as any)?.detail
-
-      if (err instanceof AxiosError) {
-        errDetail = err.message
-      }
-
-      showErrorToast(errDetail)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] })
-    },
   })
 
   const login = async (data: AccessToken) => {
@@ -67,17 +37,7 @@ const useAuth = () => {
       navigate({ to: "/" })
     },
     onError: (err: ApiError) => {
-      let errDetail = (err.body as any)?.detail
-
-      if (err instanceof AxiosError) {
-        errDetail = err.message
-      }
-
-      if (Array.isArray(errDetail)) {
-        errDetail = "Algo fue mal. Por favor, inténtalo de nuevo."
-      }
-
-      setError(errDetail)
+      handleError(err)
     },
   })
 
@@ -87,11 +47,9 @@ const useAuth = () => {
   }
 
   return {
-    signUpMutation,
     loginMutation,
     logout,
     user,
-    isLoading,
     error,
     resetError: () => setError(null),
   }
