@@ -29,6 +29,7 @@ interface ApproveOrderProps {
 
 const ApproveOrder = ({ order }: ApproveOrderProps) => {
     const [isOpen, setIsOpen] = useState(false)
+    const [updatedContent, setUpdatedContent] = useState<string>(order.content_processed || '')
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
 
@@ -48,7 +49,7 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                 requestBody: {
                     is_approved: true,
                     date_approved: new Date().toISOString(),
-                    // content_processed: convertGridToCSV(rows, columns) // Temporarily removed
+                    content_processed: updatedContent
                 }
             })
         },
@@ -67,6 +68,10 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
     const onSubmit: SubmitHandler<OrderPublic> = async () => {
         mutation.mutate()
     }
+
+    const handleDataChange = (csvData: string) => {
+        setUpdatedContent(csvData);
+    };
 
     if (!!order.is_approved) {
         return (
@@ -106,7 +111,10 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                         <DialogTitle>Aprobar Pedido</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
-                        <GridTable inputData={order.content_processed || ''} />
+                        <GridTable
+                            inputData={order.content_processed || ''}
+                            onDataChange={handleDataChange}
+                        />
                     </DialogBody>
                     <DialogFooter gap={2}>
                         <DialogActionTrigger asChild>

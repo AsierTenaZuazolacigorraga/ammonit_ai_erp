@@ -113,6 +113,9 @@ def update_order(
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     if not current_user.is_superuser and (order.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
-
+    if order.is_approved:
+        raise HTTPException(
+            status_code=400, detail="No se puede actualizar un pedido aprobado"
+        )
     order = order_service.update(db_order=order, order_update=order_in)
     return OrderPublic.model_validate(order)

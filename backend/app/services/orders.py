@@ -212,5 +212,5 @@ class OrderService:
         return db_obj
 
     def update(self, *, db_order: Order, order_update: OrderUpdate) -> Order:
-        db_obj = db_order.model_copy(update=order_update.model_dump())
-        return self.repository.update(db_obj, update=order_update)
+        update_data = order_update.model_dump(exclude_unset=True)
+        return self.repository.update(db_order, update=update_data)

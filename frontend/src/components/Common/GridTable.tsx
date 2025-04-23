@@ -1,5 +1,5 @@
 import { Box, Button, Flex, Input } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
 type Row = {
@@ -9,9 +9,11 @@ type Row = {
 
 interface GridTableProps {
     inputData: string;
+    onDataChange?: (csvData: string) => void;
 }
 
-function GridTable({ inputData }: GridTableProps) {
+function GridTable({ inputData, onDataChange }: GridTableProps) {
+
     const { headers, initialRows } = useMemo(() => {
         const lines = inputData.trim().split('\n');
         const headers = lines[0].split(';');
@@ -34,6 +36,26 @@ function GridTable({ inputData }: GridTableProps) {
     }, [inputData]);
 
     const [rows, setRows] = useState<Row[]>(initialRows);
+
+    // Convert rows to CSV string
+    const convertToCSV = (rows: Row[], headers: string[]): string => {
+        if (rows.length === 0) return headers.join(';');
+
+        const headerRow = headers.join(';');
+        const dataRows = rows.map(row =>
+            headers.map(header => row[header]?.toString() || '').join(';')
+        );
+
+        return [headerRow, ...dataRows].join('\n');
+    };
+
+    // Call onDataChange whenever rows change
+    useEffect(() => {
+        if (onDataChange) {
+            const csvData = convertToCSV(rows, headers);
+            onDataChange(csvData);
+        }
+    }, [rows, headers, onDataChange]);
 
     const updateCell = (id: number, key: string, value: string) => {
         setRows(r =>
