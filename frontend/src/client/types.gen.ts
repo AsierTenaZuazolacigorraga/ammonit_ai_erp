@@ -53,6 +53,7 @@ export type OrderPublic = {
     date_approved?: (string | null);
     is_approved?: (boolean | null);
     content_processed?: (string | null);
+    client_name?: (string | null);
     id: string;
     owner_id: string;
 };
@@ -69,6 +70,7 @@ export type OrderUpdate = {
     date_approved?: (string | null);
     is_approved?: (boolean | null);
     content_processed?: (string | null);
+    client_name?: (string | null);
 };
 
 export type Token = {

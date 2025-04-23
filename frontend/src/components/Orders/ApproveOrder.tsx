@@ -7,7 +7,7 @@ import {
     DialogActionTrigger,
     DialogTitle
 } from "@chakra-ui/react";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaEye } from "react-icons/fa";
 
 import { type OrderPublic, OrdersService } from "@/client";
 import type { ApiError } from "@/client/core/ApiError";
@@ -75,16 +75,44 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
 
     if (!!order.is_approved) {
         return (
-            <Button
-                variant="ghost"
-                size="sm"
-                colorScheme="green"
-                opacity={0.2}
-                cursor="not-allowed"
-                disabled
+            <DialogRoot
+                size={{ base: "sm", md: "xl" }}
+                placement="center"
+                open={isOpen}
+                onOpenChange={({ open }) => setIsOpen(open)}
             >
-                <FaCheckCircle fontSize="16px" />
-            </Button>
+                <DialogTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        colorScheme="gray"
+                        opacity={0.3}
+                    >
+                        <FaEye fontSize="16px" />
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Ver Pedido</DialogTitle>
+                    </DialogHeader>
+                    <DialogBody>
+                        <GridTable
+                            inputData={order.content_processed || ''}
+                            readOnly={true}
+                        />
+                    </DialogBody>
+                    <DialogFooter>
+                        <DialogActionTrigger asChild>
+                            <Button
+                                variant="subtle"
+                                colorPalette="gray"
+                            >
+                                Cerrar
+                            </Button>
+                        </DialogActionTrigger>
+                    </DialogFooter>
+                </DialogContent>
+            </DialogRoot>
         )
     }
 

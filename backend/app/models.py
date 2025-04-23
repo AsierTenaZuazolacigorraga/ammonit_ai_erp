@@ -45,9 +45,8 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
-    emails: list["Email"] = Relationship(back_populates="owner", cascade_delete=True)
     clients: list["Client"] = Relationship(back_populates="owner", cascade_delete=True)
+    emails: list["Email"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class UserPublic(UserBase):
@@ -56,6 +55,44 @@ class UserPublic(UserBase):
 
 class UsersPublic(SQLModel):
     data: list[UserPublic]
+    count: int
+
+
+##########################################################################################
+# Clients
+##########################################################################################
+
+
+class ClientBase(SQLModel):
+    name: str = Field(nullable=False)
+    clasifier: str = Field(nullable=False)
+    structure: str = Field(nullable=False)
+
+
+class ClientCreate(ClientBase):
+    pass
+
+
+class ClientUpdate(ClientBase):
+    pass
+
+
+class Client(Entity, ClientBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="clients")
+    orders: list["Order"] = Relationship(back_populates="client", cascade_delete=True)
+
+
+class ClientPublic(ClientBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+
+
+class ClientsPublic(SQLModel):
+    data: list[ClientPublic]
     count: int
 
 
@@ -84,9 +121,9 @@ class OrderUpdate(OrderBase):
 class Order(Entity, OrderBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+        foreign_key="client.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="orders")
+    owner: Client | None = Relationship(back_populates="orders")
 
 
 class OrderPublic(OrderBase):
@@ -140,43 +177,6 @@ class EmailPublic(OrderBase):
 
 class EmailsPublic(SQLModel):
     data: list[EmailPublic]
-    count: int
-
-
-##########################################################################################
-# Clients
-##########################################################################################
-
-
-class ClientBase(SQLModel):
-    name: str = Field(nullable=False)
-    clasifier: str = Field(nullable=False)
-    structure: str = Field(nullable=False)
-
-
-class ClientCreate(ClientBase):
-    pass
-
-
-class ClientUpdate(ClientBase):
-    pass
-
-
-class Client(Entity, ClientBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="clients")
-
-
-class ClientPublic(ClientBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class ClientsPublic(SQLModel):
-    data: list[ClientPublic]
     count: int
 
 

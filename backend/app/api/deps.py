@@ -124,29 +124,6 @@ ClientServiceDep = Annotated[ClientService, Depends(client_service)]
 
 
 ##########################################################################################
-# Orders
-##########################################################################################
-
-
-def order_repository(session: SessionDep) -> OrderRepository:
-    return OrderRepository(session)
-
-
-OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
-
-
-def order_service(
-    order_repository: OrderRepositoryDep,
-    client_service: ClientServiceDep,
-    ai_client: AIClientDep,
-    groq_client: GroqClientDep,
-) -> OrderService:
-    return OrderService(order_repository, client_service, ai_client, groq_client)
-
-
-OrderServiceDep = Annotated[OrderService, Depends(order_service)]
-
-##########################################################################################
 # Users
 ##########################################################################################
 
@@ -163,3 +140,30 @@ def user_service(user_repository: UserRepositoryDep) -> UserService:
 
 
 UserServiceDep = Annotated[UserService, Depends(user_service)]
+
+
+##########################################################################################
+# Orders
+##########################################################################################
+
+
+def order_repository(session: SessionDep) -> OrderRepository:
+    return OrderRepository(session)
+
+
+OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
+
+
+def order_service(
+    order_repository: OrderRepositoryDep,
+    users_service: UserServiceDep,
+    client_service: ClientServiceDep,
+    ai_client: AIClientDep,
+    groq_client: GroqClientDep,
+) -> OrderService:
+    return OrderService(
+        order_repository, users_service, client_service, ai_client, groq_client
+    )
+
+
+OrderServiceDep = Annotated[OrderService, Depends(order_service)]

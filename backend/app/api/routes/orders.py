@@ -117,5 +117,7 @@ def update_order(
         raise HTTPException(
             status_code=400, detail="No se puede actualizar un pedido aprobado"
         )
-    order = order_service.update(db_order=order, order_update=order_in)
+    order = order_service.repository.update(
+        db_obj=order, update=order_in.model_dump(exclude_unset=True)
+    )
     return OrderPublic.model_validate(order)

@@ -15,6 +15,7 @@ import PyPDF2
 from app.models import Client, Order, OrderCreate, OrderUpdate
 from app.repositories.orders import OrderRepository
 from app.services.clients import ClientService
+from app.services.users import UserService
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from groq import Groq
@@ -27,7 +28,7 @@ load_dotenv()
 
 async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
     # Preprocess PDF to remove irrelevant pages
-    filtered_pdf_binary = _preprocess_pdf(pdf_binary)
+    filtered_pdf_binary = preprocess_pdf(pdf_binary)
 
     # Create a temporary file for the filtered PDF
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as f:
@@ -62,7 +63,7 @@ async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
     return md
 
 
-def _preprocess_pdf(pdf_binary: bytes) -> bytes:
+def preprocess_pdf(pdf_binary: bytes) -> bytes:
     # Keywords that indicate the start of irrelevant content
     irrelevant_keywords = [
         'Conditions Générales d\'Achat entre MATISA Matériel Industriel SA ("Matisa") et ses Fournisseurs ("Fournisseur")',
@@ -153,15 +154,51 @@ If you cannot identify the client, respond with "unknown":
     return json.loads(response.output_text), client
 
 
+def parse_order_2_csv(order: dict) -> str:
+
+    # Find keys that contain lists of dictionaries
+    list_keys = []
+    for key, value in order.items():
+        if isinstance(value, list) and value and isinstance(value[0], dict):
+            list_keys.append(key)
+
+    # If we found any keys with lists of dictionaries
+    if list_keys:
+        # Create a list to hold all rows
+        rows = []
+
+        # Extract common fields from the order (non-list fields)
+        common_fields = {k: v for k, v in order.items() if k not in list_keys}
+
+        # For each list key, process its items
+        for list_key in list_keys:
+            for item in order[list_key]:
+                row = common_fields.copy()
+                row.update(item)
+                rows.append(row)
+
+        # Create DataFrame from the rows
+        df = pd.DataFrame(rows)
+
+    # If the order doesn't have any list keys, convert it directly
+    else:
+        # For a flat dictionary, convert to a single-row DataFrame
+        df = pd.DataFrame([order])
+
+    return df.to_csv(sep=";", index=False)
+
+
 class OrderService:
     def __init__(
         self,
         repository: OrderRepository,
+        users_service: UserService,
         clients_service: ClientService,
         ai_client: OpenAI,
         groq_client: Groq,
     ) -> None:
         self.repository = repository
+        self.users_service = users_service
         self.clients_service = clients_service
         self.ai_client = ai_client
         self.groq_client = groq_client
@@ -171,6 +208,12 @@ class OrderService:
         return self.repository.create(db_obj)
 
     async def process(self, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
+
+        # Get from external service/repository
+        clients = self.clients_service.repository.get_all_by_owner_id(owner_id=owner_id)
+        user = self.users_service.repository.get_by_id(owner_id)
+
+        # Create the order
         db_obj = Order.model_validate(order_create, update={"owner_id": owner_id})
 
         # Process parsing
@@ -178,39 +221,18 @@ class OrderService:
             raise ValueError("Base document cannot be None")
         md = await parse_pdf_binary_2_md(db_obj.base_document)
 
-        # Get all possible clients
-        clients = self.clients_service.get_all_by_owner_id(owner_id=owner_id)
-
         # Use the new parse_md_2_order function with ai_client
         order, client = parse_md_2_order(md, self.ai_client, self.groq_client, clients)
 
-        # Convert into a DataFrame
-        data = []
-        for item in order["items"]:
-            data.append(
-                {
-                    "Número de Pedido": order["number"],
-                    "Código": item["code"],
-                    "Descripción": item["description"],
-                    "Cantidad": item["quantity"],
-                    "Precio Unitario": item["unit_price"],
-                    "Plazo": item["deadline"],
-                }
-            )
-        df = pd.DataFrame(data)
-
         # Add values to db_obj
-        db_obj.content_processed = df.to_csv(sep=";", index=False)
+        db_obj.content_processed = parse_order_2_csv(order)
+        db_obj.client_name = client.name
         db_obj.date_processed = datetime.now(timezone.utc)
-        if True:
-            db_obj.date_approved = None
-            db_obj.is_approved = None
-        else:
+        if user and user.is_auto_approved:
             db_obj.date_approved = datetime.now(timezone.utc)
             db_obj.is_approved = True
+        else:
+            db_obj.date_approved = None
+            db_obj.is_approved = None
 
         return db_obj
-
-    def update(self, *, db_order: Order, order_update: OrderUpdate) -> Order:
-        update_data = order_update.model_dump(exclude_unset=True)
-        return self.repository.update(db_order, update=update_data)
