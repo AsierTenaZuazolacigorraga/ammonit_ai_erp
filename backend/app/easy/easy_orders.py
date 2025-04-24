@@ -11,9 +11,6 @@ from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
 from app.models import OrderCreate
-from app.repositories.clients import ClientRepository
-from app.repositories.orders import OrderRepository
-from app.repositories.users import UserRepository
 from app.services.clients import ClientService
 from app.services.orders import OrderService
 from app.services.users import UserService
@@ -39,9 +36,9 @@ ORDER_ulma2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/45953
 ORDER = ORDER_ulma2
 
 
-def main():
+async def main():
     with Session(engine) as session:
-        user_service = UserService(UserRepository(session))
+        user_service = UserService(session=session)
         for user in user_service.repository.get_all():
 
             # Only process desired user
@@ -49,40 +46,27 @@ def main():
 
                 # Define orders service
                 order_service = OrderService(
-                    OrderRepository(session),
-                    ClientService(ClientRepository(session)),
-                    OpenAI(api_key=settings.OPENAI_API_KEY),
-                    Groq(api_key=settings.GROQ_API_KEY),
+                    session=session,
+                    ai_client=OpenAI(api_key=settings.OPENAI_API_KEY),
+                    groq_client=Groq(api_key=settings.GROQ_API_KEY),
                 )
                 with open(ORDER, "rb") as f:
-                    in_document = f.read()
-                in_document_name = os.path.basename(ORDER)
+                    base_document = f.read()
+                base_document_name = os.path.basename(ORDER)
 
-                order = order_service.process(
+                order = await order_service.create(
                     order_create=OrderCreate(
-                        date_local=datetime.now(),
-                        date_utc=datetime.now(timezone.utc),
-                        in_document=in_document or None,
-                        in_document_name=in_document_name or None,
+                        base_document=base_document or None,
+                        base_document_name=base_document_name or None,
                     ),
                     owner_id=user.id,
                 )
-                logger.info(order.out_document)
+                logger.info(order.content_processed)
 
                 # Check if out_document is None
-                if order.out_document is None:
+                if order.content_processed is None:
                     raise ValueError("The order output document is None.")
-
-                with tempfile.NamedTemporaryFile(suffix=".csv", delete=True) as f:
-                    f.write(order.out_document)
-                    f.flush()
-                    df = pd.read_csv(f.name, sep=";")
-                    print(df)
-                    pretty_df = pprint.pformat(
-                        df.to_dict(orient="records")
-                    )  # Convert DataFrame to a list of dictionaries
-                    print(pretty_df)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

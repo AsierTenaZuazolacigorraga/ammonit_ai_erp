@@ -58,7 +58,7 @@ const AddUser = () => {
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("User created successfully.")
+      showSuccessToast("Usuario creado correctamente.")
       reset()
       setIsOpen(false)
     },

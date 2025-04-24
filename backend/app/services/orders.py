@@ -197,11 +197,9 @@ class OrderService:
         ai_client: OpenAI,
         groq_client: Groq,
     ) -> None:
-        self.repository = CRUDRepository(Order, session)
-        self.session = session
+        self.repository = CRUDRepository[Order](Order, session)
         self.clients_service = ClientService(session)
         self.users_service = UserService(session)
-
         self.ai_client = ai_client
         self.groq_client = groq_client
 
@@ -212,21 +210,21 @@ class OrderService:
     async def process(self, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
 
         # Get from external service/repository
-        clients = self.clients_service.repository.get_all_by_owner_id(owner_id=owner_id)
+        clients = self.clients_service.repository.get_all_by_kwargs(
+            skip=0, limit=100, **{"owner_id": owner_id}
+        )
         user = self.users_service.repository.get_by_id(owner_id)
 
-        # Create the order
-        db_obj = Order.model_validate(order_create, update={"owner_id": owner_id})
-
         # Process parsing
-        if db_obj.base_document is None:
+        if order_create.base_document is None:
             raise ValueError("Base document cannot be None")
-        md = await parse_pdf_binary_2_md(db_obj.base_document)
+        md = await parse_pdf_binary_2_md(order_create.base_document)
 
         # Use the new parse_md_2_order function with ai_client
         order, client = parse_md_2_order(md, self.ai_client, self.groq_client, clients)
 
-        # Add values to db_obj
+        # Create the order
+        db_obj = Order.model_validate(order_create, update={"owner_id": client.id})
         db_obj.content_processed = parse_order_2_csv(order)
         db_obj.date_processed = datetime.now(timezone.utc)
         if user and user.is_auto_approved:

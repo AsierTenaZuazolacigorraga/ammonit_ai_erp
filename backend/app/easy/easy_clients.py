@@ -5,9 +5,7 @@ from datetime import datetime, timezone
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
-from app.models import ClientCreate
-from app.repositories.clients import ClientRepository
-from app.repositories.users import UserRepository
+from app.models import Client, ClientCreate
 from app.services.clients import ClientService
 from app.services.users import UserService
 from sqlmodel import Session
@@ -17,19 +15,20 @@ logger = get_logger(__name__)
 
 def main():
     with Session(engine) as session:
-        user_service = UserService(UserRepository(session))
+        user_service = UserService(session)
         for user in user_service.repository.get_all():
 
             # Only process desired user
             if user.full_name == "Asier":
 
                 # Define clients service
-                client_service = ClientService(ClientRepository(session))
+                client_service = ClientService(session)
 
                 # Create a test client
                 client = client_service.create(
-                    client_create=ClientCreate(
+                    ClientCreate(
                         name="ulma",
+                        clasifier="Contiene la palabra y referencias a la empresa de Ulma",
                         structure=json.dumps(
                             {
                                 "format": {
@@ -89,7 +88,7 @@ def main():
                                     },
                                     "strict": True,
                                 }
-                            }
+                            },
                         ),
                     ),
                     owner_id=user.id,

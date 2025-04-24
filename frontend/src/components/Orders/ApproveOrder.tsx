@@ -86,7 +86,7 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                         variant="ghost"
                         size="sm"
                         colorScheme="gray"
-                        opacity={0.3}
+                        opacity={0.5}
                     >
                         <FaEye fontSize="16px" />
                     </Button>

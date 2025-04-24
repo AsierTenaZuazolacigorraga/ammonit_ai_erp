@@ -26,8 +26,7 @@ class EmailService:
         secret: str | None,
         email: str,
     ) -> None:
-        self.repository = CRUDRepository(Email, session)
-        self.session = session
+        self.repository = CRUDRepository[Email](Email, session)
         self.order_service = order_service
         self.id = id
         self.secret = secret

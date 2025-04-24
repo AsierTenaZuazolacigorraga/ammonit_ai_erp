@@ -1,4 +1,4 @@
-import { Badge, Container, Heading } from "@chakra-ui/react"
+import { Badge, Container, Heading, HStack } from "@chakra-ui/react"
 import {
   useQueryClient,
   type UseQueryOptions,
@@ -8,8 +8,9 @@ import { z } from "zod"
 
 import { ApiError, UsersService, type UserPublic } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
+import DeleteUser from "@/components/Admin/DeleteUser"
+import EditUser from "@/components/Admin/EditUser"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
-import { UserActionsMenu } from "@/components/Common/UserActionsMenu"
 
 // Schema
 const usersSearchSchema = z.object({
@@ -50,6 +51,16 @@ function Admin() {
   // Define columns here
   const columns: Column<UserPublic>[] = [
     {
+      header: "Acciones",
+      width: "120px",
+      accessor: (user) => (
+        <HStack gap={2}>
+          <DeleteUser id={user.id} disabled={currentUser?.id === user.id} />
+          <EditUser user={user} disabled={currentUser?.id === user.id} />
+        </HStack>
+      )
+    },
+    {
       header: "Nombre",
       accessor: (user) => (
         <>
@@ -75,15 +86,6 @@ function Admin() {
     {
       header: "Estado",
       accessor: (user) => (user.is_active ? "Activo" : "Inactivo"),
-    },
-    {
-      header: "Acciones",
-      accessor: (user) => (
-        <UserActionsMenu
-          user={user}
-          disabled={currentUser?.id === user.id}
-        />
-      ),
     },
   ]
 

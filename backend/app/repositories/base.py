@@ -1,9 +1,8 @@
 import uuid
 from typing import Any, Generic, TypeVar
 
-from sqlmodel import Session, func, select
-
 from app.models import Entity
+from sqlmodel import Session, func, select
 
 T = TypeVar("T", bound=Entity)
 
@@ -41,15 +40,31 @@ class CRUDRepository(Generic[T]):
         count = self.session.exec(statement).one()
         return count
 
-    def get_all(self, *, skip: int = 0, limit: int = 100) -> list[T]:
+    def get_all(
+        self,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        order_by: Any | None = None,
+    ) -> list[T]:
         statement = select(self.table).offset(skip).limit(limit)
+        if order_by is not None:
+            statement = statement.order_by(order_by)
         db_objs = self.session.exec(statement).all()
         return list(db_objs)
 
     def get_all_by_kwargs(
-        self, *, skip: int = 0, limit: int = 100, **kwargs: Any
+        self,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        order_by: Any | None = None,
+        **kwargs: Any,
     ) -> list[T]:
-        statement = select(self.table).filter_by(**kwargs).offset(skip).limit(limit)
+        statement = select(self.table).filter_by(**kwargs)
+        if order_by is not None:
+            statement = statement.order_by(order_by)
+        statement = statement.offset(skip).limit(limit)
         db_objs = self.session.exec(statement).all()
         return list(db_objs)
 

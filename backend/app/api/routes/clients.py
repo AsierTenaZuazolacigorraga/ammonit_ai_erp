@@ -25,10 +25,8 @@ def read_clients(
     """
     Retrieve clients.
     """
-    clients = client_service.repository.get_all_by_kwargs(
-        skip=skip, limit=limit, **{"owner_id": current_user.id}
-    )
-    count = client_service.repository.count_by_kwargs(**{"owner_id": current_user.id})
+    clients = client_service.get_all(skip=skip, limit=limit, owner_id=current_user.id)
+    count = client_service.get_count(owner_id=current_user.id)
     # Convert Client objects to ClientPublic objects
     client_publics = [ClientPublic.model_validate(client) for client in clients]
     return ClientsPublic(data=client_publics, count=count)
@@ -56,12 +54,12 @@ def delete_client(
     """
     Delete an client.
     """
-    client = client_service.repository.get_by_id(id)
+    client = client_service.get_by_id(id)
     if not client:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     if not current_user.is_superuser and (client.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
-    client_service.repository.delete(id)
+    client_service.delete(id)
     return Message(message="Cliente eliminado correctamente")
 
 
@@ -80,11 +78,10 @@ def update_client(
     Update a client.
     """
 
-    client = client_service.repository.get_by_id(id)
+    client = client_service.get_by_id(id)
     if not client:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     if not current_user.is_superuser and (client.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
-
-    client = client_service.update(db_client=client, client_update=client_in)
+    client = client_service.update(client_update=client_in, id=id)
     return ClientPublic.model_validate(client)

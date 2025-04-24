@@ -133,6 +133,7 @@ class OrderPublic(OrderBase):
     base_document: str | None = Field(
         default=None, nullable=False
     )  # Override base_document to be a string (base64 encoded) for JSON serialization
+    client_name: str | None = Field(default=None)
 
     @classmethod
     def model_validate(cls, obj):

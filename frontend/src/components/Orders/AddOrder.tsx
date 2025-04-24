@@ -135,7 +135,7 @@ const AddOrder = () => {
                   padding: "10px",
                   textAlign: "center", // Center text
                   backgroundColor: isSubmitting || mutation.isPending ? "#f5f5f5" : "transparent",
-                  opacity: isSubmitting || mutation.isPending ? 0.6 : 1,
+                  opacity: isSubmitting || mutation.isPending ? 0.5 : 1,
                   cursor: isSubmitting || mutation.isPending ? "not-allowed" : "pointer",
                 }}>
                   <input {...getInputProps()} />

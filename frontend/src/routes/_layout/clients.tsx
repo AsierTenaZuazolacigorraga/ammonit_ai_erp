@@ -1,6 +1,7 @@
 import {
     Container,
     Heading,
+    HStack,
 } from "@chakra-ui/react"
 import {
     type UseQueryOptions,
@@ -10,7 +11,8 @@ import { z } from "zod"
 
 import { ApiError, ClientPublic, ClientsService } from "@/client"
 import AddClient from "@/components/Clients/AddClient"
-import { ClientActionsMenu } from "@/components/Common/ClientActionsMenu"
+import DeleteClient from "@/components/Clients/DeleteClient"
+import EditClient from "@/components/Clients/EditClient"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 
 const clientsSearchSchema = z.object({
@@ -48,6 +50,16 @@ export const Route = createFileRoute("/_layout/clients")({
 function Clients() {
     const columns: Column<ClientPublic>[] = [
         {
+            header: "Acciones",
+            width: "120px",
+            accessor: (client) => (
+                <HStack gap={2}>
+                    <DeleteClient id={client.id} />
+                    <EditClient client={client} />
+                </HStack>
+            )
+        },
+        {
             header: "Nombre",
             accessor: (client) => client.name,
         },
@@ -58,10 +70,6 @@ function Clients() {
         {
             header: "Estructura",
             accessor: (client) => client.structure,
-        },
-        {
-            header: "Acciones",
-            accessor: (client) => <ClientActionsMenu client={client} />,
         },
     ]
 

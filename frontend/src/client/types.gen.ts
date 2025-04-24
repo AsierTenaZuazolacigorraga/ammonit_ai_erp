@@ -55,6 +55,7 @@ export type OrderPublic = {
     content_processed?: (string | null);
     id: string;
     owner_id: string;
+    client_name?: (string | null);
 };
 
 export type OrdersPublic = {

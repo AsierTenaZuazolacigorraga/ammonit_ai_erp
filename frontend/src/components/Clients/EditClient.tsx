@@ -8,13 +8,13 @@ import {
     Input,
     VStack,
 } from "@chakra-ui/react"
-import { useState } from "react"
-import { FaExchangeAlt } from "react-icons/fa"
+import { useEffect, useState } from "react"
 
 import { type ClientPublic, ClientsService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
+import { FiEdit2 } from "react-icons/fi"
 import {
     DialogBody,
     DialogContent,
@@ -43,6 +43,11 @@ const EditClient = ({ client }: EditClientProps) => {
         criteriaMode: "all",
         defaultValues: client,
     })
+
+    // Update form values when client prop changes
+    useEffect(() => {
+        reset(client)
+    }, [client, reset])
 
     const mutation = useMutation({
         mutationFn: (data: ClientPublic) =>
@@ -73,8 +78,8 @@ const EditClient = ({ client }: EditClientProps) => {
         >
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm">
-                    <FaExchangeAlt fontSize="16px" />
-                    Editar Cliente
+                    <FiEdit2 fontSize="16px" />
+                    {/* Editar Cliente */}
                 </Button>
             </DialogTrigger>
             <DialogContent>

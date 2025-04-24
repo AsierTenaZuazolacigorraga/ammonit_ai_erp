@@ -1,13 +1,14 @@
+import uuid
+
 from app.core.security import get_password_hash, verify_password
-from app.models import User, UserCreate, UserUpdate
+from app.models import User, UserCreate, UserUpdate, UserUpdateMe
 from app.repositories.base import CRUDRepository
 from sqlmodel import Session, select
 
 
 class UserService:
     def __init__(self, session: Session) -> None:
-        self.repository = CRUDRepository(User, session)
-        self.session = session
+        self.repository = CRUDRepository[User](User, session)
 
     def create(self, *, user_create: UserCreate) -> User:
         db_obj = User.model_validate(
@@ -16,21 +17,44 @@ class UserService:
         )
         return self.repository.create(db_obj)
 
-    def update(self, *, db_user: User, user_update: UserUpdate) -> User:
+    def get_all(self, skip: int, limit: int) -> list[User]:
+        return self.repository.get_all_by_kwargs(
+            skip=skip,
+            limit=limit,
+            order_by=self.repository.table.id,
+        )
+
+    def get_count(self) -> int:
+        return self.repository.count()
+
+    def get_by_id(self, id: uuid.UUID) -> User | None:
+        return self.repository.get_by_id(id)
+
+    def get_by_email(self, email: str) -> User | None:
+        users = self.repository.get_all_by_kwargs(email=email)
+        if len(users) > 1:
+            raise ValueError(f"Multiple users found with email {email}")
+        return users[0] if users else None
+
+    def update(self, user_update: UserUpdate | UserUpdateMe, id: uuid.UUID) -> User:
+        user = self.get_by_id(id)
+        if not user:
+            raise ValueError("User not found")
         update_data = user_update.model_dump(exclude_unset=True)
         if "password" in update_data:
             password = update_data["password"]
             hashed_password = get_password_hash(password)
             update_data["hashed_password"] = hashed_password
-
-        db_user = self.repository.update(db_user, update=update_data)
-        return db_user
+        return self.repository.update(user, update=update_data)
 
     def authenticate(self, *, email: str, password: str) -> User | None:
         statement = select(User).where(User.email == email)
-        db_user = self.session.exec(statement).first()
+        db_user = self.repository.session.exec(statement).first()
         if not db_user:
             return None
         if not verify_password(password, db_user.hashed_password):
             return None
         return db_user
+
+    def delete(self, id: uuid.UUID) -> None:
+        self.repository.delete(id)

@@ -19,7 +19,6 @@ from app.models import (
     UserUpdate,
     UserUpdateMe,
 )
-from app.utils import generate_new_account_email, send_email
 from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -45,13 +44,12 @@ def update_user_me(
     if current_user is None:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if user_in.email:
-        existing_user = user_service.repository.get_by_email(email=user_in.email)
+        existing_user = user_service.get_by_email(email=user_in.email)
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=409, detail="El usuario con este email ya existe"
             )
-    update_data = user_in.model_dump(exclude_unset=True)
-    user_service.repository.update(current_user, update=update_data)
+    user_service.update(user_update=user_in, id=current_user.id)
     return current_user
 
 
@@ -71,9 +69,9 @@ def update_password_me(
             status_code=400,
             detail="La nueva contraseña no puede ser la misma que la actual",
         )
-    hashed_password = get_password_hash(body.new_password)
-    update_data = {"hashed_password": hashed_password}
-    user_service.repository.update(current_user, update=update_data)
+    user_service.update(
+        user_update=UserUpdate(password=body.new_password), id=current_user.id
+    )
     return Message(message="Contraseña actualizada correctamente")
 
 
@@ -84,24 +82,14 @@ def create_user(*, user_service: UserServiceDep, user_in: UserCreate) -> Any:
     """
     Create new user.
     """
-    user = user_service.repository.get_by_email(email=user_in.email)
+    user = user_service.get_by_email(email=user_in.email)
     if user:
         raise HTTPException(
             status_code=400,
             detail="El usuario con este email ya existe en el sistema.",
         )
 
-    user = user_service.create(user_create=user_in)
-    if settings.emails_enabled and user_in.email:
-        email_data = generate_new_account_email(
-            email_to=user_in.email, username=user_in.email, password=user_in.password
-        )
-        send_email(
-            email_to=user_in.email,
-            subject=email_data.subject,
-            html_content=email_data.html_content,
-        )
-    return user
+    return user_service.create(user_create=user_in)
 
 
 @router.get(
@@ -113,10 +101,11 @@ def read_users(user_service: UserServiceDep, skip: int = 0, limit: int = 100) ->
     """
     Retrieve users.
     """
-    count = user_service.repository.count()
-    users: list[User] = user_service.repository.get_all(skip=skip, limit=limit)
-
-    return UsersPublic(data=users, count=count)
+    users = user_service.get_all(skip=skip, limit=limit)
+    return UsersPublic(
+        data=[UserPublic.model_validate(user) for user in users],
+        count=user_service.get_count(),
+    )
 
 
 @router.get(
@@ -129,7 +118,7 @@ def read_user(
     """
     Get a specific user by id.
     """
-    user = user_service.repository.get_by_id(id)
+    user = user_service.get_by_id(id)
     if user == current_user:
         return user
     if not current_user.is_superuser:
@@ -157,20 +146,20 @@ def update_user(
     Update a user.
     """
 
-    user = user_service.repository.get_by_id(id)
+    user = user_service.get_by_id(id)
     if not user:
         raise HTTPException(
             status_code=404,
             detail="El usuario con este id no existe en el sistema",
         )
     if user_in.email:
-        existing_user = user_service.repository.get_by_email(email=user_in.email)
+        existing_user = user_service.get_by_email(email=user_in.email)
         if existing_user and existing_user.id != id:
             raise HTTPException(
                 status_code=409, detail="El usuario con este email ya existe"
             )
 
-    user = user_service.update(db_user=user, user_update=user_in)
+    user = user_service.update(user_update=user_in, id=id)
     return user
 
 
@@ -181,12 +170,12 @@ def delete_user(
     """
     Delete a user.
     """
-    user = user_service.repository.get_by_id(id)
+    user = user_service.get_by_id(id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if user == current_user:
         raise HTTPException(
             status_code=403, detail="Los superusuarios no pueden eliminarse a sí mismos"
         )
-    user_service.repository.delete(id)
+    user_service.delete(id)
     return Message(message="Usuario eliminado correctamente")

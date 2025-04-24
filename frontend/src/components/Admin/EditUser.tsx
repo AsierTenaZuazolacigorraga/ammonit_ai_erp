@@ -12,12 +12,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { useState } from "react"
-import { FaExchangeAlt } from "react-icons/fa"
 
 import { type UserPublic, type UserUpdate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import { emailPattern, handleError } from "@/utils"
+import { FiEdit2 } from "react-icons/fi"
 import { Checkbox } from "../ui/checkbox"
 import {
   DialogBody,
@@ -30,13 +30,14 @@ import { Field } from "../ui/field"
 
 interface EditUserProps {
   user: UserPublic
+  disabled?: boolean
 }
 
 interface UserUpdateForm extends UserUpdate {
   confirm_password?: string
 }
 
-const EditUser = ({ user }: EditUserProps) => {
+const EditUser = ({ user, disabled = false }: EditUserProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
@@ -84,9 +85,14 @@ const EditUser = ({ user }: EditUserProps) => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <FaExchangeAlt fontSize="16px" />
-          Editar Usuario
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={disabled}
+          opacity={disabled ? 0.5 : 1}
+        >
+          <FiEdit2 fontSize="16px" />
+          {/* Editar Usuario */}
         </Button>
       </DialogTrigger>
       <DialogContent>

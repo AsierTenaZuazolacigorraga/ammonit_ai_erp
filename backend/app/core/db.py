@@ -21,7 +21,7 @@ def init_db(session: Session) -> None:
     # SQLModel.metadata.create_all(engine)
 
     user_service = UserService(session=session)
-    user = user_service.session.exec(
+    user = user_service.repository.session.exec(
         select(User).where(User.email == settings.FIRST_SUPERUSER)
     ).first()
     if not user:
