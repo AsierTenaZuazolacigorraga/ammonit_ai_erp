@@ -9,9 +9,10 @@ from typing import List
 
 from app.logger import get_logger
 from app.models import Email, EmailCreate, Order, OrderCreate
-from app.repositories.emails import EmailRepository
+from app.repositories.base import CRUDRepository
 from app.services.orders import OrderService
 from O365 import Account, FileSystemTokenBackend
+from sqlmodel import Session
 
 logger = get_logger(__name__)
 
@@ -19,13 +20,14 @@ logger = get_logger(__name__)
 class EmailService:
     def __init__(
         self,
-        repository: EmailRepository,
+        session: Session,
         order_service: OrderService,
         id: str | None,
         secret: str | None,
         email: str,
     ) -> None:
-        self.repository = repository
+        self.repository = CRUDRepository(Email, session)
+        self.session = session
         self.order_service = order_service
         self.id = id
         self.secret = secret

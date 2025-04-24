@@ -5,13 +5,14 @@ from datetime import datetime, timezone
 from pydantic import EmailStr, model_validator
 from sqlmodel import Field, Relationship, SQLModel
 
-##########################################################################################
-# User
-##########################################################################################
-
 
 class Entity(SQLModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+
+##########################################################################################
+# User
+##########################################################################################
 
 
 class UserBase(SQLModel):
@@ -42,7 +43,7 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-class User(UserBase, table=True):
+class User(Entity, UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     clients: list["Client"] = Relationship(back_populates="owner", cascade_delete=True)
@@ -83,7 +84,7 @@ class Client(Entity, ClientBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="clients")
-    orders: list["Order"] = Relationship(back_populates="client", cascade_delete=True)
+    orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class ClientPublic(ClientBase):

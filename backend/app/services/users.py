@@ -1,11 +1,13 @@
 from app.core.security import get_password_hash, verify_password
 from app.models import User, UserCreate, UserUpdate
-from app.repositories.users import UserRepository
+from app.repositories.base import CRUDRepository
+from sqlmodel import Session, select
 
 
 class UserService:
-    def __init__(self, repository: UserRepository) -> None:
-        self.repository = repository
+    def __init__(self, session: Session) -> None:
+        self.repository = CRUDRepository(User, session)
+        self.session = session
 
     def create(self, *, user_create: UserCreate) -> User:
         db_obj = User.model_validate(
@@ -25,7 +27,8 @@ class UserService:
         return db_user
 
     def authenticate(self, *, email: str, password: str) -> User | None:
-        db_user = self.repository.get_by_email(email=email)
+        statement = select(User).where(User.email == email)
+        db_user = self.session.exec(statement).first()
         if not db_user:
             return None
         if not verify_password(password, db_user.hashed_password):

@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated, Any
 
-from app.api.deps import CurrentUser, UserServiceDep, get_current_active_superuser
+from app.api.deps import CurrentUserDep, UserServiceDep, get_current_active_superuser
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash

@@ -1,8 +1,7 @@
 from app.core.config import settings
-from app.models import UserCreate
-from app.repositories.users import UserRepository
+from app.models import User, UserCreate
 from app.services.users import UserService
-from sqlmodel import Session, create_engine
+from sqlmodel import Session, create_engine, select
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -21,8 +20,10 @@ def init_db(session: Session) -> None:
     # This works because the models are already imported and registered from app.models
     # SQLModel.metadata.create_all(engine)
 
-    user_service = UserService(repository=UserRepository(session))
-    user = user_service.repository.get_by_email(email=settings.FIRST_SUPERUSER)
+    user_service = UserService(session=session)
+    user = user_service.session.exec(
+        select(User).where(User.email == settings.FIRST_SUPERUSER)
+    ).first()
     if not user:
         user_in = UserCreate(
             full_name=settings.FIRST_SUPERUSER_NAME,

@@ -1,12 +1,14 @@
 import uuid
 
 from app.models import Client, ClientCreate, ClientUpdate
-from app.repositories.clients import ClientRepository
+from app.repositories.base import CRUDRepository
+from sqlmodel import Session
 
 
 class ClientService:
     def __init__(
         self,
-        repository: ClientRepository,
+        session: Session,
     ) -> None:
-        self.repository = repository
+        self.repository = CRUDRepository(Client, session)
+        self.session = session

@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from app.api.deps import (
-    CurrentUser,
+    CurrentUserDep,
     UserServiceDep,
     get_current_active_superuser,
     get_current_user,
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me", response_model=UserPublic)
-def read_user_me(current_user: CurrentUser) -> Any:
+def read_user_me(current_user: CurrentUserDep) -> Any:
     """
     Get current user.
     """
@@ -37,7 +37,7 @@ def read_user_me(current_user: CurrentUser) -> Any:
 
 @router.patch("/me", response_model=UserPublic)
 def update_user_me(
-    *, user_service: UserServiceDep, user_in: UserUpdateMe, current_user: CurrentUser
+    *, user_service: UserServiceDep, user_in: UserUpdateMe, current_user: CurrentUserDep
 ) -> Any:
     """
     Update own user.
@@ -57,7 +57,7 @@ def update_user_me(
 
 @router.patch("/me/password", response_model=Message)
 def update_password_me(
-    *, user_service: UserServiceDep, body: UpdatePassword, current_user: CurrentUser
+    *, user_service: UserServiceDep, body: UpdatePassword, current_user: CurrentUserDep
 ) -> Any:
     """
     Update own password.
@@ -124,7 +124,7 @@ def read_users(user_service: UserServiceDep, skip: int = 0, limit: int = 100) ->
     response_model=UserPublic,
 )
 def read_user(
-    id: uuid.UUID, user_service: UserServiceDep, current_user: CurrentUser
+    id: uuid.UUID, user_service: UserServiceDep, current_user: CurrentUserDep
 ) -> Any:
     """
     Get a specific user by id.
@@ -176,7 +176,7 @@ def update_user(
 
 @router.delete("/{id}", dependencies=[Depends(get_current_active_superuser)])
 def delete_user(
-    user_service: UserServiceDep, current_user: CurrentUser, id: uuid.UUID
+    user_service: UserServiceDep, current_user: CurrentUserDep, id: uuid.UUID
 ) -> Message:
     """
     Delete a user.

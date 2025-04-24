@@ -9,11 +9,12 @@ import uuid
 from datetime import datetime, timezone
 from io import BytesIO, StringIO
 from typing import List, Union
+from uuid import UUID
 
 import pandas as pd
 import PyPDF2
 from app.models import Client, Order, OrderCreate, OrderUpdate
-from app.repositories.orders import OrderRepository
+from app.repositories.base import CRUDRepository
 from app.services.clients import ClientService
 from app.services.users import UserService
 from dotenv import load_dotenv
@@ -22,6 +23,7 @@ from groq import Groq
 from llama_parse import LlamaParse, ResultType
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from sqlmodel import Session
 
 load_dotenv()
 
@@ -191,15 +193,15 @@ def parse_order_2_csv(order: dict) -> str:
 class OrderService:
     def __init__(
         self,
-        repository: OrderRepository,
-        users_service: UserService,
-        clients_service: ClientService,
+        session: Session,
         ai_client: OpenAI,
         groq_client: Groq,
     ) -> None:
-        self.repository = repository
-        self.users_service = users_service
-        self.clients_service = clients_service
+        self.repository = CRUDRepository(Order, session)
+        self.session = session
+        self.clients_service = ClientService(session)
+        self.users_service = UserService(session)
+
         self.ai_client = ai_client
         self.groq_client = groq_client
 
@@ -226,7 +228,6 @@ class OrderService:
 
         # Add values to db_obj
         db_obj.content_processed = parse_order_2_csv(order)
-        db_obj.client_name = client.name
         db_obj.date_processed = datetime.now(timezone.utc)
         if user and user.is_auto_approved:
             db_obj.date_approved = datetime.now(timezone.utc)

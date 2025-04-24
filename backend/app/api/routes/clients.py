@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from app.api.deps import ClientServiceDep, CurrentUser
+from app.api.deps import ClientServiceDep, CurrentUserDep
 from app.models import (
     Client,
     ClientCreate,
@@ -18,17 +18,17 @@ router = APIRouter(prefix="/clients", tags=["clients"])
 @router.get("/", response_model=ClientsPublic)
 def read_clients(
     client_service: ClientServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     skip: int = 0,
     limit: int = 100,
 ) -> ClientsPublic:
     """
     Retrieve clients.
     """
-    count = client_service.repository.count_by_owner_id(owner_id=current_user.id)
-    clients = client_service.repository.get_all_by_owner_id(
-        owner_id=current_user.id, skip=skip, limit=limit
+    clients = client_service.repository.get_all_by_kwargs(
+        skip=skip, limit=limit, **{"owner_id": current_user.id}
     )
+    count = client_service.repository.count_by_kwargs(**{"owner_id": current_user.id})
     # Convert Client objects to ClientPublic objects
     client_publics = [ClientPublic.model_validate(client) for client in clients]
     return ClientsPublic(data=client_publics, count=count)
@@ -37,7 +37,7 @@ def read_clients(
 @router.post("/", response_model=ClientPublic)
 def create_client(
     client_service: ClientServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     client_in: ClientCreate,
 ) -> ClientPublic:
     """
@@ -50,7 +50,7 @@ def create_client(
 @router.delete("/{id}/")
 def delete_client(
     client_service: ClientServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     id: uuid.UUID,
 ) -> Message:
     """
@@ -72,7 +72,7 @@ def delete_client(
 def update_client(
     *,
     client_service: ClientServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     id: uuid.UUID,
     client_in: ClientUpdate,
 ) -> ClientPublic:

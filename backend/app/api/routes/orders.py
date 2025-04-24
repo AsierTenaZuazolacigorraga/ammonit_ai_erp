@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from app.api.deps import CurrentUser, OrderServiceDep
+from app.api.deps import CurrentUserDep, OrderServiceDep
 from app.models import (
     Message,
     Order,
@@ -19,17 +19,17 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 @router.get("/", response_model=OrdersPublic)
 def read_orders(
     order_service: OrderServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     skip: int = 0,
     limit: int = 100,
 ) -> OrdersPublic:
     """
     Retrieve orders.
     """
-    count = order_service.repository.count_by_owner_id(owner_id=current_user.id)
-    orders = order_service.repository.get_all_by_owner_id(
-        owner_id=current_user.id, skip=skip, limit=limit
+    orders = order_service.repository.get_all_by_kwargs(
+        skip=skip, limit=limit, **{"owner_id": current_user.id}
     )
+    count = order_service.repository.count_by_kwargs(**{"owner_id": current_user.id})
     # Convert Order objects to OrderPublic objects
     order_publics = [OrderPublic.model_validate(order) for order in orders]
     return OrdersPublic(data=order_publics, count=count)
@@ -38,7 +38,7 @@ def read_orders(
 @router.get("/{id}/", response_model=OrderPublic)
 def read_order(
     order_service: OrderServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     id: uuid.UUID,
 ) -> OrderPublic:
     """
@@ -56,7 +56,7 @@ def read_order(
 @router.post("/", response_model=OrderPublic)
 async def create_order(
     order_service: OrderServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     base_document: UploadFile = File(...),
 ) -> OrderPublic:
     """
@@ -78,7 +78,7 @@ async def create_order(
 @router.delete("/{id}/")
 def delete_order(
     order_service: OrderServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     id: uuid.UUID,
 ) -> Message:
     """
@@ -100,7 +100,7 @@ def delete_order(
 def update_order(
     *,
     order_service: OrderServiceDep,
-    current_user: CurrentUser,
+    current_user: CurrentUserDep,
     id: uuid.UUID,
     order_in: OrderUpdate,
 ) -> OrderPublic:

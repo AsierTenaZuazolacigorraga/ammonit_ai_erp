@@ -6,9 +6,6 @@ from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
-from app.repositories.clients import ClientRepository
-from app.repositories.orders import OrderRepository
-from app.repositories.users import UserRepository
 from app.services.clients import ClientService
 from app.services.orders import OrderService
 from app.services.users import UserService
@@ -48,8 +45,28 @@ def get_session(request: Request) -> Generator[Session, None, None]:
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
+
 ##########################################################################################
-# User
+# AI
+##########################################################################################
+
+
+def get_ai_client() -> OpenAI:
+    return OpenAI(api_key=settings.OPENAI_API_KEY)
+
+
+AIClientDep = Annotated[OpenAI, Depends(get_ai_client)]
+
+
+def get_groq_client() -> Groq:
+    return Groq(api_key=settings.GROQ_API_KEY)
+
+
+GroqClientDep = Annotated[Groq, Depends(get_groq_client)]
+
+
+##########################################################################################
+# Users
 ##########################################################################################
 
 
@@ -72,10 +89,10 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
     return user
 
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
-def get_current_active_superuser(current_user: CurrentUser) -> User:
+def get_current_active_superuser(current_user: CurrentUserDep) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=403, detail="El usuario no tiene suficientes privilegios"
@@ -83,23 +100,14 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
     return current_user
 
 
-##########################################################################################
-# AI
-##########################################################################################
+CurrentActiveSuperUserDep = Annotated[User, Depends(get_current_active_superuser)]
 
 
-def get_ai_client() -> OpenAI:
-    return OpenAI(api_key=settings.OPENAI_API_KEY)
+def user_service(session: SessionDep) -> UserService:
+    return UserService(session=session)
 
 
-AIClientDep = Annotated[OpenAI, Depends(get_ai_client)]
-
-
-def get_groq_client() -> Groq:
-    return Groq(api_key=settings.GROQ_API_KEY)
-
-
-GroqClientDep = Annotated[Groq, Depends(get_groq_client)]
+UserServiceDep = Annotated[UserService, Depends(user_service)]
 
 
 ##########################################################################################
@@ -107,63 +115,23 @@ GroqClientDep = Annotated[Groq, Depends(get_groq_client)]
 ##########################################################################################
 
 
-def client_repository(session: SessionDep) -> ClientRepository:
-    return ClientRepository(session)
-
-
-ClientRepositoryDep = Annotated[ClientRepository, Depends(client_repository)]
-
-
-def client_service(
-    client_repository: ClientRepositoryDep,
-) -> ClientService:
-    return ClientService(client_repository)
+def client_service(session: SessionDep) -> ClientService:
+    return ClientService(session=session)
 
 
 ClientServiceDep = Annotated[ClientService, Depends(client_service)]
-
-
-##########################################################################################
-# Users
-##########################################################################################
-
-
-def user_repository(session: SessionDep) -> UserRepository:
-    return UserRepository(session)
-
-
-UserRepositoryDep = Annotated[UserRepository, Depends(user_repository)]
-
-
-def user_service(user_repository: UserRepositoryDep) -> UserService:
-    return UserService(user_repository)
-
-
-UserServiceDep = Annotated[UserService, Depends(user_service)]
-
 
 ##########################################################################################
 # Orders
 ##########################################################################################
 
 
-def order_repository(session: SessionDep) -> OrderRepository:
-    return OrderRepository(session)
-
-
-OrderRepositoryDep = Annotated[OrderRepository, Depends(order_repository)]
-
-
 def order_service(
-    order_repository: OrderRepositoryDep,
-    users_service: UserServiceDep,
-    client_service: ClientServiceDep,
+    session: SessionDep,
     ai_client: AIClientDep,
     groq_client: GroqClientDep,
 ) -> OrderService:
-    return OrderService(
-        order_repository, users_service, client_service, ai_client, groq_client
-    )
+    return OrderService(session=session, ai_client=ai_client, groq_client=groq_client)
 
 
 OrderServiceDep = Annotated[OrderService, Depends(order_service)]
