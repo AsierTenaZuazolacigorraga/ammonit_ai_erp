@@ -13,6 +13,7 @@ from uuid import UUID
 
 import pandas as pd
 import PyPDF2
+from app.logger import get_logger
 from app.models import Client, Order, OrderCreate, OrderUpdate
 from app.repositories.base import CRUDRepository
 from app.services.clients import ClientService
@@ -23,9 +24,12 @@ from groq import Groq
 from llama_parse import LlamaParse, ResultType
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlmodel import Session
 
 load_dotenv()
+
+logger = get_logger(__name__)
 
 
 async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
@@ -107,6 +111,10 @@ def parse_md_2_order(
     md: str, ai_client: OpenAI, groq_client: Groq, clients: list[Client]
 ) -> tuple[dict, Client]:
 
+    clients_clasification = ",\n".join(
+        f'"- {client.name}: {client.clasifier}"' for client in clients
+    )
+
     # Extract client
     completion = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -117,7 +125,7 @@ def parse_md_2_order(
 Which client does this order come from? Select from the following list. Only respond with the client name as is specified in the list.
 If you cannot identify the client, respond with "unknown":
 [
-{", ".join(f'"{client.name}"' for client in clients)}
+{clients_clasification}
 ]
 """,
             },
@@ -202,6 +210,7 @@ class OrderService:
         self.users_service = UserService(session)
         self.ai_client = ai_client
         self.groq_client = groq_client
+        self.session = session
 
     async def create(self, *, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
         db_obj = await self.process(order_create, owner_id)
@@ -226,7 +235,6 @@ class OrderService:
         # Create the order
         db_obj = Order.model_validate(order_create, update={"owner_id": client.id})
         db_obj.content_processed = parse_order_2_csv(order)
-        db_obj.date_processed = datetime.now(timezone.utc)
         if user and user.is_auto_approved:
             db_obj.date_approved = datetime.now(timezone.utc)
             db_obj.is_approved = True
@@ -235,3 +243,43 @@ class OrderService:
             db_obj.is_approved = None
 
         return db_obj
+
+    def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Order]:
+        clients = self.clients_service.get_all(
+            skip=skip,
+            limit=limit,
+            owner_id=owner_id,
+        )
+        if not clients:
+            return []
+        client_ids = [client.id for client in clients]
+        return self.repository.get_all_by_kwargs(
+            skip=skip,
+            limit=limit,
+            **{"owner_id": client_ids},
+        )
+
+    def get_by_id(self, id: uuid.UUID) -> Order | None:
+        return self.repository.get_by_id(id)
+
+    def get_count(self, owner_id: uuid.UUID) -> int:
+        clients = self.clients_service.get_all(
+            skip=0,
+            limit=100,
+            owner_id=owner_id,
+        )
+        if not clients:
+            return 0
+        client_ids = [client.id for client in clients]
+        return self.repository.count_by_kwargs(**{"owner_id": client_ids})
+
+    def delete(self, id: uuid.UUID) -> None:
+        self.repository.delete(id)
+
+    def update(self, order_update: OrderUpdate, id: uuid.UUID) -> Order:
+        order = self.get_by_id(id)
+        if not order:
+            raise ValueError("Order not found")
+        return self.repository.update(
+            order, update=order_update.model_dump(exclude_unset=True)
+        )

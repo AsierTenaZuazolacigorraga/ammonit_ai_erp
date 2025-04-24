@@ -26,12 +26,14 @@ def read_orders(
     """
     Retrieve orders.
     """
-    orders = order_service.repository.get_all_by_kwargs(
-        skip=skip, limit=limit, **{"owner_id": current_user.id}
-    )
-    count = order_service.repository.count_by_kwargs(**{"owner_id": current_user.id})
-    # Convert Order objects to OrderPublic objects
-    order_publics = [OrderPublic.model_validate(order) for order in orders]
+    orders = order_service.get_all(skip=skip, limit=limit, owner_id=current_user.id)
+    count = order_service.get_count(owner_id=current_user.id)
+    order_publics = [
+        OrderPublic.model_validate(
+            order, update={"client_name": order.owner.name if order.owner else None}
+        )
+        for order in orders
+    ]
     return OrdersPublic(data=order_publics, count=count)
 
 
@@ -44,7 +46,7 @@ def read_order(
     """
     Get order by id.
     """
-    order = order_service.repository.get_by_id(id)
+    order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     if not current_user.is_superuser and (order.owner_id != current_user.id):
@@ -64,13 +66,12 @@ async def create_order(
     """
     file_bytes: bytes = await base_document.read()
 
-    order_data = OrderCreate(
-        base_document=file_bytes,
-        base_document_name=base_document.filename,
-    )
-
     order = await order_service.create(
-        order_create=order_data, owner_id=current_user.id
+        order_create=OrderCreate(
+            base_document=file_bytes,
+            base_document_name=base_document.filename,
+        ),
+        owner_id=current_user.id,
     )
     return OrderPublic.model_validate(order)
 
@@ -84,12 +85,12 @@ def delete_order(
     """
     Delete an order.
     """
-    order = order_service.repository.get_by_id(id)
+    order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     if not current_user.is_superuser and (order.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
-    order_service.repository.delete(id)
+    order_service.delete(id)
     return Message(message="Pedido eliminado correctamente")
 
 
@@ -108,7 +109,7 @@ def update_order(
     Update an order.
     """
 
-    order = order_service.repository.get_by_id(id)
+    order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     if not current_user.is_superuser and (order.owner_id != current_user.id):
@@ -117,7 +118,5 @@ def update_order(
         raise HTTPException(
             status_code=400, detail="No se puede actualizar un pedido aprobado"
         )
-    order = order_service.repository.update(
-        db_obj=order, update=order_in.model_dump(exclude_unset=True)
-    )
+    order = order_service.update(order_update=order_in, id=id)
     return OrderPublic.model_validate(order)

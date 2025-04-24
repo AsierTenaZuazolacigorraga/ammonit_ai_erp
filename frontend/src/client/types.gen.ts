@@ -17,12 +17,14 @@ export type ClientCreate = {
     name: string;
     clasifier: string;
     structure: string;
+    created_at?: string;
 };
 
 export type ClientPublic = {
     name: string;
     clasifier: string;
     structure: string;
+    created_at?: string;
     id: string;
     owner_id: string;
 };
@@ -36,6 +38,7 @@ export type ClientUpdate = {
     name: string;
     clasifier: string;
     structure: string;
+    created_at?: string;
 };
 
 export type HTTPValidationError = {
@@ -49,10 +52,10 @@ export type Message = {
 export type OrderPublic = {
     base_document?: (string | null);
     base_document_name?: (string | null);
-    date_processed?: (string | null);
     date_approved?: (string | null);
     is_approved?: (boolean | null);
     content_processed?: (string | null);
+    created_at?: string;
     id: string;
     owner_id: string;
     client_name?: (string | null);
@@ -66,10 +69,10 @@ export type OrdersPublic = {
 export type OrderUpdate = {
     base_document?: ((Blob | File) | null);
     base_document_name?: (string | null);
-    date_processed?: (string | null);
     date_approved?: (string | null);
     is_approved?: (boolean | null);
     content_processed?: (string | null);
+    created_at?: string;
 };
 
 export type Token = {
@@ -88,6 +91,7 @@ export type UserCreate = {
     is_superuser?: boolean;
     full_name?: (string | null);
     is_auto_approved?: boolean;
+    created_at?: string;
     password: string;
 };
 
@@ -97,6 +101,7 @@ export type UserPublic = {
     is_superuser?: boolean;
     full_name?: (string | null);
     is_auto_approved?: boolean;
+    created_at?: string;
     id: string;
 };
 
@@ -111,6 +116,7 @@ export type UserUpdate = {
     is_superuser?: boolean;
     full_name?: (string | null);
     is_auto_approved?: boolean;
+    created_at?: string;
     password?: (string | null);
 };
 

@@ -1,9 +1,11 @@
 import base64
 import uuid
 from datetime import datetime, timezone
+from typing import Any, Dict, Type, TypeVar, Union
 
 from pydantic import EmailStr, model_validator
 from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel._compat import sqlmodel_validate
 
 
 class Entity(SQLModel):
@@ -21,6 +23,9 @@ class UserBase(SQLModel):
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
     is_auto_approved: bool = False
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )
 
 
 class UserCreate(UserBase):
@@ -68,6 +73,9 @@ class ClientBase(SQLModel):
     name: str = Field(nullable=False)
     clasifier: str = Field(nullable=False)
     structure: str = Field(nullable=False)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )
 
 
 class ClientCreate(ClientBase):
@@ -105,10 +113,12 @@ class ClientsPublic(SQLModel):
 class OrderBase(SQLModel):
     base_document: bytes | None = Field(default=None, nullable=False)
     base_document_name: str | None = Field(default=None, max_length=255)
-    date_processed: datetime | None = Field(default=None)  # In utc
-    date_approved: datetime | None = Field(default=None)  # In utc
+    date_approved: datetime | None = Field(default=None)  # In UTC
     is_approved: bool | None = Field(default=None)
     content_processed: str | None = Field(default=None)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )  # In UTC
 
 
 class OrderCreate(OrderBase):
@@ -136,13 +146,28 @@ class OrderPublic(OrderBase):
     client_name: str | None = Field(default=None)
 
     @classmethod
-    def model_validate(cls, obj):
+    def model_validate(
+        cls,
+        obj: Any,
+        *,
+        strict: Union[bool, None] = None,
+        from_attributes: Union[bool, None] = None,
+        context: Union[Dict[str, Any], None] = None,
+        update: Union[Dict[str, Any], None] = None,
+    ):
         obj_dict = obj.model_dump()
         if obj_dict.get("base_document") is not None:
             obj_dict["base_document"] = base64.b64encode(
                 obj_dict["base_document"]
             ).decode("utf-8")
-        return cls(**obj_dict)
+        return sqlmodel_validate(
+            cls=cls,
+            obj=cls(**obj_dict),
+            strict=strict,
+            from_attributes=from_attributes,
+            context=context,
+            update=update,
+        )
 
 
 class OrdersPublic(SQLModel):
@@ -158,6 +183,9 @@ class OrdersPublic(SQLModel):
 class EmailBase(SQLModel):
     email_id: str = Field(nullable=False)
     is_processed: bool = Field(default=False)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )
 
 
 class EmailCreate(EmailBase):

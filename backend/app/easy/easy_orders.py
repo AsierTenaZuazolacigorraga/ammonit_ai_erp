@@ -31,9 +31,10 @@ ORDER_inola = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/INOLA/87-2
 ORDER_matisa = (
     r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/MATISA/CF2503-87388.pdf"
 )
+ORDER_matisa2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/MATISA/aaaaaaaaaaaaaaaaaaaaaaaa.pdf"
 ORDER_ulma1 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/598153.pdf"
 ORDER_ulma2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/4595390.pdf"
-ORDER = ORDER_ulma2
+ORDER = ORDER_matisa2
 
 
 async def main():

@@ -2,6 +2,7 @@ import uuid
 from typing import Any, Generic, TypeVar
 
 from app.models import Entity
+from sqlalchemy import Column, desc
 from sqlmodel import Session, func, select
 
 T = TypeVar("T", bound=Entity)
@@ -36,7 +37,13 @@ class CRUDRepository(Generic[T]):
         return count
 
     def count_by_kwargs(self, **kwargs: Any) -> int:
-        statement = select(func.count()).select_from(self.table).filter_by(**kwargs)
+        statement = select(func.count()).select_from(self.table)
+        for field, value in kwargs.items():
+            col = getattr(self.table, field)
+            if isinstance(value, (list, tuple, set)):
+                statement = statement.where(col.in_(value))
+            else:
+                statement = statement.where(col == value)
         count = self.session.exec(statement).one()
         return count
 
@@ -47,9 +54,10 @@ class CRUDRepository(Generic[T]):
         limit: int = 100,
         order_by: Any | None = None,
     ) -> list[T]:
-        statement = select(self.table).offset(skip).limit(limit)
-        if order_by is not None:
-            statement = statement.order_by(order_by)
+        statement = select(self.table)
+        if order_by is None:
+            order_by = desc(Column("created_at"))  # type: ignore
+        statement = statement.order_by(order_by).offset(skip).limit(limit)
         db_objs = self.session.exec(statement).all()
         return list(db_objs)
 
@@ -61,10 +69,16 @@ class CRUDRepository(Generic[T]):
         order_by: Any | None = None,
         **kwargs: Any,
     ) -> list[T]:
-        statement = select(self.table).filter_by(**kwargs)
-        if order_by is not None:
-            statement = statement.order_by(order_by)
-        statement = statement.offset(skip).limit(limit)
+        statement = select(self.table)
+        for field, value in kwargs.items():
+            col = getattr(self.table, field)
+            if isinstance(value, (list, tuple, set)):
+                statement = statement.where(col.in_(value))
+            else:
+                statement = statement.where(col == value)
+        if order_by is None:
+            order_by = desc(Column("created_at"))  # type: ignore
+        statement = statement.order_by(order_by).offset(skip).limit(limit)
         db_objs = self.session.exec(statement).all()
         return list(db_objs)
 

@@ -21,7 +21,6 @@ class ClientService:
         return self.repository.get_all_by_kwargs(
             skip=skip,
             limit=limit,
-            order_by=self.repository.table.id,
             **{"owner_id": owner_id},
         )
 

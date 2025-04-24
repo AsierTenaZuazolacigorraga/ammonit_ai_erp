@@ -21,7 +21,6 @@ class UserService:
         return self.repository.get_all_by_kwargs(
             skip=skip,
             limit=limit,
-            order_by=self.repository.table.id,
         )
 
     def get_count(self) -> int:

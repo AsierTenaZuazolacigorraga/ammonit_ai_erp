@@ -99,8 +99,8 @@ function Orders() {
             )
         },
         {
-            header: "Fecha de Procesado",
-            accessor: (order) => formatLocalDate(order.date_processed)
+            header: "Fecha de Creación",
+            accessor: (order) => formatLocalDate(order.created_at)
         },
         {
             header: "Fecha de Aprobación",
@@ -130,11 +130,11 @@ function Orders() {
                 return (
                     <Link
                         href={`data:text/csv;charset=utf-8,${encodeURIComponent(order.content_processed)}`}
-                        download={order.base_document_name?.replace('.pdf', '_processed.csv')}
+                        download={order.base_document_name?.replace('.pdf', '_ammonit.csv')}
                         color="blue.500"
                         textDecoration="underline"
                     >
-                        {order.base_document_name?.replace('.pdf', '_processed.csv')}
+                        {order.base_document_name?.replace('.pdf', '_ammonit.csv')}
                     </Link>
                 );
             }

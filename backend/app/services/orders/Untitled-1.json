@@ -1,0 +1,64 @@
+{
+    "format": {
+        "type": "json_schema",
+        "name": "order_ulma",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "string",
+                    "description": "The number of the order. Usually provided in a table called 'Pedido de compra', in the field names as 'Num.'."
+                },
+                "items": {
+                    "type": "array",
+                    "description": "The items in the order",
+                    "items": {
+                        "$ref": "#/$defs/item_ulma"
+                    }
+                }
+            },
+            "required": [
+                "number",
+                "items"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "item_ulma": {
+                    "type": "object",
+                    "description": "Defines an item in the order.",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "description": "The code of the item. Usually provided as 'Proyecto C\u00f3digo'."
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "The description of the item."
+                        },
+                        "quantity": {
+                            "type": "number",
+                            "description": "The quantity of items to order"
+                        },
+                        "unit_price": {
+                            "type": "number",
+                            "description": "The unit price of the item. Usually provided as 'Precio'."
+                        },
+                        "deadline": {
+                            "type": "string",
+                            "description": "The deadline or due date for the item. Usually provided as 'Entrega'."
+                        }
+                    },
+                    "required": [
+                        "code",
+                        "description",
+                        "quantity",
+                        "unit_price",
+                        "deadline"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "strict": true
+    }
+}
