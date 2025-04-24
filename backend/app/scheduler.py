@@ -1,3 +1,4 @@
+import asyncio
 import threading
 import time
 import traceback
@@ -5,10 +6,6 @@ import traceback
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
-from app.repositories.clients import ClientRepository
-from app.repositories.emails import EmailRepository
-from app.repositories.orders import OrderRepository
-from app.repositories.users import UserRepository
 from app.services.clients import ClientService
 from app.services.emails import EmailService
 from app.services.orders import OrderService
@@ -39,7 +36,13 @@ class Scheduler:
         while True:
             with Session(engine) as session:
                 try:
-                    func(session)
+                    # Call the function, potentially capturing a coroutine
+                    result = func(session)
+                    # Check if the result is awaitable (a coroutine)
+                    if asyncio.iscoroutine(result):
+                        # If it is, run it using asyncio.run
+                        asyncio.run(result)
+                    # Otherwise, assume the function was synchronous and already executed.
                 except Exception as e:
                     logger.error("Error in task %s: %s", func.__name__, e)
                     logger.debug("Traceback: %s", traceback.format_exc())
@@ -50,7 +53,7 @@ def task_health_check(session):
     logger.info("task_health_check: Running")
 
 
-def task_for_each_user_email_service_fetch(session, user):
+async def task_for_each_user_email_service_fetch(session, user):
 
     logger.info(
         f"task_email_service_fetch: {user.full_name} | email: {user.email} | id: {user.id}"
@@ -58,15 +61,14 @@ def task_for_each_user_email_service_fetch(session, user):
 
     # Define orders service
     order_service = OrderService(
-        OrderRepository(session),
-        ClientService(ClientRepository(session)),
+        session,
         OpenAI(api_key=settings.OPENAI_API_KEY),
         Groq(api_key=settings.GROQ_API_KEY),
     )
 
     # Define emails service
     email_service = EmailService(
-        EmailRepository(session),
+        session,
         order_service,
         settings.OUTLOOK_ID,
         settings.OUTLOOK_SECRET,
@@ -74,7 +76,7 @@ def task_for_each_user_email_service_fetch(session, user):
     )
 
     # Fetch emails
-    email_service.fetch(owner_id=user.id)
+    await email_service.fetch(owner_id=user.id)
 
 
 def main():
@@ -85,9 +87,9 @@ def main():
 
     # Add tasks for each user
     with Session(engine) as session:
-        user_service = UserService(UserRepository(session))
+        user_service = UserService(session)
         for user in [
-            user for user in user_service.repository.get_all() if user.is_active
+            user for user in user_service.get_all(skip=0, limit=100) if user.is_active
         ]:
             sched.add_task(
                 lambda s, u=user: task_for_each_user_email_service_fetch(s, u), 10

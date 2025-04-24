@@ -69,7 +69,7 @@ class EmailService:
             else:
                 logger.info("Authentication failed")
 
-    def fetch(self, *, owner_id: uuid.UUID) -> None:
+    async def fetch(self, *, owner_id: uuid.UUID) -> None:
         logger.info(f"Fetching emails for: {self.email}")
 
         messages = list(
@@ -77,7 +77,7 @@ class EmailService:
             .inbox_folder()
             .get_messages(limit=50, order_by="receivedDateTime desc")
         )
-        db_messages = self.repository.get_all()
+        db_messages = self.get_all(skip=0, limit=100, owner_id=owner_id)
 
         # Identify new emails
         new_messages = []
@@ -107,17 +107,16 @@ class EmailService:
                         for attachment in msg_complete.attachments:
                             if attachment.name.endswith(".pdf"):
 
-                                in_document_name = attachment.name
-                                in_document = base64.b64decode(attachment.content)
+                                base_document_name = attachment.name
+                                base_document = base64.b64decode(attachment.content)
 
                                 try:
                                     # Create the order
-                                    self.order_service.create(
+                                    await self.order_service.create(
                                         order_create=OrderCreate(
-                                            date_local=datetime.now(),
-                                            date_utc=datetime.now(timezone.utc),
-                                            in_document=in_document or None,
-                                            in_document_name=in_document_name or None,
+                                            base_document=base_document or None,
+                                            base_document_name=base_document_name
+                                            or None,
                                         ),
                                         owner_id=owner_id,
                                     )
@@ -136,11 +135,21 @@ class EmailService:
 
                 # Save it for tracing
                 new_messages.append(msg)
-                self.repository.create(
-                    Email.model_validate(
-                        EmailCreate(email_id=email_id, is_processed=True),
-                        update={"owner_id": owner_id},
-                    )
+                self.create(
+                    EmailCreate(email_id=email_id, is_processed=True),
+                    owner_id=owner_id,
                 )
         if not new_messages:
             logger.info(f"No new messages found for {self.email}")
+
+    def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Email]:
+        return self.repository.get_all_by_kwargs(
+            skip=skip,
+            limit=limit,
+            **{"owner_id": owner_id},
+        )
+
+    def create(self, email_create: EmailCreate, owner_id: uuid.UUID) -> Email:
+        return self.repository.create(
+            Email.model_validate(email_create, update={"owner_id": owner_id})
+        )

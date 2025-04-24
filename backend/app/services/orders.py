@@ -218,11 +218,9 @@ class OrderService:
 
     async def process(self, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
 
-        # Get from external service/repository
-        clients = self.clients_service.repository.get_all_by_kwargs(
-            skip=0, limit=100, **{"owner_id": owner_id}
-        )
-        user = self.users_service.repository.get_by_id(owner_id)
+        # Get from external service
+        clients = self.clients_service.get_all(skip=0, limit=100, owner_id=owner_id)
+        user = self.users_service.get_by_id(owner_id)
 
         # Process parsing
         if order_create.base_document is None:
