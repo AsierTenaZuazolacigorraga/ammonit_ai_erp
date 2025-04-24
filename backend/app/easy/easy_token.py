@@ -4,10 +4,6 @@ import uuid
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
-from app.repositories.clients import ClientRepository
-from app.repositories.emails import EmailRepository
-from app.repositories.orders import OrderRepository
-from app.services.clients import ClientService
 from app.services.emails import EmailService
 from app.services.orders import OrderService
 from dotenv import load_dotenv
@@ -36,18 +32,15 @@ def main():
     with Session(engine) as session:
 
         # Initialize required services
-        email_repository = EmailRepository(session)
-        client_service = ClientService(ClientRepository(session))
         order_service = OrderService(
-            repository=OrderRepository(session),
-            clients_service=client_service,
+            session=session,
             ai_client=OpenAI(api_key=settings.OPENAI_API_KEY),
             groq_client=Groq(api_key=settings.GROQ_API_KEY),
         )
 
         # Create email service instance
         email_service = EmailService(
-            repository=email_repository,
+            session=session,
             order_service=order_service,
             id=OUTLOOK_ID,
             secret=OUTLOOK_SECRET,
