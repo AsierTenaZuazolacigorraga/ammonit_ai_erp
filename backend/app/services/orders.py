@@ -246,8 +246,8 @@ class OrderService:
 
     def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Order]:
         clients = self.clients_service.get_all(
-            skip=skip,
-            limit=limit,
+            skip=0,
+            limit=100,
             owner_id=owner_id,
         )
         if not clients:
