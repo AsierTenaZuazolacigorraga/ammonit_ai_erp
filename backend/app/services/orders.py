@@ -56,7 +56,7 @@ async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
         parser = LlamaParse(
             api_key=api_key,
             result_type=ResultType.MD,
-            premium_mode=True,
+            # premium_mode=True,
             do_not_cache=True,
             invalidate_cache=True,
         )
