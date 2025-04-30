@@ -58,7 +58,7 @@ const AddOrder = () => {
   const mutation = useMutation({
     mutationFn: (data: AddOrderFormData) => {
       if (!(data.base_document instanceof File)) {
-        return Promise.reject(new Error("Archivo de pedido no válido."));
+        return Promise.reject(new Error("Archivo de documento no válido."));
       }
       // Cast to any to bypass outdated generated type check
       return OrdersService.createOrder({
@@ -68,7 +68,7 @@ const AddOrder = () => {
       });
     },
     onSuccess: () => {
-      showSuccessToast("Pedido creado correctamente.")
+      showSuccessToast("Documento creado correctamente.")
       reset()
       setIsOpen(false)
     },
@@ -113,19 +113,19 @@ const AddOrder = () => {
       <DialogTrigger asChild>
         <Button value="add-order" my={4}>
           <FaPlus fontSize="16px" />
-          Añadir Pedido
+          Añadir Documento
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Añadir Pedido</DialogTitle>
+            <DialogTitle>Añadir Documento</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <VStack gap={4}>
               <Field
                 required
-                label="Documento de Pedido"
+                label="Documento"
                 // Use correct field names for errors
                 invalid={!!errors.base_document_name || !!errors.base_document}
                 errorText={errors.base_document_name?.message || errors.base_document?.message}
@@ -143,9 +143,9 @@ const AddOrder = () => {
                 </div>
                 <Input
                   {...register("base_document_name", { // Register for validation
-                    required: "Se requiere el documento de pedido.",
+                    required: "Se requiere el documento.",
                   })}
-                  placeholder="Nombre del documento de pedido"
+                  placeholder="Nombre del documento"
                   value={currentFileName || ""} // Display watched name
                   type="text"
                   readOnly

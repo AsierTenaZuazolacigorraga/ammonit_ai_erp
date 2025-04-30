@@ -14,8 +14,9 @@ from uuid import UUID
 import pandas as pd
 import PyPDF2
 from app.logger import get_logger
-from app.models import Client, Order, OrderCreate, OrderUpdate
+from app.models import Client, Order, OrderCreate, OrderState, OrderUpdate
 from app.repositories.base import CRUDRepository
+from app.services.bridges import BridgeService
 from app.services.clients import ClientService
 from app.services.users import UserService
 from dotenv import load_dotenv
@@ -49,19 +50,27 @@ async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
             )
 
         # Add a check to ensure the API key is not None
-        api_key = os.getenv("LLAMACLOUD_API_KEY")
-        if api_key is None:
-            raise ValueError("LLAMACLOUD_API_KEY environment variable is not set")
+        for api_key in [
+            "LLAMACLOUD_API_KEY",
+            "LLAMACLOUD_API_KEY_1",
+            "LLAMACLOUD_API_KEY_2",
+        ]:
+            api_key = os.getenv(api_key)
+            if api_key is None:
+                raise ValueError(f"{api_key} environment variable is not set")
 
-        parser = LlamaParse(
-            api_key=api_key,
-            result_type=ResultType.MD,
-            # premium_mode=True,
-            do_not_cache=True,
-            invalidate_cache=True,
-        )
+            parser = LlamaParse(
+                api_key=api_key,
+                result_type=ResultType.MD,
+                premium_mode=True,
+                do_not_cache=True,
+                invalidate_cache=True,
+            )
 
-        documents = await parser.aload_data(f.name)
+            documents = await parser.aload_data(f.name)
+            if documents != []:
+                break
+
         md = ""
         for document in documents:
             md = md + document.text
@@ -208,15 +217,12 @@ class OrderService:
         self.repository = CRUDRepository[Order](Order, session)
         self.clients_service = ClientService(session)
         self.users_service = UserService(session)
+        self.bridge_service = BridgeService(session)
         self.ai_client = ai_client
         self.groq_client = groq_client
         self.session = session
 
     async def create(self, *, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
-        db_obj = await self.process(order_create, owner_id)
-        return self.repository.create(db_obj)
-
-    async def process(self, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
 
         # Get from external service
         clients = self.clients_service.get_all(skip=0, limit=100, owner_id=owner_id)
@@ -228,19 +234,35 @@ class OrderService:
         md = await parse_pdf_binary_2_md(order_create.base_document)
 
         # Use the new parse_md_2_order function with ai_client
-        order, client = parse_md_2_order(md, self.ai_client, self.groq_client, clients)
+        order_dict, client = parse_md_2_order(
+            md, self.ai_client, self.groq_client, clients
+        )
 
-        # Create the order
-        db_obj = Order.model_validate(order_create, update={"owner_id": client.id})
-        db_obj.content_processed = parse_order_2_csv(order)
+        # Creat the order
+        order = Order.model_validate(order_create, update={"owner_id": client.id})
+        order.content_processed = parse_order_2_csv(order_dict)
+        self.repository.create(order)
+
+        # Approve the order (if needed)
         if user and user.is_auto_approved:
-            db_obj.date_approved = datetime.now(timezone.utc)
-            db_obj.is_approved = True
-        else:
-            db_obj.date_approved = None
-            db_obj.is_approved = None
+            order = await self.approve(order_update=OrderUpdate(), id=order.id)
 
-        return db_obj
+        return order
+
+    async def approve(self, order_update: OrderUpdate, id: uuid.UUID) -> Order:
+        order = self.get_by_id(id)
+        if not order:
+            raise ValueError("Order not found")
+
+        # Update the order
+        order_update.approved_at = datetime.now(timezone.utc)
+
+        # Integrate in ERP
+        order_update = self.bridge_service.execute(order_update=order_update)
+
+        return self.repository.update(
+            order, update=order_update.model_dump(exclude_unset=True)
+        )
 
     def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Order]:
         clients = self.clients_service.get_all(
@@ -273,11 +295,3 @@ class OrderService:
 
     def delete(self, id: uuid.UUID) -> None:
         self.repository.delete(id)
-
-    def update(self, order_update: OrderUpdate, id: uuid.UUID) -> Order:
-        order = self.get_by_id(id)
-        if not order:
-            raise ValueError("Order not found")
-        return self.repository.update(
-            order, update=order_update.model_dump(exclude_unset=True)
-        )

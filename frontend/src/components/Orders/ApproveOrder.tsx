@@ -3,9 +3,12 @@ import { useState } from 'react';
 import { type SubmitHandler, useForm } from "react-hook-form";
 
 import {
+    Box,
     Button,
     DialogActionTrigger,
-    DialogTitle
+    DialogTitle,
+    Grid,
+    Text
 } from "@chakra-ui/react";
 import { FaCheckCircle, FaEye } from "react-icons/fa";
 
@@ -13,6 +16,7 @@ import { type OrderPublic, OrdersService } from "@/client";
 import type { ApiError } from "@/client/core/ApiError";
 import useCustomToast from "@/hooks/useCustomToast";
 import { handleError } from "@/utils";
+import DocumentViewer from "../Common/DocumentViewer";
 import GridTable from "../Common/GridTable";
 import {
     DialogBody,
@@ -44,17 +48,15 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
 
     const mutation = useMutation({
         mutationFn: () => {
-            return OrdersService.updateOrder({
+            return OrdersService.approveOrder({
                 id: order.id,
                 requestBody: {
-                    is_approved: true,
-                    date_approved: new Date().toISOString(),
                     content_processed: updatedContent
                 }
             })
         },
         onSuccess: () => {
-            showSuccessToast("Pedido aprobado correctamente.")
+            showSuccessToast("Documento aprobado correctamente.")
             setIsOpen(false)
         },
         onError: (err: ApiError) => {
@@ -73,10 +75,10 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
         setUpdatedContent(csvData);
     };
 
-    if (!!order.is_approved) {
+    if (order.state !== "PENDING") {
         return (
             <DialogRoot
-                size={{ base: "sm", md: "xl" }}
+                size="xl"
                 placement="center"
                 open={isOpen}
                 onOpenChange={({ open }) => setIsOpen(open)}
@@ -91,15 +93,33 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                         <FaEye fontSize="16px" />
                     </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent maxW="95vw">
                     <DialogHeader>
-                        <DialogTitle>Ver Pedido</DialogTitle>
+                        <DialogTitle>Ver Documento</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
-                        <GridTable
-                            inputData={order.content_processed || ''}
-                            readOnly={true}
-                        />
+                        <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
+                            <Box
+                                width="595px"
+                                maxHeight="80vh"
+                                overflowY="auto"
+                                display="flex"
+                                flexDirection="column"
+                                alignItems="center"
+                                minW="0"
+                                pr={2}
+                            >
+                                <Text fontWeight="bold" mb={2} alignSelf="flex-start">Documento Base</Text>
+                                <DocumentViewer base64Document={order.base_document || ''} />
+                            </Box>
+                            <Box maxH="80vh" overflow="auto" minW={0} width="100%">
+                                <Text fontWeight="bold" mb={2}>Información Extraída</Text>
+                                <GridTable
+                                    inputData={order.content_processed || ''}
+                                    readOnly={true}
+                                />
+                            </Box>
+                        </Grid>
                     </DialogBody>
                     <DialogFooter>
                         <DialogActionTrigger asChild>
@@ -118,7 +138,7 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
 
     return (
         <DialogRoot
-            size={{ base: "sm", md: "xl" }}
+            size="xl"
             placement="center"
             open={isOpen}
             onOpenChange={({ open }) => setIsOpen(open)}
@@ -127,37 +147,58 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    colorScheme="green"
+                    colorScheme="orange"
                     disabled={isSubmitting}
                 >
                     <FaCheckCircle fontSize="16px" />
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent maxW="95vw">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogHeader>
-                        <DialogTitle>Aprobar Pedido</DialogTitle>
+                        <DialogTitle>Aprobar Documento</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
-                        <GridTable
-                            inputData={order.content_processed || ''}
-                            onDataChange={handleDataChange}
-                        />
+                        <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
+                            <Box
+                                width="595px"
+                                maxHeight="80vh"
+                                overflowY="auto"
+                                display="flex"
+                                flexDirection="column"
+                                alignItems="center"
+                                minW="0"
+                                pr={2}
+                            >
+                                <Text fontWeight="bold" mb={2} alignSelf="flex-start">Documento Base</Text>
+                                <DocumentViewer base64Document={order.base_document || ''} />
+                            </Box>
+                            <Box maxH="80vh" overflow="auto" minW={0} width="100%">
+                                <Text fontWeight="bold" mb={2}>Información Extraída</Text>
+                                <GridTable
+                                    inputData={order.content_processed || ''}
+                                    onDataChange={handleDataChange}
+                                />
+                            </Box>
+                        </Grid>
                     </DialogBody>
                     <DialogFooter gap={2}>
-                        <DialogActionTrigger asChild>
-                            <Button
-                                variant="subtle"
-                                colorPalette="gray"
-                                disabled={isSubmitting}
-                            >
-                                Cancelar
-                            </Button>
-                        </DialogActionTrigger>
+                        {!(isSubmitting || mutation.isPending) && (
+                            <DialogActionTrigger asChild>
+                                <Button
+                                    variant="subtle"
+                                    colorPalette="gray"
+                                    disabled={isSubmitting}
+                                >
+                                    Cancelar
+                                </Button>
+                            </DialogActionTrigger>
+                        )}
                         <Button
                             variant="solid"
                             type="submit"
-                            loading={isSubmitting}
+                            loading={isSubmitting || mutation.isPending}
+                            loadingText="Procesando..."
                             colorScheme="green"
                         >
                             Aprobar

@@ -139,7 +139,7 @@ const UserInformation = () => {
               <Checkbox.HiddenInput />
               <Checkbox.Control />
               <Checkbox.Label>
-                Permitir que la IA apruebe los pedidos automáticamente, sin supervisión humana.
+                Permitir que la IA apruebe los documentos automáticamente, sin supervisión humana.
               </Checkbox.Label>
             </Checkbox.Root>
           ) : (
@@ -151,7 +151,7 @@ const UserInformation = () => {
               <Checkbox.HiddenInput />
               <Checkbox.Control />
               <Checkbox.Label>
-                Permitir que la IA apruebe los pedidos automáticamente, sin supervisión humana.
+                Permitir que la IA apruebe los documentos automáticamente, sin supervisión humana.
               </Checkbox.Label>
             </Checkbox.Root>
           )}

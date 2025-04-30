@@ -4,17 +4,21 @@ import os
 from datetime import datetime, timezone
 from typing import List, Optional, Union
 
-from app.client.ammonit_client import AuthenticatedClient
-from app.client.ammonit_client import Client as ApiClient
-from app.client.ammonit_client.api.clients.clients_create_client import (
+from app.api_client.ammonit_client import AuthenticatedClient
+from app.api_client.ammonit_client import Client as ApiClient
+from app.api_client.ammonit_client.api.clients.clients_create_client import (
     sync as create_client,
 )
-from app.client.ammonit_client.api.login.login_login_access_token import sync as login
-from app.client.ammonit_client.api.orders.orders_read_orders import sync as read_orders
-from app.client.ammonit_client.models.body_login_login_access_token import (
+from app.api_client.ammonit_client.api.login.login_login_access_token import (
+    sync as login,
+)
+from app.api_client.ammonit_client.api.orders.orders_read_orders import (
+    sync as read_orders,
+)
+from app.api_client.ammonit_client.models.body_login_login_access_token import (
     BodyLoginLoginAccessToken,
 )
-from app.client.ammonit_client.models.client_create import (
+from app.api_client.ammonit_client.models.client_create import (
     ClientCreate as ClientCreateApi,
 )
 from app.core.db import engine
@@ -63,6 +67,12 @@ class Order(BaseModel):
     )
 
 
+def adapt_schema(schema: dict) -> dict:
+    schema.update({"additionalProperties": False})
+    schema.pop("title")
+    return schema
+
+
 # Parameters
 IS_LOCAL = False
 EMAIL = "asier.tena.zu@outlook.com"
@@ -71,8 +81,9 @@ CLIENT_CLASSIFIER = (
     "Contiene la palabra y referencias a la empresa de Nearby Electronics"
 )
 CLIENT_STRUCTURE = Order.model_json_schema()
-CLIENT_STRUCTURE.update({"additionalProperties": False})
-CLIENT_STRUCTURE.pop("title")
+CLIENT_STRUCTURE = adapt_schema(CLIENT_STRUCTURE)
+for defs in CLIENT_STRUCTURE["$defs"]:
+    CLIENT_STRUCTURE["$defs"][defs] = adapt_schema(CLIENT_STRUCTURE["$defs"][defs])
 CLIENT_STRUCTURE = {
     "format": {
         "type": "json_schema",

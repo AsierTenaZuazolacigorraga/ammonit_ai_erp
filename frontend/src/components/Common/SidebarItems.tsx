@@ -7,7 +7,7 @@ import type { IconType } from "react-icons/lib"
 import type { UserPublic } from "@/client"
 
 const items = [
-  { icon: FiHome, title: "Gestión de Pedidos", path: "/orders" },
+  { icon: FiHome, title: "Gestión de Documentos", path: "/orders" },
   { icon: FiUserPlus, title: "Gestión de Clientes", path: "/clients" },
   { icon: FiSettings, title: "Configuración de Usuario", path: "/settings" },
 ]

@@ -1,9 +1,12 @@
 import base64
 import uuid
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Any, Dict, Type, TypeVar, Union
 
 from pydantic import EmailStr, model_validator
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import ENUM as PGEnum
 from sqlmodel import Field, Relationship, SQLModel
 from sqlmodel._compat import sqlmodel_validate
 
@@ -110,12 +113,25 @@ class ClientsPublic(SQLModel):
 ##########################################################################################
 
 
+class OrderState(str, Enum):
+    PENDING = "PENDING"  # Pending for user approval
+    INTEGRATED = "INTEGRATED"  # Integrated correctly in ERP
+    ERROR = "ERROR"  # Error while integrating in ERP
+
+
 class OrderBase(SQLModel):
     base_document: bytes | None = Field(default=None, nullable=False)
     base_document_name: str | None = Field(default=None, max_length=255)
-    date_approved: datetime | None = Field(default=None)  # In UTC
-    is_approved: bool | None = Field(default=None)
     content_processed: str | None = Field(default=None)
+    state: OrderState = Field(
+        sa_column=Column(
+            PGEnum(OrderState, name="order_state_enum", create_type=True),
+            nullable=False,
+        ),
+        default=OrderState.PENDING,
+    )
+    approved_at: datetime | None = Field(default=None, nullable=True)  # In UTC
+    erp_interaction_at: datetime | None = Field(default=None, nullable=True)  # In UTC
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )  # In UTC
@@ -180,9 +196,20 @@ class OrdersPublic(SQLModel):
 ##########################################################################################
 
 
+class EmailState(str, Enum):
+    PROCESSED = "PROCESSED"  # Processed correctly the orders in the email
+    ERROR = "ERROR"  # Error while processing the orders in the email
+
+
 class EmailBase(SQLModel):
     email_id: str = Field(nullable=False)
-    is_processed: bool = Field(default=False)
+    state: EmailState = Field(
+        sa_column=Column(
+            PGEnum(EmailState, name="email_state_enum", create_type=True),
+            nullable=False,
+        ),
+        default=EmailState.PROCESSED,
+    )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )

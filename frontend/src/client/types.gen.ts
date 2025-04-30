@@ -52,9 +52,10 @@ export type Message = {
 export type OrderPublic = {
     base_document?: (string | null);
     base_document_name?: (string | null);
-    date_approved?: (string | null);
-    is_approved?: (boolean | null);
     content_processed?: (string | null);
+    state?: OrderState;
+    approved_at?: (string | null);
+    erp_interaction_at?: (string | null);
     created_at?: string;
     id: string;
     owner_id: string;
@@ -66,12 +67,15 @@ export type OrdersPublic = {
     count: number;
 };
 
+export type OrderState = 'PENDING' | 'INTEGRATED' | 'ERROR';
+
 export type OrderUpdate = {
     base_document?: ((Blob | File) | null);
     base_document_name?: (string | null);
-    date_approved?: (string | null);
-    is_approved?: (boolean | null);
     content_processed?: (string | null);
+    state?: OrderState;
+    approved_at?: (string | null);
+    erp_interaction_at?: (string | null);
     created_at?: string;
 };
 
@@ -189,12 +193,12 @@ export type OrdersDeleteOrderData = {
 
 export type OrdersDeleteOrderResponse = (Message);
 
-export type OrdersUpdateOrderData = {
+export type OrdersApproveOrderData = {
     id: string;
     requestBody: OrderUpdate;
 };
 
-export type OrdersUpdateOrderResponse = (OrderPublic);
+export type OrdersApproveOrderResponse = (OrderPublic);
 
 export type UsersReadUserMeResponse = (UserPublic);
 

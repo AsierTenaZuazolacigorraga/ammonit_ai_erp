@@ -1,12 +1,15 @@
 import {
     Container,
     Heading,
-    HStack, Link
+    HStack,
+    Icon,
+    Link
 } from "@chakra-ui/react"
 import {
     type UseQueryOptions,
 } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
+import { MdAccessTime, MdCheckCircle, MdError } from "react-icons/md"
 import { z } from "zod"
 
 import { ApiError, OrderPublic, OrdersService } from "@/client"
@@ -103,8 +106,33 @@ function Orders() {
             accessor: (order) => formatLocalDate(order.created_at)
         },
         {
-            header: "Fecha de Aprobación",
-            accessor: (order) => formatLocalDate(order.date_approved)
+            header: "Estado",
+            accessor: (order) => (
+                <HStack gap={2}>
+                    <Icon
+                        as={
+                            order.state === "PENDING"
+                                ? MdAccessTime
+                                : order.state === "INTEGRATED"
+                                    ? MdCheckCircle
+                                    : MdError
+                        }
+                        color={
+                            order.state === "PENDING"
+                                ? "orange"
+                                : order.state === "INTEGRATED"
+                                    ? "green"
+                                    : "red"
+                        }
+                        boxSize="16px"
+                    />
+                    {order.state === "PENDING"
+                        ? "Pendiente de aprobación"
+                        : order.state === "INTEGRATED"
+                            ? "Integrado en ERP"
+                            : "Error al integrar en ERP"}
+                </HStack>
+            )
         },
         {
             header: "Cliente",
@@ -124,7 +152,7 @@ function Orders() {
             )
         },
         {
-            header: "Documento Procesado",
+            header: "Información Procesada",
             accessor: (order) => {
                 if (!order.content_processed) return "-";
                 return (
@@ -144,7 +172,7 @@ function Orders() {
     return (
         <Container maxW="full">
             <Heading size="lg" pt={12}>
-                Gestión de Pedidos
+                Gestión de Documentos
             </Heading>
             <AddOrder />
             <DataTable
@@ -153,8 +181,8 @@ function Orders() {
                 searchSchema={ordersSearchSchema}
                 route={Route}
                 columns={columns}
-                emptyStateTitle="No tienes ningún pedido"
-                emptyStateDescription="Agrega un nuevo pedido para empezar, bien por email o bien por el botón para añadir un pedido desde un archivo .pdf"
+                emptyStateTitle="No tienes ningún documento"
+                emptyStateDescription="Agrega un nuevo documento para empezar, bien por email o bien por el botón para añadir un documento desde un archivo .pdf"
                 pageSize={PER_PAGE}
             />
         </Container>

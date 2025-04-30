@@ -11,11 +11,12 @@ class UserService:
         self.repository = CRUDRepository[User](User, session)
 
     def create(self, *, user_create: UserCreate) -> User:
-        db_obj = User.model_validate(
-            user_create,
-            update={"hashed_password": get_password_hash(user_create.password)},
+        return self.repository.create(
+            User.model_validate(
+                user_create,
+                update={"hashed_password": get_password_hash(user_create.password)},
+            )
         )
-        return self.repository.create(db_obj)
 
     def get_all(self, skip: int, limit: int) -> list[User]:
         return self.repository.get_all_by_kwargs(
@@ -48,12 +49,12 @@ class UserService:
 
     def authenticate(self, *, email: str, password: str) -> User | None:
         statement = select(User).where(User.email == email)
-        db_user = self.repository.session.exec(statement).first()
-        if not db_user:
+        user = self.repository.session.exec(statement).first()
+        if not user:
             return None
-        if not verify_password(password, db_user.hashed_password):
+        if not verify_password(password, user.hashed_password):
             return None
-        return db_user
+        return user
 
     def delete(self, id: uuid.UUID) -> None:
         self.repository.delete(id)

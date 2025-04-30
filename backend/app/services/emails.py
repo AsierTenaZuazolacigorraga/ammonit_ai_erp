@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import List
 
 from app.logger import get_logger
-from app.models import Email, EmailCreate, Order, OrderCreate
+from app.models import Email, EmailCreate, EmailState, Order, OrderCreate, OrderState
 from app.repositories.base import CRUDRepository
 from app.services.orders import OrderService
 from O365 import Account, FileSystemTokenBackend
@@ -84,8 +84,11 @@ class EmailService:
         for msg in messages:
             email_id = msg.object_id
             if email_id not in [m.email_id for m in db_messages] or email_id in [
-                m.email_id for m in db_messages if not m.is_processed
+                m.email_id for m in db_messages if not m.state == OrderState.PENDING
             ]:  # Check if email is not on db or was not processed
+
+                # Default state
+                state = EmailState.PROCESSED
 
                 # Only process emails with attachments
                 if msg.has_attachments:
@@ -121,6 +124,7 @@ class EmailService:
                                         owner_id=owner_id,
                                     )
                                 except Exception as e:
+                                    state = EmailState.ERROR
                                     logger.error(f"Failed to create order: {e}")
                             else:
                                 logger.warning(
@@ -136,7 +140,7 @@ class EmailService:
                 # Save it for tracing
                 new_messages.append(msg)
                 self.create(
-                    EmailCreate(email_id=email_id, is_processed=True),
+                    EmailCreate(email_id=email_id, state=state),
                     owner_id=owner_id,
                 )
         if not new_messages:

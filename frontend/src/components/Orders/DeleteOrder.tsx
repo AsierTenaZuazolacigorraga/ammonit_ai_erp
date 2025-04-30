@@ -32,11 +32,11 @@ const DeleteOrder = ({ id }: { id: string }) => {
   const mutation = useMutation({
     mutationFn: deleteOrder,
     onSuccess: () => {
-      showSuccessToast("El pedido fue eliminado correctamente")
+      showSuccessToast("El documento fue eliminado correctamente")
       setIsOpen(false)
     },
     onError: () => {
-      showErrorToast("Ocurrió un error al eliminar el pedido")
+      showErrorToast("Ocurrió un error al eliminar el documento")
     },
     onSettled: () => {
       queryClient.invalidateQueries()
@@ -58,7 +58,7 @@ const DeleteOrder = ({ id }: { id: string }) => {
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" colorPalette="red">
           <FiTrash2 fontSize="16px" />
-          {/* Eliminar Pedido */}
+          {/* Eliminar Documento */}
         </Button>
       </DialogTrigger>
 
@@ -66,11 +66,11 @@ const DeleteOrder = ({ id }: { id: string }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* <DialogCloseTrigger /> */}
           <DialogHeader>
-            <DialogTitle>Eliminar Pedido</DialogTitle>
+            <DialogTitle>Eliminar Documento</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <Text mb={4}>
-              Este pedido será eliminado permanentemente. ¿Estás seguro? No podrás deshacer esta acción.
+              Este documento será eliminado permanentemente. ¿Estás seguro? No podrás deshacer esta acción.
             </Text>
           </DialogBody>
 

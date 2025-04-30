@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersUpdateOrderData, OrdersUpdateOrderResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ClientsService {
     /**
@@ -206,15 +206,15 @@ export class OrdersService {
     }
     
     /**
-     * Update Order
-     * Update an order.
+     * Approve Order
+     * Approve an order.
      * @param data The data for the request.
      * @param data.id
      * @param data.requestBody
      * @returns OrderPublic Successful Response
      * @throws ApiError
      */
-    public static updateOrder(data: OrdersUpdateOrderData): CancelablePromise<OrdersUpdateOrderResponse> {
+    public static approveOrder(data: OrdersApproveOrderData): CancelablePromise<OrdersApproveOrderResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/v1/orders/{id}/',
