@@ -10,7 +10,7 @@ mkdir -p backend/app/client
 openapi-python-client generate \
     --overwrite \
     --path openapi.json \
-    --output-path backend/app/client/
+    --output-path backend/app/api_client/
 mv openapi.json frontend/
 cd frontend
 npm run generate-client
