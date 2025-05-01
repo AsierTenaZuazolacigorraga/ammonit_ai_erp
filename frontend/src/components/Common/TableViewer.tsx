@@ -7,13 +7,13 @@ type Row = {
     id: number;
 };
 
-interface GridTableProps {
+interface TableViewerProps {
     inputData: string;
     onDataChange?: (csvData: string) => void;
     readOnly?: boolean;
 }
 
-function GridTable({ inputData, onDataChange, readOnly = false }: GridTableProps) {
+function TableViewer({ inputData, onDataChange, readOnly = false }: TableViewerProps) {
     const { headers, initialRows } = useMemo(() => {
         const lines = inputData.trim().split('\n');
         const headers = lines[0].split(';');
@@ -233,4 +233,4 @@ function GridTable({ inputData, onDataChange, readOnly = false }: GridTableProps
     );
 }
 
-export default GridTable;
+export default TableViewer;

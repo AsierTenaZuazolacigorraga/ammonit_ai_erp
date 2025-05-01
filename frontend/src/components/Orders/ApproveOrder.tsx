@@ -17,7 +17,7 @@ import type { ApiError } from "@/client/core/ApiError";
 import useCustomToast from "@/hooks/useCustomToast";
 import { handleError } from "@/utils";
 import DocumentViewer from "../Common/DocumentViewer";
-import GridTable from "../Common/GridTable";
+import TableViewer from "../Common/TableViewer";
 import {
     DialogBody,
     DialogContent,
@@ -101,8 +101,6 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                         <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
                             <Box
                                 width="595px"
-                                maxHeight="80vh"
-                                overflowY="auto"
                                 display="flex"
                                 flexDirection="column"
                                 alignItems="center"
@@ -114,7 +112,7 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                             </Box>
                             <Box maxH="80vh" overflow="auto" minW={0} width="100%">
                                 <Text fontWeight="bold" mb={2}>Información Extraída</Text>
-                                <GridTable
+                                <TableViewer
                                     inputData={order.content_processed || ''}
                                     readOnly={true}
                                 />
@@ -162,8 +160,6 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                         <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
                             <Box
                                 width="595px"
-                                maxHeight="80vh"
-                                overflowY="auto"
                                 display="flex"
                                 flexDirection="column"
                                 alignItems="center"
@@ -175,7 +171,7 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                             </Box>
                             <Box maxH="80vh" overflow="auto" minW={0} width="100%">
                                 <Text fontWeight="bold" mb={2}>Información Extraída</Text>
-                                <GridTable
+                                <TableViewer
                                     inputData={order.content_processed || ''}
                                     onDataChange={handleDataChange}
                                 />
