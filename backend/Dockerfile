@@ -27,6 +27,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project
 
+# Install other dependencies
+RUN apt-get update && \
+    apt-get install -y poppler-utils
+
 ENV PYTHONPATH=/app
 
 COPY ./scripts /app/scripts
