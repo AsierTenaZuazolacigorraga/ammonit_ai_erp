@@ -62,8 +62,6 @@ async def task_for_each_user_email_service_fetch(session, user):
     # Define orders service
     order_service = OrderService(
         session,
-        OpenAI(api_key=settings.OPENAI_API_KEY),
-        Groq(api_key=settings.GROQ_API_KEY),
     )
 
     # Define emails service

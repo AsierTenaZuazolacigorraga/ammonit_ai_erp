@@ -34,8 +34,6 @@ def main():
         # Initialize required services
         order_service = OrderService(
             session=session,
-            ai_client=OpenAI(api_key=settings.OPENAI_API_KEY),
-            groq_client=Groq(api_key=settings.GROQ_API_KEY),
         )
 
         # Create email service instance

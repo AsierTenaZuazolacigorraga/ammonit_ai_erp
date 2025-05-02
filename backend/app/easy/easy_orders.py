@@ -34,7 +34,7 @@ ORDER_matisa = (
 ORDER_matisa2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/MATISA/aaaaaaaaaaaaaaaaaaaaaaaa.pdf"
 ORDER_ulma1 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/598153.pdf"
 ORDER_ulma2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/4595390.pdf"
-ORDER = ORDER_matisa2
+ORDER = ORDER_fagor
 
 
 async def main():
@@ -48,8 +48,6 @@ async def main():
                 # Define orders service
                 order_service = OrderService(
                     session=session,
-                    ai_client=OpenAI(api_key=settings.OPENAI_API_KEY),
-                    groq_client=Groq(api_key=settings.GROQ_API_KEY),
                 )
                 with open(ORDER, "rb") as f:
                     base_document = f.read()

@@ -47,25 +47,6 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 
 ##########################################################################################
-# AI
-##########################################################################################
-
-
-def get_ai_client() -> OpenAI:
-    return OpenAI(api_key=settings.OPENAI_API_KEY)
-
-
-AIClientDep = Annotated[OpenAI, Depends(get_ai_client)]
-
-
-def get_groq_client() -> Groq:
-    return Groq(api_key=settings.GROQ_API_KEY)
-
-
-GroqClientDep = Annotated[Groq, Depends(get_groq_client)]
-
-
-##########################################################################################
 # Users
 ##########################################################################################
 
@@ -128,10 +109,8 @@ ClientServiceDep = Annotated[ClientService, Depends(client_service)]
 
 def order_service(
     session: SessionDep,
-    ai_client: AIClientDep,
-    groq_client: GroqClientDep,
 ) -> OrderService:
-    return OrderService(session=session, ai_client=ai_client, groq_client=groq_client)
+    return OrderService(session=session)
 
 
 OrderServiceDep = Annotated[OrderService, Depends(order_service)]

@@ -13,6 +13,7 @@ from uuid import UUID
 
 import pandas as pd
 import PyPDF2
+from app.core.config import settings
 from app.logger import get_logger
 from app.models import Client, Order, OrderCreate, OrderState, OrderUpdate
 from app.repositories.base import CRUDRepository
@@ -24,6 +25,7 @@ from fastapi import HTTPException
 from groq import Groq
 from llama_parse import LlamaParse, ResultType
 from openai import OpenAI
+from pdf2image import convert_from_bytes
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlmodel import Session
@@ -33,48 +35,77 @@ load_dotenv()
 logger = get_logger(__name__)
 
 
-async def parse_pdf_binary_2_md(pdf_binary: bytes) -> str:
+def parse_pdf_binary_2_base64_jpg(pdf_binary: bytes) -> str:
+    # Convert PDF to images (one per page)
+    images = convert_from_bytes(pdf_binary)
+    # Take the first page (or loop through all if needed)
+    img = images[0]
+    # Save image to a BytesIO buffer in JPG format
+    buffer = BytesIO()
+    img.save(buffer, format="JPEG")
+    buffer.seek(0)
+    # Encode the image bytes as base64
+    img_base64 = base64.b64encode(buffer.read()).decode("utf-8")
+    return img_base64
+
+
+def parse_pdf_binary_2_base64(pdf_binary: bytes) -> str:
+    return base64.b64encode(pdf_binary).decode("utf-8")
+
+
+async def parse_pdf_binary_2_md(
+    ai_client: OpenAI, pdf_binary: bytes, pdf_name: str
+) -> str:
     # Preprocess PDF to remove irrelevant pages
     filtered_pdf_binary = preprocess_pdf(pdf_binary)
 
-    # Create a temporary file for the filtered PDF
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as f:
-        f.write(filtered_pdf_binary)
-        f.flush()
+    # Convert to md
+    response = ai_client.responses.create(
+        model="gpt-4.1-mini",
+        input=[
+            {
+                "role": "system",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": """
+1. Read the document you are provided
+2. Understand the text structure and display of the different contents
+3. Convert the document into markdown text, making sure to keep the same text structure and display
+4. Respond just with the markdown text, using the same language used in the document
+""",
+                    }
+                ],
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_image",
+                        "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(pdf_binary)}",
+                    }
+                ],
+                # "content": [
+                #     {
+                #         "type": "input_file",
+                #         "filename": pdf_name,
+                #         "file_data": f"data:application/pdf;base64,{parse_pdf_binary_2_base64(pdf_binary)}",
+                #     }
+                # ],
+            },  # type: ignore
+        ],
+        text={"format": {"type": "text"}},
+        reasoning={},
+        tools=[],
+        temperature=0,
+        max_output_tokens=2048,
+        top_p=0,
+        store=True,
+    )
 
-        pdf_reader = PyPDF2.PdfReader(f.name)
-        if len(pdf_reader.pages) > 8:
-            raise HTTPException(
-                status_code=500,
-                detail="El archivo PDF excede el límite máximo permitido de 8 páginas.",
-            )
-
-        # Add a check to ensure the API key is not None
-        for api_key in [
-            "LLAMACLOUD_API_KEY",
-            "LLAMACLOUD_API_KEY_1",
-            "LLAMACLOUD_API_KEY_2",
-        ]:
-            api_key = os.getenv(api_key)
-            if api_key is None:
-                raise ValueError(f"{api_key} environment variable is not set")
-
-            parser = LlamaParse(
-                api_key=api_key,
-                result_type=ResultType.MD,
-                premium_mode=True,
-                do_not_cache=True,
-                invalidate_cache=True,
-            )
-
-            documents = await parser.aload_data(f.name)
-            if documents != []:
-                break
-
-        md = ""
-        for document in documents:
-            md = md + document.text
-
+    md = response.output_text
+    if md is None:
+        raise ValueError("Failed to parse the PDF to markdown.")
     return md
 
 
@@ -117,7 +148,7 @@ def preprocess_pdf(pdf_binary: bytes) -> bytes:
 
 
 def parse_md_2_order(
-    md: str, ai_client: OpenAI, groq_client: Groq, clients: list[Client]
+    ai_client: OpenAI, md: str, clients: list[Client]
 ) -> tuple[dict, Client]:
 
     clients_clasification = ",\n".join(
@@ -125,23 +156,43 @@ def parse_md_2_order(
     )
 
     # Extract client
-    completion = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
+    response = ai_client.responses.create(
+        model="gpt-4.1-nano",
+        input=[
             {
                 "role": "system",
-                "content": f"""
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": f"""
 Which client does this order come from? Select from the following list. Only respond with the client name as is specified in the list.
 If you cannot identify the client, respond with "unknown":
 [
 {clients_clasification}
 ]
 """,
+                    }
+                ],
             },
-            {"role": "user", "content": md},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": md,
+                    }
+                ],
+            },
         ],
+        text={"format": {"type": "text"}},
+        reasoning={},
+        tools=[],
+        temperature=0,
+        max_output_tokens=2048,
+        top_p=0,
+        store=True,
     )
-    client = completion.choices[0].message.content
+    client = response.output_text
     if client is None:
         raise ValueError("Failed to extract the client info from the order.")
 
@@ -156,7 +207,7 @@ If you cannot identify the client, respond with "unknown":
 
     # Extract info
     response = ai_client.responses.create(
-        model="gpt-4o-mini",
+        model="gpt-4.1-nano",
         input=[
             {
                 "role": "system",
@@ -165,6 +216,12 @@ If you cannot identify the client, respond with "unknown":
             {"role": "user", "content": md},
         ],
         text=json.loads(client.structure),
+        reasoning={},
+        tools=[],
+        temperature=0,
+        max_output_tokens=2048,
+        top_p=0,
+        store=True,
     )
 
     if response.output_text is None:
@@ -211,16 +268,15 @@ class OrderService:
     def __init__(
         self,
         session: Session,
-        ai_client: OpenAI,
-        groq_client: Groq,
     ) -> None:
         self.repository = CRUDRepository[Order](Order, session)
         self.clients_service = ClientService(session)
         self.users_service = UserService(session)
         self.bridge_service = BridgeService(session)
-        self.ai_client = ai_client
-        self.groq_client = groq_client
         self.session = session
+
+        # Initialize clients
+        self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     async def create(self, *, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
 
@@ -231,12 +287,12 @@ class OrderService:
         # Process parsing
         if order_create.base_document is None:
             raise ValueError("Base document cannot be None")
-        md = await parse_pdf_binary_2_md(order_create.base_document)
+        md = await parse_pdf_binary_2_md(
+            self.ai_client, order_create.base_document, order_create.base_document_name
+        )
 
         # Use the new parse_md_2_order function with ai_client
-        order_dict, client = parse_md_2_order(
-            md, self.ai_client, self.groq_client, clients
-        )
+        order_dict, client = parse_md_2_order(self.ai_client, md, clients)
 
         # Creat the order
         order = Order.model_validate(order_create, update={"owner_id": client.id})
