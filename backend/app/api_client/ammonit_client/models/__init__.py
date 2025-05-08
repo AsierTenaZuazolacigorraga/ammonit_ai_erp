@@ -12,6 +12,7 @@ from .order_public import OrderPublic
 from .order_state import OrderState
 from .order_update import OrderUpdate
 from .orders_public import OrdersPublic
+from .outlook_token_step_2 import OutlookTokenStep2
 from .token import Token
 from .update_password import UpdatePassword
 from .user_create import UserCreate
@@ -34,6 +35,7 @@ __all__ = (
     "OrdersPublic",
     "OrderState",
     "OrderUpdate",
+    "OutlookTokenStep2",
     "Token",
     "UpdatePassword",
     "UserCreate",

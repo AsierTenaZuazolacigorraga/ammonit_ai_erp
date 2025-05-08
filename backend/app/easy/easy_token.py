@@ -19,8 +19,8 @@ load_dotenv()
 
 OUTLOOK_ID = os.getenv("OUTLOOK_ID")
 OUTLOOK_SECRET = os.getenv("OUTLOOK_SECRET")
-# OUTLOOK_EMAIL = "asier.tena.zu@outlook.com"
-OUTLOOK_EMAIL = "alberdi.autom@outlook.com"
+OUTLOOK_EMAIL = "asier.tena.zu@outlook.com"
+# OUTLOOK_EMAIL = "alberdi.autom@outlook.com"
 # OUTLOOK_EMAIL = "asier.tena.zu@ammonitammonit.onmicrosoft.com"
 
 ################################################################
@@ -31,19 +31,12 @@ def main():
     # Create a database session
     with Session(engine) as session:
 
-        # Initialize required services
-        order_service = OrderService(
-            session=session,
-        )
-
         # Create email service instance
         email_service = EmailService(
             session=session,
-            order_service=order_service,
-            id=OUTLOOK_ID,
-            secret=OUTLOOK_SECRET,
             email=OUTLOOK_EMAIL,
         )
+        email_service.authenticate()
 
         messages = list(
             email_service.account.mailbox()

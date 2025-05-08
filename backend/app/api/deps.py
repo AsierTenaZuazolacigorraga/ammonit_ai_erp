@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
 from app.services.clients import ClientService
+from app.services.emails import EmailService
 from app.services.orders import OrderService
 from app.services.users import UserService
 from fastapi import Depends, HTTPException, Request, status
@@ -114,3 +115,17 @@ def order_service(
 
 
 OrderServiceDep = Annotated[OrderService, Depends(order_service)]
+
+##########################################################################################
+# Emails
+##########################################################################################
+
+
+def email_service(
+    session: SessionDep,
+    current_user: CurrentUserDep,
+) -> EmailService:
+    return EmailService(session=session, email=current_user.email)
+
+
+EmailServiceDep = Annotated[EmailService, Depends(email_service)]

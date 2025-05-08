@@ -59,17 +59,9 @@ async def task_for_each_user_email_service_fetch(session, user):
         f"task_email_service_fetch: {user.full_name} | email: {user.email} | id: {user.id}"
     )
 
-    # Define orders service
-    order_service = OrderService(
-        session,
-    )
-
     # Define emails service
     email_service = EmailService(
         session,
-        order_service,
-        settings.OUTLOOK_ID,
-        settings.OUTLOOK_SECRET,
         user.email,
     )
 
@@ -81,7 +73,7 @@ def main():
     sched = Scheduler()
 
     # Add tasks
-    sched.add_task(task_health_check, 15)
+    sched.add_task(task_health_check, 30)
 
     # Add tasks for each user
     with Session(engine) as session:
@@ -90,7 +82,7 @@ def main():
             user for user in user_service.get_all(skip=0, limit=100) if user.is_active
         ]:
             sched.add_task(
-                lambda s, u=user: task_for_each_user_email_service_fetch(s, u), 10
+                lambda s, u=user: task_for_each_user_email_service_fetch(s, u), 15
             )
 
     # Keep the main thread running for further task additions or a graceful exit.
