@@ -35,3 +35,12 @@ def create_outlook_token_step_2(
     if not success:
         raise HTTPException(status_code=400, detail="Authentication failed.")
     return {"detail": "Authentication successful."}
+
+
+@router.get("/outlook-connection/")
+def is_outlook_connected(email_service: EmailServiceDep):
+    """
+    Get outlook connection.
+    """
+    connected = email_service.account.is_authenticated
+    return {"connected": connected}

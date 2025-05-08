@@ -79,6 +79,10 @@ export type OrderUpdate = {
     created_at?: string;
 };
 
+export type OutlookTokenStep2 = {
+    code: string;
+};
+
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -161,6 +165,16 @@ export type ClientsUpdateClientData = {
 };
 
 export type ClientsUpdateClientResponse = (ClientPublic);
+
+export type EmailsCreateOutlookTokenStep1Response = (string);
+
+export type EmailsCreateOutlookTokenStep2Data = {
+    requestBody: OutlookTokenStep2;
+};
+
+export type EmailsCreateOutlookTokenStep2Response = (unknown);
+
+export type EmailsIsOutlookConnectedResponse = (unknown);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;

@@ -1,4 +1,3 @@
-
 import { Box, Button, Heading, VStack } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
@@ -49,7 +48,7 @@ const ChangePassword = () => {
       onSubmit={handleSubmit(onSubmit)}
     >
       <Heading size="lg" py={4}>
-        Cambio de contraseña
+        Cambio de Contraseña
       </Heading>
       <VStack gap={4} w={{ base: "100%", md: "sm" }}>
         <PasswordInput
@@ -76,6 +75,7 @@ const ChangePassword = () => {
       </VStack>
       <Button
         variant="solid"
+        w="100%"
         mt={4}
         type="submit"
         loading={isSubmitting}

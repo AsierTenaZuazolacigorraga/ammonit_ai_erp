@@ -2,12 +2,14 @@ import { Container, Heading, Tabs } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 
 import ChangePassword from "@/components/UserSettings/ChangePassword"
+import OutlookConnection from "@/components/UserSettings/OutlookConnection"
 import UserInformation from "@/components/UserSettings/UserInformation"
 import useAuth from "@/hooks/useAuth"
 
 const tabsConfig = [
-  { value: "my-profile", title: "Mi perfil", component: UserInformation },
+  { value: "my-profile", title: "Mi Perfil", component: UserInformation },
   { value: "password", title: "Contraseña", component: ChangePassword },
+  { value: "outlook-token", title: "Conexión con Outlook", component: OutlookConnection },
 ]
 
 export const Route = createFileRoute("/_layout/settings")({
