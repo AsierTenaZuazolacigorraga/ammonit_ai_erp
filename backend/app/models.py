@@ -74,8 +74,8 @@ class UsersPublic(SQLModel):
 
 class ClientBase(SQLModel):
     name: str = Field(nullable=False)
-    clasifier: str = Field(nullable=False)
-    structure: str = Field(nullable=False)
+    # clasifier: str = Field(nullable=False) -> TODO: Add fields
+    # structure: str = Field(nullable=False)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )

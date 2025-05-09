@@ -16,16 +16,7 @@ import pandas as pd
 import PyPDF2
 from app.logger import get_logger
 from app.models import Client, Order, OrderCreate, OrderState, OrderUpdate
-from app.repositories.base import CRUDRepository
-from app.services.clients import ClientService
-from app.services.users import UserService
 from dotenv import load_dotenv
-from fastapi import HTTPException
-from groq import Groq
-from llama_parse import LlamaParse, ResultType
-from openai import OpenAI
-from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlmodel import Session
 
 load_dotenv()

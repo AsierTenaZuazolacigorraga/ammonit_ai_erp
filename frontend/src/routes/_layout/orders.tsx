@@ -14,7 +14,6 @@ import { z } from "zod"
 
 import { ApiError, OrderPublic, OrdersService } from "@/client"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
-import AddOrder from "@/components/Orders/AddOrder"
 import ApproveOrder from "@/components/Orders/ApproveOrder"
 import DeleteOrder from "@/components/Orders/DeleteOrder"
 
@@ -172,9 +171,9 @@ function Orders() {
     return (
         <Container maxW="full">
             <Heading size="lg" pt={12}>
-                Gestión de Documentos
+                Documentos
             </Heading>
-            <AddOrder />
+            {/* <AddOrder /> */}
             <DataTable
                 queryKeyBase="orders"
                 baseQueryOptionsFn={baseOrdersQueryOptionsFn}

@@ -6,7 +6,8 @@ from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
-from app.services.clients import ClientService
+
+# from app.services.clients import ClientService
 from app.services.emails import EmailService
 from app.services.orders import OrderService
 from app.services.users import UserService
@@ -28,7 +29,6 @@ reusable_oauth2 = OAuth2PasswordBearer(
 
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
-
 ##########################################################################################
 # Session
 ##########################################################################################
@@ -45,7 +45,6 @@ def get_session(request: Request) -> Generator[Session, None, None]:
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
-
 
 ##########################################################################################
 # Users
@@ -91,18 +90,6 @@ def user_service(session: SessionDep) -> UserService:
 
 UserServiceDep = Annotated[UserService, Depends(user_service)]
 
-
-##########################################################################################
-# Clients
-##########################################################################################
-
-
-def client_service(session: SessionDep) -> ClientService:
-    return ClientService(session=session)
-
-
-ClientServiceDep = Annotated[ClientService, Depends(client_service)]
-
 ##########################################################################################
 # Orders
 ##########################################################################################
@@ -129,3 +116,14 @@ def email_service(
 
 
 EmailServiceDep = Annotated[EmailService, Depends(email_service)]
+
+# ##########################################################################################
+# # Clients
+# ##########################################################################################
+
+
+# def client_service(session: SessionDep) -> ClientService:
+#     return ClientService(session=session)
+
+
+# ClientServiceDep = Annotated[ClientService, Depends(client_service)]

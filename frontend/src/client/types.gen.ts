@@ -13,34 +13,6 @@ export type Body_orders_create_order = {
     base_document: (Blob | File);
 };
 
-export type ClientCreate = {
-    name: string;
-    clasifier: string;
-    structure: string;
-    created_at?: string;
-};
-
-export type ClientPublic = {
-    name: string;
-    clasifier: string;
-    structure: string;
-    created_at?: string;
-    id: string;
-    owner_id: string;
-};
-
-export type ClientsPublic = {
-    data: Array<ClientPublic>;
-    count: number;
-};
-
-export type ClientUpdate = {
-    name: string;
-    clasifier: string;
-    structure: string;
-    created_at?: string;
-};
-
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
@@ -139,32 +111,6 @@ export type ValidationError = {
     msg: string;
     type: string;
 };
-
-export type ClientsReadClientsData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type ClientsReadClientsResponse = (ClientsPublic);
-
-export type ClientsCreateClientData = {
-    requestBody: ClientCreate;
-};
-
-export type ClientsCreateClientResponse = (ClientPublic);
-
-export type ClientsDeleteClientData = {
-    id: string;
-};
-
-export type ClientsDeleteClientResponse = (Message);
-
-export type ClientsUpdateClientData = {
-    id: string;
-    requestBody: ClientUpdate;
-};
-
-export type ClientsUpdateClientResponse = (ClientPublic);
 
 export type EmailsCreateOutlookTokenStep1Response = (string);
 
