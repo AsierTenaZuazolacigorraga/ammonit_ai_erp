@@ -21,6 +21,7 @@ from app.models import (
 )
 from app.repositories.base import CRUDRepository
 from app.services.orders import OrderService
+from app.services.users import UserService
 from O365 import Account, FileSystemTokenBackend
 from sqlmodel import Session
 
@@ -35,6 +36,7 @@ class EmailService:
         self.email_repository = CRUDRepository[Email](Email, session)
         self.emaildata_repository = CRUDRepository[EmailData](EmailData, session)
         self.order_service = OrderService(session)
+        self.user_service = UserService(session)
         self.id = settings.OUTLOOK_ID
         self.secret = settings.OUTLOOK_SECRET
         self.accounts = {}
@@ -130,11 +132,18 @@ class EmailService:
             tenant_id=self.accounts[email]["outlook_tenant_id"],
         )
 
-    def create(self, email_create: EmailCreate, owner_id: uuid.UUID) -> Email:
+    def email_create(self, email_create: EmailCreate, owner_id: uuid.UUID) -> Email:
         return self.email_repository.create(
             Email.model_validate(
                 email_create, update={"owner_id": owner_id, "is_connected": False}
             )
+        )
+
+    def emaildata_create(
+        self, email_data_create: EmailDataCreate, owner_id: uuid.UUID
+    ) -> EmailData:
+        return self.emaildata_repository.create(
+            EmailData.model_validate(email_data_create, update={"owner_id": owner_id})
         )
 
     def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Email]:
@@ -157,78 +166,99 @@ class EmailService:
         return self.email_repository.count_by_kwargs(**{"owner_id": owner_id})
 
     async def fetch(self, *, owner_id: uuid.UUID) -> None:
-        logger.info(f"Fetching emails for: {self.email}")
 
-        messages = list(
-            self.account.mailbox()
-            .inbox_folder()
-            .get_messages(limit=50, order_by="receivedDateTime desc")
-        )
-        db_messages = self.get_all(skip=0, limit=100, owner_id=owner_id)
+        # Fetch emails
+        for k, v in self.accounts.items():
 
-        # Identify new emails
-        new_messages = []
-        for msg in messages:
-            email_id = msg.object_id
-            if email_id not in [m.email_id for m in db_messages] or email_id in [
-                m.email_id for m in db_messages if not m.state == OrderState.PENDING
-            ]:  # Check if email is not on db or was not processed
+            email = self.get_by_email(email=k)
+            if not email:
+                logger.warning(f"Email {k} not found")
+                continue
 
-                # Default state
-                state = EmailDataState.PROCESSED
+            account = v["account"]
 
-                # Only process emails with attachments
-                if msg.has_attachments:
+            logger.info(f"Fetching emails for: {email.email}")
 
-                    logger.info(f"From: {msg.sender}")
-                    for to in msg.to:
-                        logger.info(f"To: {to.name} <{to.address}>")
-                    logger.info(f"Subject: {msg.subject}")
-                    logger.info(f"Received: {msg.received}")
-                    logger.info(f"Body: {msg.body_preview}")
+            messages = list(
+                account.mailbox()
+                .inbox_folder()
+                .get_messages(limit=50, order_by="receivedDateTime desc")
+            )
+            db_messages = self.emaildata_repository.get_all_by_kwargs(
+                owner_id=email.id,
+                state=EmailDataState.PROCESSED,
+            )
 
-                    msg_complete = (
-                        self.account.mailbox()
-                        .inbox_folder()
-                        .get_message(msg.object_id, download_attachments=True)
-                    )
-                    if msg_complete:
+            # Identify new emails
+            new_messages = []
+            for msg in messages:
+                if msg.object_id not in [
+                    m.email_id for m in db_messages
+                ] or msg.object_id in [
+                    m.email_id for m in db_messages if not m.state == OrderState.PENDING
+                ]:  # Check if email is not on db or was not processed
 
-                        for attachment in msg_complete.attachments:
-                            if attachment.name.endswith(".pdf"):
+                    # Default state
+                    state = EmailDataState.PROCESSED
 
-                                base_document_name = attachment.name
-                                base_document = base64.b64decode(attachment.content)
+                    # Only process emails with attachments
+                    from app.services._emails.filters import filters
 
-                                try:
-                                    # Create the order
-                                    await self.order_service.create(
-                                        order_create=OrderCreate(
-                                            base_document=base_document or None,
-                                            base_document_name=base_document_name
-                                            or None,
-                                        ),
-                                        owner_id=owner_id,
-                                    )
-                                except Exception as e:
-                                    state = EmailDataState.ERROR
-                                    logger.error(f"Failed to create order: {e}")
-                            else:
-                                logger.warning(
-                                    f"Non .pdf attachment found for ID: {msg.object_id}"
-                                )
-                    else:
-                        logger.warning(
-                            f"Failed to retrieve message for ID: {msg.object_id}"
+                    if filters(msg, self.user_service.get_by_id(owner_id), email):
+
+                        logger.info(f"From: {msg.sender}")
+                        for to in msg.to:
+                            logger.info(f"To: {to.name} <{to.address}>")
+                        logger.info(f"Subject: {msg.subject}")
+                        logger.info(f"Received: {msg.received}")
+                        logger.info(f"Body: {msg.body_preview}")
+
+                        msg_complete = (
+                            account.mailbox()
+                            .inbox_folder()
+                            .get_message(msg.object_id, download_attachments=True)
                         )
-                else:
-                    logger.warning(f"No attachments found for ID: {msg.object_id}")
+                        if msg_complete:
 
-                # Save it for tracing
-                new_messages.append(msg)
-                self.create(
-                    EmailDataCreate(email_id=email_id, state=state),
-                    owner_id=owner_id,
-                )
-        if not new_messages:
-            logger.info(f"No new messages found for {self.email}")
+                            for attachment in msg_complete.attachments:
+                                if attachment.name.endswith(".pdf"):
+
+                                    base_document_name = attachment.name
+                                    base_document = base64.b64decode(attachment.content)
+
+                                    try:
+                                        # Create the order
+                                        await self.order_service.create(
+                                            order_create=OrderCreate(
+                                                base_document=base_document or None,
+                                                base_document_name=base_document_name
+                                                or None,
+                                            ),
+                                            owner_id=owner_id,
+                                        )
+                                    except Exception as e:
+                                        state = EmailDataState.ERROR
+                                        logger.error(f"Failed to create order: {e}")
+                                else:
+                                    logger.warning(
+                                        f"Non .pdf attachment found for ID: {msg.object_id}"
+                                    )
+                        else:
+                            logger.warning(
+                                f"Failed to retrieve message for ID: {msg.object_id}"
+                            )
+                    else:
+                        logger.warning(f"No attachments found for ID: {msg.object_id}")
+
+                    # Save it for tracing
+                    new_messages.append(msg)
+                    self.emaildata_create(
+                        email_data_create=EmailDataCreate(
+                            email_id=msg.object_id,
+                            email_body=msg.body_preview,
+                            state=state,
+                        ),
+                        owner_id=email.id,
+                    )
+            if not new_messages:
+                logger.info(f"No new messages found for {email.email}")

@@ -56,7 +56,7 @@ def create_email(
             detail="Este email ya existe en el sistema.",
         )
 
-    email = email_service.create(email_create=email_in, owner_id=current_user.id)
+    email = email_service.email_create(email_create=email_in, owner_id=current_user.id)
     email_service.load_by_id(id=email.id)
     return EmailPublic.model_validate(
         email,

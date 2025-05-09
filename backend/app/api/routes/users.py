@@ -93,7 +93,7 @@ def create_user(
             detail="El usuario con este email ya existe en el sistema.",
         )
     user = user_service.create(user_create=user_in)
-    email_service.create(
+    email_service.email_create(
         email_create=EmailCreate(email=user_in.email), owner_id=user.id
     )
 

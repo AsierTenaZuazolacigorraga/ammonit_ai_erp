@@ -240,6 +240,7 @@ class EmailDataState(str, Enum):
 
 class EmailDataBase(SQLModel):
     email_id: str = Field(nullable=False)
+    email_body: str | None = Field(default=None)
     state: EmailDataState = Field(
         sa_column=Column(
             PGEnum(EmailDataState, name="email_state_enum", create_type=True),

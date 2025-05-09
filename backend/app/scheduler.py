@@ -55,15 +55,13 @@ def task_health_check(session):
 
 async def task_for_each_user_email_service_fetch(session, user):
 
-    logger.info(
-        f"task_email_service_fetch: {user.full_name} | email: {user.email} | id: {user.id}"
-    )
+    logger.info(f"task_email_service_fetch: {user.full_name}")
 
     # Define emails service
     email_service = EmailService(
         session,
-        user.email,
     )
+    email_service.load_all(owner_id=user.id)
 
     # Fetch emails
     await email_service.fetch(owner_id=user.id)

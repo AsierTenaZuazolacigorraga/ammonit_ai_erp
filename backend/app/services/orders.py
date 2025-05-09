@@ -287,6 +287,8 @@ class OrderService:
         # Process parsing
         if order_create.base_document is None:
             raise ValueError("Base document cannot be None")
+        if order_create.base_document_name is None:
+            raise ValueError("Base document name cannot be None")
         md = await parse_pdf_binary_2_md(
             self.ai_client, order_create.base_document, order_create.base_document_name
         )
