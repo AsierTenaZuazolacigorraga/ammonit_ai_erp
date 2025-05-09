@@ -170,7 +170,7 @@ function Orders() {
 
     return (
         <Container maxW="full">
-            <Heading size="lg" pt={12}>
+            <Heading size="lg" py={6}>
                 Documentos
             </Heading>
             {/* <AddOrder /> */}

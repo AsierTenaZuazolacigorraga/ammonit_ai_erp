@@ -28,10 +28,9 @@ function UserSettings() {
 
   return (
     <Container maxW="full">
-      <Heading size="lg" textAlign={{ base: "center", md: "left" }} py={12}>
+      <Heading size="lg" py={6}>
         Ajustes
       </Heading>
-
       <Tabs.Root defaultValue="my-profile" variant="subtle">
         <Tabs.List>
           {finalTabs.map((tab) => (
