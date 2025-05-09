@@ -3,19 +3,92 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, EmailsIsOutlookConnectedResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsCreateClientData, ClientsCreateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+
+export class ClientsService {
+    /**
+     * Create Client
+     * Create new client.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns ClientPublic Successful Response
+     * @throws ApiError
+     */
+    public static createClient(data: ClientsCreateClientData): CancelablePromise<ClientsCreateClientResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/clients/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+}
 
 export class EmailsService {
     /**
+     * Read Emails
+     * Retrieve emails.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns EmailsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readEmails(data: EmailsReadEmailsData = {}): CancelablePromise<EmailsReadEmailsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/emails/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Email
+     * Create new email.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns EmailPublic Successful Response
+     * @throws ApiError
+     */
+    public static createEmail(data: EmailsCreateEmailData): CancelablePromise<EmailsCreateEmailResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/emails/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
      * Create Outlook Token Step 1
      * Create outlook token step 1.
+     * @param data The data for the request.
+     * @param data.requestBody
      * @returns string Successful Response
      * @throws ApiError
      */
-    public static createOutlookTokenStep1(): CancelablePromise<EmailsCreateOutlookTokenStep1Response> {
+    public static createOutlookTokenStep1(data: EmailsCreateOutlookTokenStep1Data): CancelablePromise<EmailsCreateOutlookTokenStep1Response> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/emails/outlook-token-step-1/'
+            url: '/api/v1/emails/outlook-token-step-1/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
     
@@ -24,7 +97,7 @@ export class EmailsService {
      * Create outlook token step 2.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns unknown Successful Response
+     * @returns string Successful Response
      * @throws ApiError
      */
     public static createOutlookTokenStep2(data: EmailsCreateOutlookTokenStep2Data): CancelablePromise<EmailsCreateOutlookTokenStep2Response> {
@@ -36,19 +109,6 @@ export class EmailsService {
             errors: {
                 422: 'Validation Error'
             }
-        });
-    }
-    
-    /**
-     * Is Outlook Connected
-     * Get outlook connection.
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static isOutlookConnected(): CancelablePromise<EmailsIsOutlookConnectedResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/emails/outlook-connection/'
         });
     }
     

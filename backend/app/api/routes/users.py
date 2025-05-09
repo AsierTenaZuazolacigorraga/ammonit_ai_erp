@@ -3,6 +3,7 @@ from typing import Any
 
 from app.api.deps import (
     CurrentUserDep,
+    EmailServiceDep,
     UserServiceDep,
     get_current_active_superuser,
     get_current_user,
@@ -10,6 +11,7 @@ from app.api.deps import (
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 from app.models import (
+    EmailCreate,
     Message,
     UpdatePassword,
     User,
@@ -78,7 +80,9 @@ def update_password_me(
 @router.post(
     "/", dependencies=[Depends(get_current_active_superuser)], response_model=UserPublic
 )
-def create_user(*, user_service: UserServiceDep, user_in: UserCreate) -> Any:
+def create_user(
+    *, user_service: UserServiceDep, email_service: EmailServiceDep, user_in: UserCreate
+) -> Any:
     """
     Create new user.
     """
@@ -88,8 +92,12 @@ def create_user(*, user_service: UserServiceDep, user_in: UserCreate) -> Any:
             status_code=400,
             detail="El usuario con este email ya existe en el sistema.",
         )
+    user = user_service.create(user_create=user_in)
+    email_service.create(
+        email_create=EmailCreate(email=user_in.email), owner_id=user.id
+    )
 
-    return user_service.create(user_create=user_in)
+    return user
 
 
 @router.get(

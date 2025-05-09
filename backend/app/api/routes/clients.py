@@ -1,18 +1,18 @@
-# import uuid
-# from typing import Any
+import uuid
+from typing import Any
 
-# from app.api.deps import ClientServiceDep, CurrentUserDep
-# from app.models import (
-#     Client,
-#     ClientCreate,
-#     ClientPublic,
-#     ClientsPublic,
-#     ClientUpdate,
-#     Message,
-# )
-# from fastapi import APIRouter, Depends, HTTPException
+from app.api.deps import ClientServiceDep, CurrentUserDep
+from app.models import (
+    Client,
+    ClientCreate,
+    ClientPublic,
+    ClientsPublic,
+    ClientUpdate,
+    Message,
+)
+from fastapi import APIRouter, Depends, HTTPException
 
-# router = APIRouter(prefix="/clients", tags=["clients"])
+router = APIRouter(prefix="/clients", tags=["clients"])
 
 
 # @router.get("/", response_model=ClientsPublic)
@@ -32,17 +32,17 @@
 #     return ClientsPublic(data=client_publics, count=count)
 
 
-# @router.post("/", response_model=ClientPublic)
-# def create_client(
-#     client_service: ClientServiceDep,
-#     current_user: CurrentUserDep,
-#     client_in: ClientCreate,
-# ) -> ClientPublic:
-#     """
-#     Create new client.
-#     """
-#     client = client_service.create(client_create=client_in, owner_id=current_user.id)
-#     return ClientPublic.model_validate(client)
+@router.post("/", response_model=ClientPublic)
+def create_client(
+    client_service: ClientServiceDep,
+    current_user: CurrentUserDep,
+    client_in: ClientCreate,
+) -> ClientPublic:
+    """
+    Create new client.
+    """
+    client = client_service.create(client_create=client_in, owner_id=current_user.id)
+    return ClientPublic.model_validate(client)
 
 
 # @router.delete("/{id}/")

@@ -196,20 +196,8 @@ class OrdersPublic(SQLModel):
 ##########################################################################################
 
 
-class EmailState(str, Enum):
-    PROCESSED = "PROCESSED"  # Processed correctly the orders in the email
-    ERROR = "ERROR"  # Error while processing the orders in the email
-
-
 class EmailBase(SQLModel):
-    email_id: str = Field(nullable=False)
-    state: EmailState = Field(
-        sa_column=Column(
-            PGEnum(EmailState, name="email_state_enum", create_type=True),
-            nullable=False,
-        ),
-        default=EmailState.PROCESSED,
-    )
+    email: str = Field(nullable=False)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
@@ -219,22 +207,61 @@ class EmailCreate(EmailBase):
     pass
 
 
+class EmailUpdate(EmailBase):
+    pass
+
+
 class Email(Entity, EmailBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="emails")
+    emails_data: list["EmailData"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
 
 
-class EmailPublic(OrderBase):
+class EmailPublic(EmailBase):
     id: uuid.UUID
     owner_id: uuid.UUID
+    is_connected: bool = Field(default=False)
 
 
 class EmailsPublic(SQLModel):
     data: list[EmailPublic]
     count: int
+
+
+class EmailDataState(str, Enum):
+    PROCESSED = "PROCESSED"  # Processed correctly the orders in the email
+    ERROR = "ERROR"  # Error while processing the orders in the email
+
+
+class EmailDataBase(SQLModel):
+    email_id: str = Field(nullable=False)
+    state: EmailDataState = Field(
+        sa_column=Column(
+            PGEnum(EmailDataState, name="email_state_enum", create_type=True),
+            nullable=False,
+        ),
+        default=EmailDataState.PROCESSED,
+    )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )
+
+
+class EmailDataCreate(EmailDataBase):
+    pass
+
+
+class EmailData(Entity, EmailDataBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="email.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: Email | None = Relationship(back_populates="emails_data")
 
 
 ##########################################################################################

@@ -9,7 +9,16 @@ from typing import List
 
 from app.core.config import settings
 from app.logger import get_logger
-from app.models import Email, EmailCreate, EmailState, Order, OrderCreate, OrderState
+from app.models import (
+    Email,
+    EmailCreate,
+    EmailData,
+    EmailDataCreate,
+    EmailDataState,
+    Order,
+    OrderCreate,
+    OrderState,
+)
 from app.repositories.base import CRUDRepository
 from app.services.orders import OrderService
 from O365 import Account, FileSystemTokenBackend
@@ -22,45 +31,21 @@ class EmailService:
     def __init__(
         self,
         session: Session,
-        email: str,
     ) -> None:
-        self.repository = CRUDRepository[Email](Email, session)
+        self.email_repository = CRUDRepository[Email](Email, session)
+        self.emaildata_repository = CRUDRepository[EmailData](EmailData, session)
         self.order_service = OrderService(session)
         self.id = settings.OUTLOOK_ID
         self.secret = settings.OUTLOOK_SECRET
-        self.email = email
+        self.accounts = {}
 
-        # Prepare account
-        if self.email.endswith("@outlook.com"):
-            self.outlook_tenant_id = "consumers"
-            self.outlook_scopes = ["Mail.Read", "offline_access"]
-        else:
-            self.outlook_tenant_id = "common"
-            self.outlook_scopes = "https://graph.microsoft.com/Mail.Read offline_access"
-
-        self.token_path = os.path.join(
-            os.getcwd(),
-            ".gitignores",
-            "azure_tokens",
-        )
-        # logger.info(f"Token path is: {token_path}")
-        self.token_backend = FileSystemTokenBackend(
-            token_path=self.token_path,
-            token_filename=self.email,
-        )
-        self.account = Account(
-            (self.id or "", self.secret or ""),
-            token_backend=self.token_backend,
-            tenant_id=self.outlook_tenant_id,
-        )
-
-    def authenticate(self) -> None:
-        if not self.account.is_authenticated:
+    def authenticate(self, email: str) -> None:
+        if not self.accounts[email]["account"].is_authenticated:
             logger.info("You need to authenticate with Outlook.")
-            url = self.create_outlook_token_step_1()
+            url = self.create_outlook_token_step_1(email)
             logger.info(f"Please visit this URL and authenticate:\n{url}")
             code = input("Paste the code you received here: ").strip()
-            success = self.create_outlook_token_step_2(code)
+            success = self.create_outlook_token_step_2(email, code)
             if not success:
                 logger.info("Authentication failed. Exiting.")
                 return
@@ -68,31 +53,108 @@ class EmailService:
         else:
             logger.info("Already authenticated.")
 
-    def create_outlook_token_step_1(self) -> str:
+    def create_outlook_token_step_1(self, email: str) -> str:
         """
         Step 1: Call this to get the authorization URL. Send this URL to the frontend.
         """
-        self.account.connection.scopes = self.outlook_scopes
-        url, state = self.account.connection.get_authorization_url()
-        logger.info(f"Generated OAuth URL for {self.email}: {url}")
+        if email not in self.accounts:
+            raise ValueError(f"Email {email} not found in accounts")
+        self.accounts[email]["account"].connection.scopes = self.accounts[email][
+            "outlook_scopes"
+        ]
+        url, state = self.accounts[email]["account"].connection.get_authorization_url()
+        logger.info(f"Generated OAuth URL for {email}: {url}")
         return url
 
-    def create_outlook_token_step_2(self, code: str) -> bool:
+    def create_outlook_token_step_2(self, email: str, code: str) -> bool:
         """
         Step 2: Call this with the code received from the frontend after user authenticates.
         Returns True if authentication succeeded, False otherwise.
         """
+        if email not in self.accounts:
+            raise ValueError(f"Email {email} not found in accounts")
         try:
-            self.account.connection.request_token(code)
-            if self.account.is_authenticated:
-                logger.info(f"Authenticated successfully for {self.email}")
+            self.accounts[email]["account"].connection.request_token(code)
+            if self.accounts[email]["account"].is_authenticated:
+                logger.info(f"Authenticated successfully for {email}")
                 return True
             else:
-                logger.error(f"Authentication failed for {self.email}")
+                logger.error(f"Authentication failed for {email}")
                 return False
         except Exception as e:
             logger.error(f"Exception during OAuth completion: {e}")
             return False
+
+    def load_all(self, owner_id: uuid.UUID) -> None:
+
+        # Get all emails
+        emails = self.get_all(skip=0, limit=50, owner_id=owner_id)
+
+        # Load info and update accounts
+        for email in emails:
+            self.load(email.email)
+
+    def load_by_id(self, id: uuid.UUID) -> None:
+
+        # Get email
+        email = self.email_repository.get_by_id(id)
+        if not email:
+            return None
+        self.load(email.email)
+
+    def load(self, email: str) -> None:
+
+        # Prepare account
+        if email.endswith("@outlook.com"):
+            self.accounts[email] = {
+                "outlook_tenant_id": "consumers",
+                "outlook_scopes": ["Mail.Read", "offline_access"],
+            }
+        else:
+            self.accounts[email] = {
+                "outlook_tenant_id": "common",
+                "outlook_scopes": "https://graph.microsoft.com/Mail.Read offline_access",
+            }
+        token_path = os.path.join(
+            os.getcwd(),
+            ".gitignores",
+            "azure_tokens",
+        )
+        self.accounts[email]["token_backend"] = FileSystemTokenBackend(
+            token_path=token_path,
+            token_filename=email,
+        )
+        self.accounts[email]["account"] = Account(
+            (self.id or "", self.secret or ""),
+            token_backend=self.accounts[email]["token_backend"],
+            tenant_id=self.accounts[email]["outlook_tenant_id"],
+        )
+
+    def create(self, email_create: EmailCreate, owner_id: uuid.UUID) -> Email:
+        return self.email_repository.create(
+            Email.model_validate(
+                email_create, update={"owner_id": owner_id, "is_connected": False}
+            )
+        )
+
+    def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Email]:
+        return self.email_repository.get_all_by_kwargs(
+            skip=skip,
+            limit=limit,
+            **{"owner_id": owner_id},
+        )
+
+    def get_by_id(self, id: uuid.UUID) -> Email | None:
+        return self.email_repository.get_by_id(id)
+
+    def get_by_email(self, email: str) -> Email | None:
+        emails = self.email_repository.get_all_by_kwargs(email=email)
+        if len(emails) > 1:
+            raise ValueError(f"Multiple emails found with email {email}")
+        return emails[0] if emails else None
+
+    def get_count(self, owner_id: uuid.UUID) -> int:
+        return self.email_repository.count_by_kwargs(**{"owner_id": owner_id})
 
     async def fetch(self, *, owner_id: uuid.UUID) -> None:
         logger.info(f"Fetching emails for: {self.email}")
@@ -113,7 +175,7 @@ class EmailService:
             ]:  # Check if email is not on db or was not processed
 
                 # Default state
-                state = EmailState.PROCESSED
+                state = EmailDataState.PROCESSED
 
                 # Only process emails with attachments
                 if msg.has_attachments:
@@ -149,7 +211,7 @@ class EmailService:
                                         owner_id=owner_id,
                                     )
                                 except Exception as e:
-                                    state = EmailState.ERROR
+                                    state = EmailDataState.ERROR
                                     logger.error(f"Failed to create order: {e}")
                             else:
                                 logger.warning(
@@ -165,20 +227,8 @@ class EmailService:
                 # Save it for tracing
                 new_messages.append(msg)
                 self.create(
-                    EmailCreate(email_id=email_id, state=state),
+                    EmailDataCreate(email_id=email_id, state=state),
                     owner_id=owner_id,
                 )
         if not new_messages:
             logger.info(f"No new messages found for {self.email}")
-
-    def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Email]:
-        return self.repository.get_all_by_kwargs(
-            skip=skip,
-            limit=limit,
-            **{"owner_id": owner_id},
-        )
-
-    def create(self, email_create: EmailCreate, owner_id: uuid.UUID) -> Email:
-        return self.repository.create(
-            Email.model_validate(email_create, update={"owner_id": owner_id})
-        )

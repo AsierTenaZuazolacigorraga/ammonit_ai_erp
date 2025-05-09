@@ -1,24 +1,25 @@
 from http import HTTPStatus
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union
 
 import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.email_create import EmailCreate
+from ...models.client_create import ClientCreate
+from ...models.client_public import ClientPublic
 from ...models.http_validation_error import HTTPValidationError
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: EmailCreate,
+    body: ClientCreate,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/api/v1/emails/outlook-token-step-1/",
+        "url": "/api/v1/clients/",
     }
 
     _body = body.to_dict()
@@ -32,9 +33,10 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[HTTPValidationError, str]]:
+) -> Optional[Union[ClientPublic, HTTPValidationError]]:
     if response.status_code == 200:
-        response_200 = cast(str, response.json())
+        response_200 = ClientPublic.from_dict(response.json())
+
         return response_200
     if response.status_code == 422:
         response_422 = HTTPValidationError.from_dict(response.json())
@@ -48,7 +50,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[HTTPValidationError, str]]:
+) -> Response[Union[ClientPublic, HTTPValidationError]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -59,22 +61,22 @@ def _build_response(
 
 def sync_detailed(
     *,
-    client: Union[AuthenticatedClient, Client],
-    body: EmailCreate,
-) -> Response[Union[HTTPValidationError, str]]:
-    """Create Outlook Token Step 1
+    client: AuthenticatedClient,
+    body: ClientCreate,
+) -> Response[Union[ClientPublic, HTTPValidationError]]:
+    """Create Client
 
-     Create outlook token step 1.
+     Create new client.
 
     Args:
-        body (EmailCreate):
+        body (ClientCreate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[HTTPValidationError, str]]
+        Response[Union[ClientPublic, HTTPValidationError]]
     """
 
     kwargs = _get_kwargs(
@@ -90,22 +92,22 @@ def sync_detailed(
 
 def sync(
     *,
-    client: Union[AuthenticatedClient, Client],
-    body: EmailCreate,
-) -> Optional[Union[HTTPValidationError, str]]:
-    """Create Outlook Token Step 1
+    client: AuthenticatedClient,
+    body: ClientCreate,
+) -> Optional[Union[ClientPublic, HTTPValidationError]]:
+    """Create Client
 
-     Create outlook token step 1.
+     Create new client.
 
     Args:
-        body (EmailCreate):
+        body (ClientCreate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[HTTPValidationError, str]
+        Union[ClientPublic, HTTPValidationError]
     """
 
     return sync_detailed(
@@ -116,22 +118,22 @@ def sync(
 
 async def asyncio_detailed(
     *,
-    client: Union[AuthenticatedClient, Client],
-    body: EmailCreate,
-) -> Response[Union[HTTPValidationError, str]]:
-    """Create Outlook Token Step 1
+    client: AuthenticatedClient,
+    body: ClientCreate,
+) -> Response[Union[ClientPublic, HTTPValidationError]]:
+    """Create Client
 
-     Create outlook token step 1.
+     Create new client.
 
     Args:
-        body (EmailCreate):
+        body (ClientCreate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[HTTPValidationError, str]]
+        Response[Union[ClientPublic, HTTPValidationError]]
     """
 
     kwargs = _get_kwargs(
@@ -145,22 +147,22 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: Union[AuthenticatedClient, Client],
-    body: EmailCreate,
-) -> Optional[Union[HTTPValidationError, str]]:
-    """Create Outlook Token Step 1
+    client: AuthenticatedClient,
+    body: ClientCreate,
+) -> Optional[Union[ClientPublic, HTTPValidationError]]:
+    """Create Client
 
-     Create outlook token step 1.
+     Create new client.
 
     Args:
-        body (EmailCreate):
+        body (ClientCreate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[HTTPValidationError, str]
+        Union[ClientPublic, HTTPValidationError]
     """
 
     return (

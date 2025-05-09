@@ -5,14 +5,17 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.body_emails_create_outlook_token_step_2 import BodyEmailsCreateOutlookTokenStep2
+from ...models.emails_create_outlook_token_step_2_response_emails_create_outlook_token_step_2 import (
+    EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2,
+)
 from ...models.http_validation_error import HTTPValidationError
-from ...models.outlook_token_step_2 import OutlookTokenStep2
 from ...types import Response
 
 
 def _get_kwargs(
     *,
-    body: OutlookTokenStep2,
+    body: BodyEmailsCreateOutlookTokenStep2,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
@@ -32,9 +35,10 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, HTTPValidationError]]:
+) -> Optional[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]:
     if response.status_code == 200:
-        response_200 = response.json()
+        response_200 = EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2.from_dict(response.json())
+
         return response_200
     if response.status_code == 422:
         response_422 = HTTPValidationError.from_dict(response.json())
@@ -48,7 +52,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, HTTPValidationError]]:
+) -> Response[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -59,22 +63,22 @@ def _build_response(
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient,
-    body: OutlookTokenStep2,
-) -> Response[Union[Any, HTTPValidationError]]:
+    client: Union[AuthenticatedClient, Client],
+    body: BodyEmailsCreateOutlookTokenStep2,
+) -> Response[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]:
     """Create Outlook Token Step 2
 
      Create outlook token step 2.
 
     Args:
-        body (OutlookTokenStep2):
+        body (BodyEmailsCreateOutlookTokenStep2):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, HTTPValidationError]]
+        Response[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]
     """
 
     kwargs = _get_kwargs(
@@ -90,22 +94,22 @@ def sync_detailed(
 
 def sync(
     *,
-    client: AuthenticatedClient,
-    body: OutlookTokenStep2,
-) -> Optional[Union[Any, HTTPValidationError]]:
+    client: Union[AuthenticatedClient, Client],
+    body: BodyEmailsCreateOutlookTokenStep2,
+) -> Optional[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]:
     """Create Outlook Token Step 2
 
      Create outlook token step 2.
 
     Args:
-        body (OutlookTokenStep2):
+        body (BodyEmailsCreateOutlookTokenStep2):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, HTTPValidationError]
+        Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]
     """
 
     return sync_detailed(
@@ -116,22 +120,22 @@ def sync(
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient,
-    body: OutlookTokenStep2,
-) -> Response[Union[Any, HTTPValidationError]]:
+    client: Union[AuthenticatedClient, Client],
+    body: BodyEmailsCreateOutlookTokenStep2,
+) -> Response[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]:
     """Create Outlook Token Step 2
 
      Create outlook token step 2.
 
     Args:
-        body (OutlookTokenStep2):
+        body (BodyEmailsCreateOutlookTokenStep2):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[Any, HTTPValidationError]]
+        Response[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]
     """
 
     kwargs = _get_kwargs(
@@ -145,22 +149,22 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: AuthenticatedClient,
-    body: OutlookTokenStep2,
-) -> Optional[Union[Any, HTTPValidationError]]:
+    client: Union[AuthenticatedClient, Client],
+    body: BodyEmailsCreateOutlookTokenStep2,
+) -> Optional[Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]]:
     """Create Outlook Token Step 2
 
      Create outlook token step 2.
 
     Args:
-        body (OutlookTokenStep2):
+        body (BodyEmailsCreateOutlookTokenStep2):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[Any, HTTPValidationError]
+        Union[EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2, HTTPValidationError]
     """
 
     return (
