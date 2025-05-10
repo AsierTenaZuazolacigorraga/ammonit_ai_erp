@@ -15,7 +15,7 @@ import pandas as pd
 import PyPDF2
 from app.core.config import settings
 from app.logger import get_logger
-from app.models import Client, Order, OrderCreate, OrderState, OrderUpdate
+from app.models import Client, Order, OrderCreate, OrderState, OrderUpdate, User
 from app.repositories.base import CRUDRepository
 from app.services.bridges import BridgeService
 from app.services.clients import ClientService
@@ -53,13 +53,45 @@ def parse_pdf_binary_2_base64(pdf_binary: bytes) -> str:
     return base64.b64encode(pdf_binary).decode("utf-8")
 
 
-async def parse_pdf_binary_2_md(
-    ai_client: OpenAI, pdf_binary: bytes, pdf_name: str
+async def parse_document_2_md(
+    ai_client: OpenAI, document: bytes, document_name: str, user: User
 ) -> str:
+
     # Preprocess PDF to remove irrelevant pages
-    filtered_pdf_binary = preprocess_pdf(pdf_binary)
+    from app.services._orders._preprocessors_documents import _preprocess_document
+
+    document = _preprocess_document(document, document_name, user)
 
     # Convert to md
+    if document_name.endswith(".pdf"):
+        user_prompt = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(document)}",
+                }
+            ],
+            # "content": [
+            #     {
+            #         "type": "input_file",
+            #         "filename": pdf_name,
+            #         "file_data": f"data:application/pdf;base64,{parse_pdf_binary_2_base64(pdf_binary)}",
+            #     }
+            # ],
+        }
+    elif document_name.endswith(".txt"):
+        user_prompt = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": document,
+                }
+            ],
+        }
+    else:
+        raise ValueError(f"Unsupported file type: {document_name}")
     response = ai_client.responses.create(
         model="gpt-4.1-mini",
         input=[
@@ -77,22 +109,7 @@ async def parse_pdf_binary_2_md(
                     }
                 ],
             },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_image",
-                        "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(pdf_binary)}",
-                    }
-                ],
-                # "content": [
-                #     {
-                #         "type": "input_file",
-                #         "filename": pdf_name,
-                #         "file_data": f"data:application/pdf;base64,{parse_pdf_binary_2_base64(pdf_binary)}",
-                #     }
-                # ],
-            },  # type: ignore
+            user_prompt,  # type: ignore
         ],
         text={"format": {"type": "text"}},
         reasoning={},
@@ -109,51 +126,13 @@ async def parse_pdf_binary_2_md(
     return md
 
 
-def preprocess_pdf(pdf_binary: bytes) -> bytes:
-    # Keywords that indicate the start of irrelevant content
-    irrelevant_keywords = [
-        'Conditions Générales d\'Achat entre MATISA Matériel Industriel SA ("Matisa") et ses Fournisseurs ("Fournisseur")',
-    ]
-
-    # Create a new PDF writer
-    pdf_writer = PyPDF2.PdfWriter()
-
-    # Read the PDF from binary data
-    pdf_reader = PyPDF2.PdfReader(BytesIO(pdf_binary))
-
-    # Process each page until we find irrelevant content
-    for i in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[i]
-        text = page.extract_text().lower()
-
-        # Check if page contains irrelevant content
-        if any(keyword.lower() in text for keyword in irrelevant_keywords):
-            # Stop processing once we find irrelevant content
-            break
-
-        # Add relevant page to the new PDF
-        pdf_writer.add_page(page)
-
-    # If we filtered out all pages, keep at least the first page
-    if len(pdf_writer.pages) == 0 and len(pdf_reader.pages) > 0:
-        pdf_writer.add_page(pdf_reader.pages[0])
-
-    # Instead of saving to a file, write to a BytesIO object
-    output_buffer = BytesIO()
-    pdf_writer.write(output_buffer)
-
-    # Get the binary data from the buffer
-    output_buffer.seek(0)
-    return output_buffer.getvalue()
-
-
 def parse_md_2_order(
-    ai_client: OpenAI, md: str, clients: list[Client]
-) -> tuple[dict, Client]:
+    ai_client: OpenAI, md: str, clients: list[Client], user: User
+) -> tuple[BaseModel, Client]:
 
-    clients_clasification = ",\n".join(
-        f'"- {client.name}: {client.clasifier}"' for client in clients
-    )
+    from app.services._clients._clasifiers import _get_clients_clasifier
+
+    clients_clasification = _get_clients_clasifier(user, clients)
 
     # Extract client
     response = ai_client.responses.create(
@@ -205,8 +184,12 @@ If you cannot identify the client, respond with "unknown":
         raise ValueError(f"Multiple clients found for {client}: {possible_clients}")
     client = possible_clients[0]
 
+    from app.services._clients._structures import _get_client_structure
+
+    client_structure = _get_client_structure(user, client)
+
     # Extract info
-    response = ai_client.responses.create(
+    response = ai_client.responses.parse(
         model="gpt-4.1-nano",
         input=[
             {
@@ -215,7 +198,7 @@ If you cannot identify the client, respond with "unknown":
             },
             {"role": "user", "content": md},
         ],
-        text=json.loads(client.structure),
+        text_format=client_structure,
         reasoning={},
         tools=[],
         temperature=0,
@@ -224,17 +207,19 @@ If you cannot identify the client, respond with "unknown":
         store=True,
     )
 
-    if response.output_text is None:
+    if response.output_parsed is None:
         raise ValueError("Failed to parse the order information from the markdown.")
 
-    return json.loads(response.output_text), client
+    return response.output_parsed, client
 
 
-def parse_order_2_csv(order: dict) -> str:
+def parse_order_2_csv(order: BaseModel) -> str:
+
+    order_dict = order.model_dump()
 
     # Find keys that contain lists of dictionaries
     list_keys = []
-    for key, value in order.items():
+    for key, value in order_dict.items():
         if isinstance(value, list) and value and isinstance(value[0], dict):
             list_keys.append(key)
 
@@ -244,11 +229,11 @@ def parse_order_2_csv(order: dict) -> str:
         rows = []
 
         # Extract common fields from the order (non-list fields)
-        common_fields = {k: v for k, v in order.items() if k not in list_keys}
+        common_fields = {k: v for k, v in order_dict.items() if k not in list_keys}
 
         # For each list key, process its items
         for list_key in list_keys:
-            for item in order[list_key]:
+            for item in order_dict[list_key]:
                 row = common_fields.copy()
                 row.update(item)
                 rows.append(row)
@@ -289,16 +274,19 @@ class OrderService:
             raise ValueError("Base document cannot be None")
         if order_create.base_document_name is None:
             raise ValueError("Base document name cannot be None")
-        md = await parse_pdf_binary_2_md(
-            self.ai_client, order_create.base_document, order_create.base_document_name
+        md = await parse_document_2_md(
+            self.ai_client,
+            order_create.base_document,
+            order_create.base_document_name,
+            user,
         )
 
         # Use the new parse_md_2_order function with ai_client
-        order_dict, client = parse_md_2_order(self.ai_client, md, clients)
+        order_basemodel, client = parse_md_2_order(self.ai_client, md, clients, user)
 
         # Creat the order
         order = Order.model_validate(order_create, update={"owner_id": client.id})
-        order.content_processed = parse_order_2_csv(order_dict)
+        order.content_processed = parse_order_2_csv(order_basemodel)
         self.repository.create(order)
 
         # Approve the order (if needed)

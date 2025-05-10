@@ -44,8 +44,12 @@ class Scheduler:
                         asyncio.run(result)
                     # Otherwise, assume the function was synchronous and already executed.
                 except Exception as e:
-                    logger.error("Error in task %s: %s", func.__name__, e)
-                    logger.debug("Traceback: %s", traceback.format_exc())
+                    logger.error(
+                        "Error in task %s: %s\nTraceback:\n%s",
+                        func.__name__,
+                        str(e),
+                        traceback.format_exc(),
+                    )
             time.sleep(period)
 
 

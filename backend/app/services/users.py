@@ -27,14 +27,19 @@ class UserService:
     def get_count(self) -> int:
         return self.repository.count()
 
-    def get_by_id(self, id: uuid.UUID) -> User | None:
-        return self.repository.get_by_id(id)
+    def get_by_id(self, id: uuid.UUID) -> User:
+        user = self.repository.get_by_id(id)
+        if not user:
+            raise ValueError("User not found")
+        return user
 
-    def get_by_email(self, email: str) -> User | None:
+    def get_by_email(self, email: str) -> User:
         users = self.repository.get_all_by_kwargs(email=email)
         if len(users) > 1:
             raise ValueError(f"Multiple users found with email {email}")
-        return users[0] if users else None
+        if len(users) == 0:
+            raise ValueError(f"User with email {email} not found")
+        return users[0]
 
     def update(self, user_update: UserUpdate | UserUpdateMe, id: uuid.UUID) -> User:
         user = self.get_by_id(id)
@@ -47,13 +52,13 @@ class UserService:
             update_data["hashed_password"] = hashed_password
         return self.repository.update(user, update=update_data)
 
-    def authenticate(self, *, email: str, password: str) -> User | None:
+    def authenticate(self, *, email: str, password: str) -> User:
         statement = select(User).where(User.email == email)
         user = self.repository.session.exec(statement).first()
         if not user:
-            return None
+            raise ValueError(f"User with email {email} not found")
         if not verify_password(password, user.hashed_password):
-            return None
+            raise ValueError("Invalid password")
         return user
 
     def delete(self, id: uuid.UUID) -> None:
