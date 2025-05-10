@@ -131,7 +131,7 @@ class OrderBase(SQLModel):
         default=OrderState.PENDING,
     )
     approved_at: datetime | None = Field(default=None, nullable=True)  # In UTC
-    erp_interaction_at: datetime | None = Field(default=None, nullable=True)  # In UTC
+    created_in_erp_at: datetime | None = Field(default=None, nullable=True)  # In UTC
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )  # In UTC
@@ -150,6 +150,7 @@ class Order(Entity, OrderBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="client.id", nullable=False, ondelete="CASCADE"
     )
+    email_id: uuid.UUID = Field(foreign_key="email.id", nullable=True)
     owner: Client | None = Relationship(back_populates="orders")
 
 

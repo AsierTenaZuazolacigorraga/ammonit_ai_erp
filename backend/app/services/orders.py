@@ -15,9 +15,8 @@ import pandas as pd
 import PyPDF2
 from app.core.config import settings
 from app.logger import get_logger
-from app.models import Client, Order, OrderCreate, OrderState, OrderUpdate, User
+from app.models import Client, Email, Order, OrderCreate, OrderState, OrderUpdate, User
 from app.repositories.base import CRUDRepository
-from app.services.bridges import BridgeService
 from app.services.clients import ClientService
 from app.services.users import UserService
 from dotenv import load_dotenv
@@ -56,11 +55,6 @@ def parse_pdf_binary_2_base64(pdf_binary: bytes) -> str:
 async def parse_document_2_md(
     ai_client: OpenAI, document: bytes, document_name: str, user: User
 ) -> str:
-
-    # Preprocess PDF to remove irrelevant pages
-    from app.services._orders._preprocessors_documents import _preprocess_document
-
-    document = _preprocess_document(document, document_name, user)
 
     # Convert to md
     if document_name.endswith(".pdf"):
@@ -127,13 +121,14 @@ async def parse_document_2_md(
 
 
 def parse_md_2_order(
-    ai_client: OpenAI, md: str, clients: list[Client], user: User
+    ai_client: OpenAI,
+    md: str,
+    clients: list[Client],
+    client_service: ClientService,
+    user: User,
 ) -> tuple[BaseModel, Client]:
 
-    from app.services._clients._clasifiers import _get_clients_clasifier
-
-    clients_clasification = _get_clients_clasifier(user, clients)
-
+    clients_clasification = client_service.get_clasification_prompt(user.id)
     # Extract client
     response = ai_client.responses.create(
         model="gpt-4.1-nano",
@@ -184,9 +179,7 @@ If you cannot identify the client, respond with "unknown":
         raise ValueError(f"Multiple clients found for {client}: {possible_clients}")
     client = possible_clients[0]
 
-    from app.services._clients._structures import _get_client_structure
-
-    client_structure = _get_client_structure(user, client)
+    client_structure = client_service.get_structure(client.id)
 
     # Extract info
     response = ai_client.responses.parse(
@@ -213,9 +206,7 @@ If you cannot identify the client, respond with "unknown":
     return response.output_parsed, client
 
 
-def parse_order_2_csv(order: BaseModel) -> str:
-
-    order_dict = order.model_dump()
+def parse_order_dict_2_csv(order_dict: dict) -> str:
 
     # Find keys that contain lists of dictionaries
     list_keys = []
@@ -241,10 +232,9 @@ def parse_order_2_csv(order: BaseModel) -> str:
         # Create DataFrame from the rows
         df = pd.DataFrame(rows)
 
-    # If the order doesn't have any list keys, convert it directly
+    # If the order doesn't have any list keys
     else:
-        # For a flat dictionary, convert to a single-row DataFrame
-        df = pd.DataFrame([order])
+        raise ValueError("Order doesn't have any list keys")
 
     return df.to_csv(sep=";", index=False)
 
@@ -257,13 +247,18 @@ class OrderService:
         self.repository = CRUDRepository[Order](Order, session)
         self.clients_service = ClientService(session)
         self.users_service = UserService(session)
-        self.bridge_service = BridgeService(session)
         self.session = session
 
         # Initialize clients
         self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-    async def create(self, *, order_create: OrderCreate, owner_id: uuid.UUID) -> Order:
+    async def create(
+        self,
+        *,
+        order_create: OrderCreate,
+        owner_id: uuid.UUID,
+        email_id: uuid.UUID | None = None,
+    ) -> Order:
 
         # Get from external service
         clients = self.clients_service.get_all(skip=0, limit=100, owner_id=owner_id)
@@ -274,41 +269,87 @@ class OrderService:
             raise ValueError("Base document cannot be None")
         if order_create.base_document_name is None:
             raise ValueError("Base document name cannot be None")
+
+        # Preprocess document
+        document = self.preprocess_document(
+            order_create.base_document, order_create.base_document_name, user
+        )
+
+        # Parse document to md
         md = await parse_document_2_md(
             self.ai_client,
-            order_create.base_document,
+            document,
             order_create.base_document_name,
             user,
         )
 
-        # Use the new parse_md_2_order function with ai_client
-        order_basemodel, client = parse_md_2_order(self.ai_client, md, clients, user)
+        # Parse md to order
+        order_basemodel, client = parse_md_2_order(
+            self.ai_client, md, clients, self.clients_service, user
+        )
 
-        # Creat the order
-        order = Order.model_validate(order_create, update={"owner_id": client.id})
-        order.content_processed = parse_order_2_csv(order_basemodel)
+        # Preprocess order
+        order = self.preprocess_order(
+            order_create, order_basemodel, user, client, email_id
+        )
+
+        # Create the order
         self.repository.create(order)
 
         # Approve the order (if needed)
         if user and user.is_auto_approved:
-            order = await self.approve(order_update=OrderUpdate(), id=order.id)
+            order = await self.approve(
+                order_update=OrderUpdate(), id=order.id, user=user
+            )
 
         return order
 
-    async def approve(self, order_update: OrderUpdate, id: uuid.UUID) -> Order:
+    async def approve(
+        self, order_update: OrderUpdate, id: uuid.UUID, user: User
+    ) -> Order:
+
         order = self.get_by_id(id)
-        if not order:
-            raise ValueError("Order not found")
 
         # Update the order
         order_update.approved_at = datetime.now(timezone.utc)
 
         # Integrate in ERP
-        order_update = self.bridge_service.execute(order_update=order_update)
+        from app.services._orders._postprocessors_orders import _postprocess_order
+
+        order_update = _postprocess_order(order_update, user)
 
         return self.repository.update(
             order, update=order_update.model_dump(exclude_unset=True)
         )
+
+    def preprocess_document(
+        self, document: bytes, document_name: str, user: User
+    ) -> bytes:
+        from app.services._orders._preprocessors_documents import _preprocess_document
+
+        return _preprocess_document(document, document_name, user)
+
+    def preprocess_order(
+        self,
+        order_create: OrderCreate,
+        order_basemodel: BaseModel,
+        user: User,
+        client: Client,
+        email_id: uuid.UUID | None,
+    ) -> Order:
+
+        if email_id is not None:
+            update = {"owner_id": client.id, "email_id": email_id}
+        else:
+            update = {"owner_id": client.id}
+        order = Order.model_validate(order_create, update=update)
+
+        from app.services._orders._preprocessors_orders import _preprocess_order
+
+        order.content_processed = parse_order_dict_2_csv(
+            _preprocess_order(order_basemodel, user)
+        )
+        return order
 
     def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Order]:
         clients = self.clients_service.get_all(
@@ -325,8 +366,11 @@ class OrderService:
             **{"owner_id": client_ids},
         )
 
-    def get_by_id(self, id: uuid.UUID) -> Order | None:
-        return self.repository.get_by_id(id)
+    def get_by_id(self, id: uuid.UUID) -> Order:
+        order = self.repository.get_by_id(id)
+        if order is None:
+            raise ValueError("Order not found")
+        return order
 
     def get_count(self, owner_id: uuid.UUID) -> int:
         clients = self.clients_service.get_all(

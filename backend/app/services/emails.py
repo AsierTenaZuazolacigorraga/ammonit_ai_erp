@@ -16,14 +16,13 @@ from app.models import (
     EmailData,
     EmailDataCreate,
     EmailDataState,
-    Order,
     OrderCreate,
-    OrderState,
+    User,
 )
 from app.repositories.base import CRUDRepository
 from app.services.orders import OrderService
 from app.services.users import UserService
-from O365 import Account, FileSystemTokenBackend
+from O365 import Account, FileSystemTokenBackend, Message
 from sqlmodel import Session
 
 logger = get_logger(__name__)
@@ -215,9 +214,7 @@ class EmailService:
                     logger.info(f"Received: {msg_complete.received}")
                     logger.info(f"Body: {msg_complete.body_preview}")
 
-                    from app.services._emails._filters import _filter_orders
-
-                    for order in _filter_orders(msg_complete, user, email):
+                    for order in self.filter_orders(msg_complete, user, email):
                         try:
                             # Create the order
                             await self.order_service.create(
@@ -227,6 +224,7 @@ class EmailService:
                                     or None,
                                 ),
                                 owner_id=owner_id,
+                                email_id=email.id,
                             )
                         except Exception as e:
                             state = EmailDataState.ERROR
@@ -248,3 +246,10 @@ class EmailService:
                     )
             if not new_messages:
                 logger.info(f"No new messages found for {email.email}")
+
+    def filter_orders(
+        self, msg_complete: Message, user: User, email: Email
+    ) -> list[dict]:
+        from app.services._emails._filters import _filter_orders
+
+        return _filter_orders(msg_complete, user, email)

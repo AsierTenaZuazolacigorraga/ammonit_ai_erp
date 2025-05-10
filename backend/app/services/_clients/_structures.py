@@ -22,7 +22,7 @@ def _get_client_structure(user: User, client: Client) -> type[BaseModel]:
         if client.name == "danobat":
 
             class Item(BaseModel):
-                code: str = Field(
+                client_code: str = Field(
                     ...,
                     description=f"{GENERIC_CODE_DESC}",
                 )
@@ -56,7 +56,7 @@ def _get_client_structure(user: User, client: Client) -> type[BaseModel]:
         elif client.name == "fagor":
 
             class Item(BaseModel):
-                code: str = Field(
+                client_code: str = Field(
                     ...,
                     description=f"{GENERIC_CODE_DESC}. The code is usually repeated two times.",
                 )
@@ -93,7 +93,7 @@ def _get_client_structure(user: User, client: Client) -> type[BaseModel]:
         elif client.name == "inola":
 
             class Item(BaseModel):
-                code: str = Field(..., description=f"{GENERIC_CODE_DESC}")
+                client_code: str = Field(..., description=f"{GENERIC_CODE_DESC}")
                 description: str = Field(..., description=f"{GENERIC_DESCRIPTION_DESC}")
                 quantity: int = Field(..., description=f"{GENERIC_QUANTITY_DESC}")
                 unit_price: float = Field(..., description=f"{GENERIC_UNIT_PRICE_DESC}")
@@ -112,7 +112,7 @@ def _get_client_structure(user: User, client: Client) -> type[BaseModel]:
         elif client.name == "matisa":
 
             class Item(BaseModel):
-                code: str = Field(
+                client_code: str = Field(
                     ...,
                     description=f"{GENERIC_CODE_DESC}. Usually provided as 'Référence article et désignation'. The code is provided in digits in this format: XX-XX-XXX-XXXXX.",
                 )
@@ -137,7 +137,7 @@ def _get_client_structure(user: User, client: Client) -> type[BaseModel]:
         elif client.name == "ulma":
 
             class Item(BaseModel):
-                code: str = Field(
+                client_code: str = Field(
                     ...,
                     description=f"{GENERIC_CODE_DESC}. Usually provided as 'Proyecto Código'.",
                 )
@@ -165,7 +165,7 @@ def _get_client_structure(user: User, client: Client) -> type[BaseModel]:
         elif client.name == "nearby":
 
             class Item(BaseModel):
-                code: str = Field(..., description=f"{GENERIC_CODE_DESC}")
+                client_code: str = Field(..., description=f"{GENERIC_CODE_DESC}")
                 description: str = Field(..., description=f"{GENERIC_DESCRIPTION_DESC}")
                 quantity: int = Field(..., description=f"{GENERIC_QUANTITY_DESC}")
                 unit_price: float = Field(..., description=f"{GENERIC_UNIT_PRICE_DESC}")

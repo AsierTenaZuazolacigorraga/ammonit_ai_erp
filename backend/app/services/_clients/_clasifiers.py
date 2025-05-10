@@ -9,7 +9,7 @@ def _join_clients(
     return f"{clients_clasification}\n- {client.name}: {clasifier}"
 
 
-def _get_clients_clasifier(user: User, clients: list[Client]) -> str:
+def _get_clasification_prompt(user: User, clients: list[Client]) -> str:
 
     ##############################################################
     clients_clasification = ""

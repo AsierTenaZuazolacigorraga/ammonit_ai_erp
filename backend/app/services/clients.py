@@ -2,6 +2,8 @@ import uuid
 
 from app.models import Client, ClientCreate, ClientUpdate
 from app.repositories.base import CRUDRepository
+from app.services.users import UserService
+from pydantic import BaseModel
 from sqlmodel import Session
 
 
@@ -11,6 +13,7 @@ class ClientService:
         session: Session,
     ) -> None:
         self.repository = CRUDRepository[Client](Client, session)
+        self.user_service = UserService(session)
 
     def create(self, client_create: ClientCreate, owner_id: uuid.UUID) -> Client:
         return self.repository.create(
@@ -24,8 +27,11 @@ class ClientService:
             **{"owner_id": owner_id},
         )
 
-    def get_by_id(self, id: uuid.UUID) -> Client | None:
-        return self.repository.get_by_id(id)
+    def get_by_id(self, id: uuid.UUID) -> Client:
+        client = self.repository.get_by_id(id)
+        if not client:
+            raise ValueError("Client not found")
+        return client
 
     def get_count(self, owner_id: uuid.UUID) -> int:
         return self.repository.count_by_kwargs(**{"owner_id": owner_id})
@@ -40,3 +46,19 @@ class ClientService:
         return self.repository.update(
             client, update=client_update.model_dump(exclude_unset=True)
         )
+
+    def get_clasification_prompt(self, owner_id: uuid.UUID) -> str:
+
+        from app.services._clients._clasifiers import _get_clasification_prompt
+
+        user = self.user_service.get_by_id(owner_id)
+        clients = self.get_all(skip=0, limit=100, owner_id=owner_id)
+        return _get_clasification_prompt(user, clients)
+
+    def get_structure(self, id: uuid.UUID) -> type[BaseModel]:
+
+        from app.services._clients._structures import _get_client_structure
+
+        client = self.get_by_id(id)
+        user = self.user_service.get_by_id(client.owner_id)
+        return _get_client_structure(user, client)
