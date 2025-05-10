@@ -150,7 +150,9 @@ class Order(Entity, OrderBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="client.id", nullable=False, ondelete="CASCADE"
     )
-    email_id: uuid.UUID = Field(foreign_key="email.id", nullable=True)
+    email_id: uuid.UUID = Field(
+        foreign_key="email.id", nullable=True, ondelete="SET NULL"
+    )
     owner: Client | None = Relationship(back_populates="orders")
 
 
