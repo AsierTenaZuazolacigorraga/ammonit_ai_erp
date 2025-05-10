@@ -1,8 +1,5 @@
 import { Badge, Container, Heading, HStack } from "@chakra-ui/react"
-import {
-  useQueryClient,
-  type UseQueryOptions,
-} from "@tanstack/react-query"
+import { UseQueryOptions } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
@@ -11,6 +8,7 @@ import AddUser from "@/components/Admin/AddUser"
 import DeleteUser from "@/components/Admin/DeleteUser"
 import EditUser from "@/components/Admin/EditUser"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
+import useAuth from "@/hooks/useAuth"
 
 // Schema
 const usersSearchSchema = z.object({
@@ -45,8 +43,7 @@ export const Route = createFileRoute("/_layout/admin")({
 
 // Main component
 function Admin() {
-  const queryClient = useQueryClient()
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const { user: currentUser } = useAuth()
 
   // Define columns here
   const columns: Column<UserPublic>[] = [

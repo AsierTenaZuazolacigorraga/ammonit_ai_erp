@@ -121,5 +121,5 @@ async def approve_order(
         raise HTTPException(
             status_code=400, detail="No se puede actualizar un documento aprobado"
         )
-    order = await order_service.approve(order_update=order_in, id=id)
+    order = await order_service.approve(order_update=order_in, id=id, user=current_user)
     return OrderPublic.model_validate(order)

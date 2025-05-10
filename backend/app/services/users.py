@@ -33,13 +33,11 @@ class UserService:
             raise ValueError("User not found")
         return user
 
-    def get_by_email(self, email: str) -> User:
+    def get_by_email(self, email: str) -> User | None:
         users = self.repository.get_all_by_kwargs(email=email)
         if len(users) > 1:
             raise ValueError(f"Multiple users found with email {email}")
-        if len(users) == 0:
-            raise ValueError(f"User with email {email} not found")
-        return users[0]
+        return users[0] if users else None
 
     def update(self, user_update: UserUpdate | UserUpdateMe, id: uuid.UUID) -> User:
         user = self.get_by_id(id)

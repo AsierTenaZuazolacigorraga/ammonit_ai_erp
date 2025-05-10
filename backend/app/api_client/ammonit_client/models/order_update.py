@@ -22,7 +22,7 @@ class OrderUpdate:
         content_processed (Union[None, Unset, str]):
         state (Union[Unset, OrderState]):
         approved_at (Union[None, Unset, datetime.datetime]):
-        erp_interaction_at (Union[None, Unset, datetime.datetime]):
+        created_in_erp_at (Union[None, Unset, datetime.datetime]):
         created_at (Union[Unset, datetime.datetime]):
     """
 
@@ -31,7 +31,7 @@ class OrderUpdate:
     content_processed: Union[None, Unset, str] = UNSET
     state: Union[Unset, OrderState] = UNSET
     approved_at: Union[None, Unset, datetime.datetime] = UNSET
-    erp_interaction_at: Union[None, Unset, datetime.datetime] = UNSET
+    created_in_erp_at: Union[None, Unset, datetime.datetime] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -69,13 +69,13 @@ class OrderUpdate:
         else:
             approved_at = self.approved_at
 
-        erp_interaction_at: Union[None, Unset, str]
-        if isinstance(self.erp_interaction_at, Unset):
-            erp_interaction_at = UNSET
-        elif isinstance(self.erp_interaction_at, datetime.datetime):
-            erp_interaction_at = self.erp_interaction_at.isoformat()
+        created_in_erp_at: Union[None, Unset, str]
+        if isinstance(self.created_in_erp_at, Unset):
+            created_in_erp_at = UNSET
+        elif isinstance(self.created_in_erp_at, datetime.datetime):
+            created_in_erp_at = self.created_in_erp_at.isoformat()
         else:
-            erp_interaction_at = self.erp_interaction_at
+            created_in_erp_at = self.created_in_erp_at
 
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
@@ -94,8 +94,8 @@ class OrderUpdate:
             field_dict["state"] = state
         if approved_at is not UNSET:
             field_dict["approved_at"] = approved_at
-        if erp_interaction_at is not UNSET:
-            field_dict["erp_interaction_at"] = erp_interaction_at
+        if created_in_erp_at is not UNSET:
+            field_dict["created_in_erp_at"] = created_in_erp_at
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
 
@@ -164,7 +164,7 @@ class OrderUpdate:
 
         approved_at = _parse_approved_at(d.pop("approved_at", UNSET))
 
-        def _parse_erp_interaction_at(data: object) -> Union[None, Unset, datetime.datetime]:
+        def _parse_created_in_erp_at(data: object) -> Union[None, Unset, datetime.datetime]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -172,14 +172,14 @@ class OrderUpdate:
             try:
                 if not isinstance(data, str):
                     raise TypeError()
-                erp_interaction_at_type_0 = isoparse(data)
+                created_in_erp_at_type_0 = isoparse(data)
 
-                return erp_interaction_at_type_0
+                return created_in_erp_at_type_0
             except:  # noqa: E722
                 pass
             return cast(Union[None, Unset, datetime.datetime], data)
 
-        erp_interaction_at = _parse_erp_interaction_at(d.pop("erp_interaction_at", UNSET))
+        created_in_erp_at = _parse_created_in_erp_at(d.pop("created_in_erp_at", UNSET))
 
         _created_at = d.pop("created_at", UNSET)
         created_at: Union[Unset, datetime.datetime]
@@ -194,7 +194,7 @@ class OrderUpdate:
             content_processed=content_processed,
             state=state,
             approved_at=approved_at,
-            erp_interaction_at=erp_interaction_at,
+            created_in_erp_at=created_in_erp_at,
             created_at=created_at,
         )
 

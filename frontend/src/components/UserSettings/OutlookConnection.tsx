@@ -126,8 +126,8 @@ const OutlookConnection = () => {
                                 bg="gray.50"
                                 borderRadius="md"
                             >
-                                <Box>
-                                    <Text>{email.email}</Text>
+                                <Box maxW="60%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                                    <Text truncate>{email.email}</Text>
                                     {email.is_connected ? (
                                         <Text color="green.500" fontSize="sm">Conectado</Text>
                                     ) : (

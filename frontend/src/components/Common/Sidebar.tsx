@@ -1,11 +1,9 @@
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react"
-import { useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { FaBars } from "react-icons/fa"
 import { FiLogOut } from "react-icons/fi"
 import { HiMiniChevronDoubleLeft, HiMiniChevronDoubleRight } from "react-icons/hi2"
 
-import type { UserPublic } from "@/client"
 import useAuth from "@/hooks/useAuth"
 import {
   DrawerBackdrop,
@@ -18,8 +16,7 @@ import {
 import SidebarItems from "./SidebarItems"
 
 const Sidebar = () => {
-  const queryClient = useQueryClient()
-  const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const { user: currentUser } = useAuth()
   const { logout } = useAuth()
   const [open, setOpen] = useState(false)
   const [isDesktopVisible, setIsDesktopVisible] = useState(true)

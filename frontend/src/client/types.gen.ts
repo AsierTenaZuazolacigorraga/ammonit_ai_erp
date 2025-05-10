@@ -62,7 +62,7 @@ export type OrderPublic = {
     content_processed?: (string | null);
     state?: OrderState;
     approved_at?: (string | null);
-    erp_interaction_at?: (string | null);
+    created_in_erp_at?: (string | null);
     created_at?: string;
     id: string;
     owner_id: string;
@@ -82,7 +82,7 @@ export type OrderUpdate = {
     content_processed?: (string | null);
     state?: OrderState;
     approved_at?: (string | null);
-    erp_interaction_at?: (string | null);
+    created_in_erp_at?: (string | null);
     created_at?: string;
 };
 
