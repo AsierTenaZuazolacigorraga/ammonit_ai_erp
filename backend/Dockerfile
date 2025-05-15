@@ -40,8 +40,9 @@ COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 COPY ./app /app/app
 COPY ./bridge /app/bridge
 COPY ./scheduler /app/scheduler
+COPY ./prestart /app/prestart
 
-COPY ./.gitignores /app/.gitignores
+COPY ./.gitignores/azure_tokens /app/.gitignores/azure_tokens
 
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
