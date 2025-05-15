@@ -38,6 +38,8 @@ COPY ./scripts /app/scripts
 COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
 COPY ./app /app/app
+COPY ./bridge /app/bridge
+COPY ./scheduler /app/scheduler
 
 COPY ./.gitignores /app/.gitignores
 
