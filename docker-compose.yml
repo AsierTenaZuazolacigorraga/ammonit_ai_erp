@@ -156,8 +156,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
-    # command: sleep infinity # Infinite loop to keep container alive doing nothing
-    command: python app/scheduler.py
+    command: python scheduler/scheduler.py
 
   frontend:
     image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'

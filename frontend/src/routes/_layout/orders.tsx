@@ -151,7 +151,7 @@ function Orders() {
             )
         },
         {
-            header: "Información Procesada",
+            header: "Información Extraída",
             accessor: (order) => {
                 if (!order.content_processed) return "-";
                 return (

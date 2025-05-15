@@ -50,13 +50,13 @@ class UserService:
             update_data["hashed_password"] = hashed_password
         return self.repository.update(user, update=update_data)
 
-    def authenticate(self, *, email: str, password: str) -> User:
+    def authenticate(self, *, email: str, password: str) -> User | None:
         statement = select(User).where(User.email == email)
         user = self.repository.session.exec(statement).first()
         if not user:
-            raise ValueError(f"User with email {email} not found")
+            return None
         if not verify_password(password, user.hashed_password):
-            raise ValueError("Invalid password")
+            return None
         return user
 
     def delete(self, id: uuid.UUID) -> None:
