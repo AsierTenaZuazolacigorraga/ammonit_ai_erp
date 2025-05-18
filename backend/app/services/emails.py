@@ -198,7 +198,7 @@ class EmailService:
                 ]:  # Check if email is not on
 
                     # Default state
-                    state = EmailDataState.PROCESSED
+                    state = EmailDataState.PROCESSED_OK
 
                     # Load complete message
                     msg_complete = (
@@ -227,7 +227,7 @@ class EmailService:
                                 email_id=email.id,
                             )
                         except Exception as e:
-                            state = EmailDataState.ERROR
+                            state = EmailDataState.PROCESSED_ERROR
                             logger.error(
                                 "Failed to create order: %s\nTraceback:\n%s",
                                 str(e),

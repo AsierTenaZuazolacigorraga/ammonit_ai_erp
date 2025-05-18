@@ -3,9 +3,32 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ClientsCreateClientData, ClientsCreateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ClientsService {
+    /**
+     * Read Clients
+     * Retrieve clients.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns ClientsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readClients(data: ClientsReadClientsData = {}): CancelablePromise<ClientsReadClientsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clients/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
     /**
      * Create Client
      * Create new client.
@@ -18,6 +41,51 @@ export class ClientsService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/clients/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Client
+     * Delete an client.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteClient(data: ClientsDeleteClientData): CancelablePromise<ClientsDeleteClientResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/clients/{id}/',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Client
+     * Update a client.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns ClientPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateClient(data: ClientsUpdateClientData): CancelablePromise<ClientsUpdateClientResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/clients/{id}/',
+            path: {
+                id: data.id
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -235,7 +303,31 @@ export class OrdersService {
     public static approveOrder(data: OrdersApproveOrderData): CancelablePromise<OrdersApproveOrderResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/orders/{id}/',
+            url: '/api/v1/orders/approve/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Order Erp State
+     * Update ERP state of an order.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns OrderPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateOrderErpState(data: OrdersUpdateOrderErpStateData): CancelablePromise<OrdersUpdateOrderErpStateResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/orders/update_erp_state/{id}/',
             path: {
                 id: data.id
             },
@@ -259,7 +351,7 @@ export class UsersService {
     public static readUserMe(): CancelablePromise<UsersReadUserMeResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/users/me'
+            url: '/api/v1/users/me/'
         });
     }
     
@@ -274,7 +366,7 @@ export class UsersService {
     public static updateUserMe(data: UsersUpdateUserMeData): CancelablePromise<UsersUpdateUserMeResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/me',
+            url: '/api/v1/users/me/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -294,7 +386,7 @@ export class UsersService {
     public static updatePasswordMe(data: UsersUpdatePasswordMeData): CancelablePromise<UsersUpdatePasswordMeResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/me/password',
+            url: '/api/v1/users/me/password/',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -357,7 +449,7 @@ export class UsersService {
     public static readUser(data: UsersReadUserData): CancelablePromise<UsersReadUserResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/users/{id}',
+            url: '/api/v1/users/{id}/',
             path: {
                 id: data.id
             },
@@ -379,7 +471,7 @@ export class UsersService {
     public static updateUser(data: UsersUpdateUserData): CancelablePromise<UsersUpdateUserResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/api/v1/users/{id}',
+            url: '/api/v1/users/{id}/',
             path: {
                 id: data.id
             },
@@ -402,7 +494,7 @@ export class UsersService {
     public static deleteUser(data: UsersDeleteUserData): CancelablePromise<UsersDeleteUserResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/users/{id}',
+            url: '/api/v1/users/{id}/',
             path: {
                 id: data.id
             },

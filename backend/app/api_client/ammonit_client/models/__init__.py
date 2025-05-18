@@ -5,6 +5,8 @@ from .body_login_login_access_token import BodyLoginLoginAccessToken
 from .body_orders_create_order import BodyOrdersCreateOrder
 from .client_create import ClientCreate
 from .client_public import ClientPublic
+from .client_update import ClientUpdate
+from .clients_public import ClientsPublic
 from .email_create import EmailCreate
 from .email_public import EmailPublic
 from .emails_create_outlook_token_step_2_response_emails_create_outlook_token_step_2 import (
@@ -33,6 +35,8 @@ __all__ = (
     "BodyOrdersCreateOrder",
     "ClientCreate",
     "ClientPublic",
+    "ClientsPublic",
+    "ClientUpdate",
     "EmailCreate",
     "EmailPublic",
     "EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2",

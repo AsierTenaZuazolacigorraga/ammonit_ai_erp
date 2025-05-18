@@ -10,26 +10,44 @@ from app.models import (
     ClientUpdate,
     Message,
 )
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
 
-# @router.get("/", response_model=ClientsPublic)
-# def read_clients(
-#     client_service: ClientServiceDep,
-#     current_user: CurrentUserDep,
-#     skip: int = 0,
-#     limit: int = 100,
-# ) -> ClientsPublic:
-#     """
-#     Retrieve clients.
-#     """
-#     clients = client_service.get_all(skip=skip, limit=limit, owner_id=current_user.id)
-#     count = client_service.get_count(owner_id=current_user.id)
-#     # Convert Client objects to ClientPublic objects
-#     client_publics = [ClientPublic.model_validate(client) for client in clients]
-#     return ClientsPublic(data=client_publics, count=count)
+@router.get("/", response_model=ClientsPublic)
+def read_clients(
+    client_service: ClientServiceDep,
+    current_user: CurrentUserDep,
+    skip: int = 0,
+    limit: int = 100,
+) -> ClientsPublic:
+    """
+    Retrieve clients.
+    """
+    clients = client_service.get_all(skip=skip, limit=limit, owner_id=current_user.id)
+    count = client_service.get_count(owner_id=current_user.id)
+    # Convert Client objects to ClientPublic objects
+    client_publics = [ClientPublic.model_validate(client) for client in clients]
+    return ClientsPublic(data=client_publics, count=count)
+
+
+@router.get("/proposal", response_model=ClientPublic)
+async def get_client_proposal(
+    client_service: ClientServiceDep,
+    current_user: CurrentUserDep,
+    base_document: UploadFile = File(...),
+) -> ClientPublic:
+    """
+    Retrieve clients proposal.
+    """
+    file_bytes: bytes = await base_document.read()
+
+    client = client_service.get_proposal(
+        base_document=file_bytes,
+        base_document_name=base_document.filename,
+    )
+    return ClientPublic.model_validate(client)
 
 
 @router.post("/", response_model=ClientPublic)
@@ -45,43 +63,43 @@ def create_client(
     return ClientPublic.model_validate(client)
 
 
-# @router.delete("/{id}/")
-# def delete_client(
-#     client_service: ClientServiceDep,
-#     current_user: CurrentUserDep,
-#     id: uuid.UUID,
-# ) -> Message:
-#     """
-#     Delete an client.
-#     """
-#     client = client_service.get_by_id(id)
-#     if not client:
-#         raise HTTPException(status_code=404, detail="Cliente no encontrado")
-#     if not current_user.is_superuser and (client.owner_id != current_user.id):
-#         raise HTTPException(status_code=400, detail="Permisos insuficientes")
-#     client_service.delete(id)
-#     return Message(message="Cliente eliminado correctamente")
+@router.delete("/{id}/")
+def delete_client(
+    client_service: ClientServiceDep,
+    current_user: CurrentUserDep,
+    id: uuid.UUID,
+) -> Message:
+    """
+    Delete an client.
+    """
+    client = client_service.get_by_id(id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    if not current_user.is_superuser and (client.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+    client_service.delete(id)
+    return Message(message="Cliente eliminado correctamente")
 
 
-# @router.patch(
-#     "/{id}/",
-#     response_model=ClientPublic,
-# )
-# def update_client(
-#     *,
-#     client_service: ClientServiceDep,
-#     current_user: CurrentUserDep,
-#     id: uuid.UUID,
-#     client_in: ClientUpdate,
-# ) -> ClientPublic:
-#     """
-#     Update a client.
-#     """
+@router.patch(
+    "/{id}/",
+    response_model=ClientPublic,
+)
+def update_client(
+    *,
+    client_service: ClientServiceDep,
+    current_user: CurrentUserDep,
+    id: uuid.UUID,
+    client_in: ClientUpdate,
+) -> ClientPublic:
+    """
+    Update a client.
+    """
 
-#     client = client_service.get_by_id(id)
-#     if not client:
-#         raise HTTPException(status_code=404, detail="Cliente no encontrado")
-#     if not current_user.is_superuser and (client.owner_id != current_user.id):
-#         raise HTTPException(status_code=400, detail="Permisos insuficientes")
-#     client = client_service.update(client_update=client_in, id=id)
-#     return ClientPublic.model_validate(client)
+    client = client_service.get_by_id(id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    if not current_user.is_superuser and (client.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+    client = client_service.update(client_update=client_in, id=id)
+    return ClientPublic.model_validate(client)

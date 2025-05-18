@@ -120,7 +120,7 @@ async def parse_document_2_md(
     return md
 
 
-def parse_md_2_order(
+async def parse_md_2_order(
     ai_client: OpenAI,
     md: str,
     clients: list[Client],
@@ -129,6 +129,7 @@ def parse_md_2_order(
 ) -> tuple[BaseModel, Client]:
 
     clients_clasification = client_service.get_clasification_prompt(user.id)
+
     # Extract client
     response = ai_client.responses.create(
         model="gpt-4.1-nano",
@@ -265,6 +266,31 @@ class OrderService:
         user = self.users_service.get_by_id(owner_id)
 
         # Process parsing
+        order, client = await self.process(
+            order_create=order_create,
+            user=user,
+            clients=clients,
+            email_id=email_id,
+        )
+
+        # Create the order
+        self.repository.create(order)
+
+        # Approve the order (if needed)
+        if user and user.is_auto_approved:
+            order = self.approve(order_update=OrderUpdate(), id=order.id, user=user)
+
+        return order
+
+    async def process(
+        self,
+        *,
+        order_create: OrderCreate,
+        user: User,
+        clients: list[Client],
+        email_id: uuid.UUID | None = None,
+    ) -> tuple[Order, Client]:
+
         if order_create.base_document is None:
             raise ValueError("Base document cannot be None")
         if order_create.base_document_name is None:
@@ -284,7 +310,7 @@ class OrderService:
         )
 
         # Parse md to order
-        order_basemodel, client = parse_md_2_order(
+        order_basemodel, client = await parse_md_2_order(
             self.ai_client, md, clients, self.clients_service, user
         )
 
@@ -293,31 +319,31 @@ class OrderService:
             order_create, order_basemodel, user, client, email_id
         )
 
-        # Create the order
-        self.repository.create(order)
+        return order, client
 
-        # Approve the order (if needed)
-        if user and user.is_auto_approved:
-            order = await self.approve(
-                order_update=OrderUpdate(), id=order.id, user=user
-            )
-
-        return order
-
-    async def approve(
-        self, order_update: OrderUpdate, id: uuid.UUID, user: User
-    ) -> Order:
+    def approve(self, order_update: OrderUpdate, id: uuid.UUID, user: User) -> Order:
 
         order = self.get_by_id(id)
 
         # Update the order
         order_update.approved_at = datetime.now(timezone.utc)
 
-        # Integrate in ERP
         from app.services._orders._postprocessors_orders import _postprocess_order
 
         order_update = _postprocess_order(order_update, user)
 
+        return self.repository.update(
+            order, update=order_update.model_dump(exclude_unset=True)
+        )
+
+    def update_erp_state(
+        self, order_update: OrderUpdate, id: uuid.UUID, user: User
+    ) -> Order:
+
+        order = self.get_by_id(id)
+
+        # Update the order
+        order_update.created_in_erp_at = datetime.now(timezone.utc)
         return self.repository.update(
             order, update=order_update.model_dump(exclude_unset=True)
         )

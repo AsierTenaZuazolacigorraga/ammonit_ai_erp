@@ -98,10 +98,10 @@ def delete_order(
 
 
 @router.patch(
-    "/{id}/",
+    "/approve/{id}/",
     response_model=OrderPublic,
 )
-async def approve_order(
+def approve_order(
     *,
     order_service: OrderServiceDep,
     current_user: CurrentUserDep,
@@ -119,7 +119,37 @@ async def approve_order(
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
     if order.state != OrderState.PENDING:
         raise HTTPException(
-            status_code=400, detail="No se puede actualizar un documento aprobado"
+            status_code=400, detail="No se puede actualizar un documento no pendiente"
         )
-    order = await order_service.approve(order_update=order_in, id=id, user=current_user)
+    order = order_service.approve(order_update=order_in, id=id, user=current_user)
+    return OrderPublic.model_validate(order)
+
+
+@router.patch(
+    "/update_erp_state/{id}/",
+    response_model=OrderPublic,
+)
+def update_order_erp_state(
+    *,
+    order_service: OrderServiceDep,
+    current_user: CurrentUserDep,
+    id: uuid.UUID,
+    order_in: OrderUpdate,
+) -> OrderPublic:
+    """
+    Update ERP state of an order.
+    """
+
+    order = order_service.get_by_id(id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    if not current_user.is_superuser and (order.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+    if order.state != OrderState.APPROVED:
+        raise HTTPException(
+            status_code=400, detail="No se puede actualizar un documento no aprobado"
+        )
+    order = order_service.update_erp_state(
+        order_update=order_in, id=id, user=current_user
+    )
     return OrderPublic.model_validate(order)

@@ -7,21 +7,21 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.user_public import UserPublic
-from ...models.user_update import UserUpdate
+from ...models.order_public import OrderPublic
+from ...models.order_update import OrderUpdate
 from ...types import Response
 
 
 def _get_kwargs(
     id: UUID,
     *,
-    body: UserUpdate,
+    body: OrderUpdate,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "patch",
-        "url": f"/api/v1/users/{id}/",
+        "url": f"/api/v1/orders/update_erp_state/{id}/",
     }
 
     _body = body.to_dict()
@@ -35,9 +35,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[HTTPValidationError, UserPublic]]:
+) -> Optional[Union[HTTPValidationError, OrderPublic]]:
     if response.status_code == 200:
-        response_200 = UserPublic.from_dict(response.json())
+        response_200 = OrderPublic.from_dict(response.json())
 
         return response_200
     if response.status_code == 422:
@@ -52,7 +52,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[HTTPValidationError, UserPublic]]:
+) -> Response[Union[HTTPValidationError, OrderPublic]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -65,22 +65,22 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Response[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: OrderUpdate,
+) -> Response[Union[HTTPValidationError, OrderPublic]]:
+    """Update Order Erp State
 
-     Update a user.
+     Update ERP state of an order.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (OrderUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[HTTPValidationError, UserPublic]]
+        Response[Union[HTTPValidationError, OrderPublic]]
     """
 
     kwargs = _get_kwargs(
@@ -99,22 +99,22 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Optional[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: OrderUpdate,
+) -> Optional[Union[HTTPValidationError, OrderPublic]]:
+    """Update Order Erp State
 
-     Update a user.
+     Update ERP state of an order.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (OrderUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[HTTPValidationError, UserPublic]
+        Union[HTTPValidationError, OrderPublic]
     """
 
     return sync_detailed(
@@ -128,22 +128,22 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Response[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: OrderUpdate,
+) -> Response[Union[HTTPValidationError, OrderPublic]]:
+    """Update Order Erp State
 
-     Update a user.
+     Update ERP state of an order.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (OrderUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[HTTPValidationError, UserPublic]]
+        Response[Union[HTTPValidationError, OrderPublic]]
     """
 
     kwargs = _get_kwargs(
@@ -160,22 +160,22 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Optional[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: OrderUpdate,
+) -> Optional[Union[HTTPValidationError, OrderPublic]]:
+    """Update Order Erp State
 
-     Update a user.
+     Update ERP state of an order.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (OrderUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[HTTPValidationError, UserPublic]
+        Union[HTTPValidationError, OrderPublic]
     """
 
     return (

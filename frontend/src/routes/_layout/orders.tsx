@@ -112,24 +112,30 @@ function Orders() {
                         as={
                             order.state === "PENDING"
                                 ? MdAccessTime
-                                : order.state === "INTEGRATED"
-                                    ? MdCheckCircle
-                                    : MdError
+                                : order.state === "APPROVED"
+                                    ? MdAccessTime
+                                    : order.state === "INTEGRATED_OK"
+                                        ? MdCheckCircle
+                                        : MdError
                         }
                         color={
                             order.state === "PENDING"
                                 ? "orange"
-                                : order.state === "INTEGRATED"
-                                    ? "green"
-                                    : "red"
+                                : order.state === "APPROVED"
+                                    ? "gray"
+                                    : order.state === "INTEGRATED_OK"
+                                        ? "green"
+                                        : "red"
                         }
                         boxSize="16px"
                     />
                     {order.state === "PENDING"
-                        ? "Pendiente de aprobación"
-                        : order.state === "INTEGRATED"
-                            ? "Integrado en ERP"
-                            : "Error al integrar en ERP"}
+                        ? "Pendiente de Aprobación"
+                        : order.state === "APPROVED"
+                            ? "Aprobado"
+                            : order.state === "INTEGRATED_OK"
+                                ? "Integrado en ERP"
+                                : "Error al integrar en ERP"}
                 </HStack>
             )
         },
@@ -171,7 +177,7 @@ function Orders() {
     return (
         <Container maxW="full">
             <Heading size="lg" py={6}>
-                Documentos
+                Listado de Documentos
             </Heading>
             {/* <AddOrder /> */}
             <DataTable

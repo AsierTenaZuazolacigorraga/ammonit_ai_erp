@@ -1,14 +1,15 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { Link as RouterLink } from "@tanstack/react-router"
-import { FiHome, FiSettings, FiUsers } from "react-icons/fi"
+import { FiHome, FiMail, FiSettings, FiUserPlus, FiUsers } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 
 import useAuth from "@/hooks/useAuth"
 
 const items = [
-  { icon: FiHome, title: "Documentos", path: "/orders" },
-  // { icon: FiUserPlus, title: "Gestión de Clientes", path: "/clients" },
-  { icon: FiSettings, title: "Ajustes", path: "/settings" },
+  { icon: FiHome, title: "Listado de Documentos", path: "/orders" },
+  { icon: FiUserPlus, title: "Gestión de Clientes", path: "/clients" },
+  { icon: FiMail, title: "Configuración Outlook", path: "/emails" },
+  { icon: FiSettings, title: "Ajustes de Usuario", path: "/settings" },
 ]
 
 

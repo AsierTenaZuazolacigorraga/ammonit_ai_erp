@@ -74,8 +74,9 @@ class UsersPublic(SQLModel):
 
 class ClientBase(SQLModel):
     name: str = Field(nullable=False)
-    # clasifier: str = Field(nullable=False) -> TODO: Add fields
-    # structure: str = Field(nullable=False)
+    clasifier: str = Field(nullable=False)
+    base_markdown: str = Field(nullable=False)
+    content_processed: str = Field(nullable=False)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
@@ -114,9 +115,10 @@ class ClientsPublic(SQLModel):
 
 
 class OrderState(str, Enum):
-    PENDING = "PENDING"  # Pending for user approval
-    INTEGRATED = "INTEGRATED"  # Integrated correctly in ERP
-    ERROR = "ERROR"  # Error while integrating in ERP
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    INTEGRATED_OK = "INTEGRATED_OK"
+    INTEGRATED_ERROR = "INTEGRATED_ERROR"
 
 
 class OrderBase(SQLModel):
@@ -201,6 +203,7 @@ class OrdersPublic(SQLModel):
 
 class EmailBase(SQLModel):
     email: str = Field(nullable=False)
+    filter: str | None = Field(default=None)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
@@ -237,8 +240,8 @@ class EmailsPublic(SQLModel):
 
 
 class EmailDataState(str, Enum):
-    PROCESSED = "PROCESSED"  # Processed correctly the orders in the email
-    ERROR = "ERROR"  # Error while processing the orders in the email
+    PROCESSED_OK = "PROCESSED_OK"
+    PROCESSED_ERROR = "PROCESSED_ERROR"
 
 
 class EmailDataBase(SQLModel):
@@ -249,7 +252,7 @@ class EmailDataBase(SQLModel):
             PGEnum(EmailDataState, name="email_state_enum", create_type=True),
             nullable=False,
         ),
-        default=EmailDataState.PROCESSED,
+        default=EmailDataState.PROCESSED_OK,
     )
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True

@@ -20,23 +20,44 @@ export type Body_orders_create_order = {
 
 export type ClientCreate = {
     name: string;
+    clasifier: string;
+    base_markdown: string;
+    content_processed: string;
     created_at?: string;
 };
 
 export type ClientPublic = {
     name: string;
+    clasifier: string;
+    base_markdown: string;
+    content_processed: string;
     created_at?: string;
     id: string;
     owner_id: string;
 };
 
+export type ClientsPublic = {
+    data: Array<ClientPublic>;
+    count: number;
+};
+
+export type ClientUpdate = {
+    name: string;
+    clasifier: string;
+    base_markdown: string;
+    content_processed: string;
+    created_at?: string;
+};
+
 export type EmailCreate = {
     email: string;
+    filter?: (string | null);
     created_at?: string;
 };
 
 export type EmailPublic = {
     email: string;
+    filter?: (string | null);
     created_at?: string;
     id: string;
     owner_id: string;
@@ -74,7 +95,7 @@ export type OrdersPublic = {
     count: number;
 };
 
-export type OrderState = 'PENDING' | 'INTEGRATED' | 'ERROR';
+export type OrderState = 'PENDING' | 'APPROVED' | 'INTEGRATED_OK' | 'INTEGRATED_ERROR';
 
 export type OrderUpdate = {
     base_document?: ((Blob | File) | null);
@@ -147,11 +168,31 @@ export type ValidationError = {
     type: string;
 };
 
+export type ClientsReadClientsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type ClientsReadClientsResponse = (ClientsPublic);
+
 export type ClientsCreateClientData = {
     requestBody: ClientCreate;
 };
 
 export type ClientsCreateClientResponse = (ClientPublic);
+
+export type ClientsDeleteClientData = {
+    id: string;
+};
+
+export type ClientsDeleteClientResponse = (Message);
+
+export type ClientsUpdateClientData = {
+    id: string;
+    requestBody: ClientUpdate;
+};
+
+export type ClientsUpdateClientResponse = (ClientPublic);
 
 export type EmailsReadEmailsData = {
     limit?: number;
@@ -217,6 +258,13 @@ export type OrdersApproveOrderData = {
 };
 
 export type OrdersApproveOrderResponse = (OrderPublic);
+
+export type OrdersUpdateOrderErpStateData = {
+    id: string;
+    requestBody: OrderUpdate;
+};
+
+export type OrdersUpdateOrderErpStateResponse = (OrderPublic);
 
 export type UsersReadUserMeResponse = (UserPublic);
 

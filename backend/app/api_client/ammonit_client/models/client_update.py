@@ -1,7 +1,6 @@
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
-from uuid import UUID
+from typing import Any, TypeVar, Union
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -9,83 +8,65 @@ from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="EmailPublic")
+T = TypeVar("T", bound="ClientUpdate")
 
 
 @_attrs_define
-class EmailPublic:
+class ClientUpdate:
     """
     Attributes:
-        email (str):
-        id (UUID):
-        owner_id (UUID):
-        filter_ (Union[None, Unset, str]):
+        name (str):
+        clasifier (str):
+        base_markdown (str):
+        content_processed (str):
         created_at (Union[Unset, datetime.datetime]):
-        is_connected (Union[Unset, bool]):  Default: False.
     """
 
-    email: str
-    id: UUID
-    owner_id: UUID
-    filter_: Union[None, Unset, str] = UNSET
+    name: str
+    clasifier: str
+    base_markdown: str
+    content_processed: str
     created_at: Union[Unset, datetime.datetime] = UNSET
-    is_connected: Union[Unset, bool] = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        email = self.email
+        name = self.name
 
-        id = str(self.id)
+        clasifier = self.clasifier
 
-        owner_id = str(self.owner_id)
+        base_markdown = self.base_markdown
 
-        filter_: Union[None, Unset, str]
-        if isinstance(self.filter_, Unset):
-            filter_ = UNSET
-        else:
-            filter_ = self.filter_
+        content_processed = self.content_processed
 
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
             created_at = self.created_at.isoformat()
 
-        is_connected = self.is_connected
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
-                "email": email,
-                "id": id,
-                "owner_id": owner_id,
+                "name": name,
+                "clasifier": clasifier,
+                "base_markdown": base_markdown,
+                "content_processed": content_processed,
             }
         )
-        if filter_ is not UNSET:
-            field_dict["filter"] = filter_
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
-        if is_connected is not UNSET:
-            field_dict["is_connected"] = is_connected
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        email = d.pop("email")
+        name = d.pop("name")
 
-        id = UUID(d.pop("id"))
+        clasifier = d.pop("clasifier")
 
-        owner_id = UUID(d.pop("owner_id"))
+        base_markdown = d.pop("base_markdown")
 
-        def _parse_filter_(data: object) -> Union[None, Unset, str]:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(Union[None, Unset, str], data)
-
-        filter_ = _parse_filter_(d.pop("filter", UNSET))
+        content_processed = d.pop("content_processed")
 
         _created_at = d.pop("created_at", UNSET)
         created_at: Union[Unset, datetime.datetime]
@@ -94,19 +75,16 @@ class EmailPublic:
         else:
             created_at = isoparse(_created_at)
 
-        is_connected = d.pop("is_connected", UNSET)
-
-        email_public = cls(
-            email=email,
-            id=id,
-            owner_id=owner_id,
-            filter_=filter_,
+        client_update = cls(
+            name=name,
+            clasifier=clasifier,
+            base_markdown=base_markdown,
+            content_processed=content_processed,
             created_at=created_at,
-            is_connected=is_connected,
         )
 
-        email_public.additional_properties = d
-        return email_public
+        client_update.additional_properties = d
+        return client_update
 
     @property
     def additional_keys(self) -> list[str]:

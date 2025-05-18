@@ -1,6 +1,6 @@
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union
+from typing import Any, TypeVar, Union, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -16,15 +16,23 @@ class EmailCreate:
     """
     Attributes:
         email (str):
+        filter_ (Union[None, Unset, str]):
         created_at (Union[Unset, datetime.datetime]):
     """
 
     email: str
+    filter_: Union[None, Unset, str] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         email = self.email
+
+        filter_: Union[None, Unset, str]
+        if isinstance(self.filter_, Unset):
+            filter_ = UNSET
+        else:
+            filter_ = self.filter_
 
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
@@ -37,6 +45,8 @@ class EmailCreate:
                 "email": email,
             }
         )
+        if filter_ is not UNSET:
+            field_dict["filter"] = filter_
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
 
@@ -47,6 +57,15 @@ class EmailCreate:
         d = dict(src_dict)
         email = d.pop("email")
 
+        def _parse_filter_(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        filter_ = _parse_filter_(d.pop("filter", UNSET))
+
         _created_at = d.pop("created_at", UNSET)
         created_at: Union[Unset, datetime.datetime]
         if isinstance(_created_at, Unset):
@@ -56,6 +75,7 @@ class EmailCreate:
 
         email_create = cls(
             email=email,
+            filter_=filter_,
             created_at=created_at,
         )
 

@@ -17,12 +17,18 @@ class ClientPublic:
     """
     Attributes:
         name (str):
+        clasifier (str):
+        base_markdown (str):
+        content_processed (str):
         id (UUID):
         owner_id (UUID):
         created_at (Union[Unset, datetime.datetime]):
     """
 
     name: str
+    clasifier: str
+    base_markdown: str
+    content_processed: str
     id: UUID
     owner_id: UUID
     created_at: Union[Unset, datetime.datetime] = UNSET
@@ -30,6 +36,12 @@ class ClientPublic:
 
     def to_dict(self) -> dict[str, Any]:
         name = self.name
+
+        clasifier = self.clasifier
+
+        base_markdown = self.base_markdown
+
+        content_processed = self.content_processed
 
         id = str(self.id)
 
@@ -44,6 +56,9 @@ class ClientPublic:
         field_dict.update(
             {
                 "name": name,
+                "clasifier": clasifier,
+                "base_markdown": base_markdown,
+                "content_processed": content_processed,
                 "id": id,
                 "owner_id": owner_id,
             }
@@ -58,6 +73,12 @@ class ClientPublic:
         d = dict(src_dict)
         name = d.pop("name")
 
+        clasifier = d.pop("clasifier")
+
+        base_markdown = d.pop("base_markdown")
+
+        content_processed = d.pop("content_processed")
+
         id = UUID(d.pop("id"))
 
         owner_id = UUID(d.pop("owner_id"))
@@ -71,6 +92,9 @@ class ClientPublic:
 
         client_public = cls(
             name=name,
+            clasifier=clasifier,
+            base_markdown=base_markdown,
+            content_processed=content_processed,
             id=id,
             owner_id=owner_id,
             created_at=created_at,

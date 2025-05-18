@@ -1,7 +1,8 @@
 import uuid
 
-from app.models import Client, ClientCreate, ClientUpdate
+from app.models import Client, ClientCreate, ClientUpdate, OrderCreate
 from app.repositories.base import CRUDRepository
+from app.services.orders import OrderService
 from app.services.users import UserService
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -14,6 +15,7 @@ class ClientService:
     ) -> None:
         self.repository = CRUDRepository[Client](Client, session)
         self.user_service = UserService(session)
+        self.order_service = OrderService(session)
 
     def create(self, client_create: ClientCreate, owner_id: uuid.UUID) -> Client:
         return self.repository.create(
@@ -46,6 +48,23 @@ class ClientService:
         return self.repository.update(
             client, update=client_update.model_dump(exclude_unset=True)
         )
+
+    async def get_proposal(
+        self, base_document: bytes, base_document_name: str, owner_id: uuid.UUID
+    ) -> Client:
+        user = self.user_service.get_by_id(owner_id)
+        clients = self.get_all(skip=0, limit=100, owner_id=owner_id)
+        email_id = None
+        order, client = await self.order_service.process(
+            order_create=OrderCreate(
+                base_document=base_document,
+                base_document_name=base_document_name,
+            ),
+            user=user,
+            clients=clients,
+            email_id=email_id,
+        )
+        return client
 
     def get_clasification_prompt(self, owner_id: uuid.UUID) -> str:
 

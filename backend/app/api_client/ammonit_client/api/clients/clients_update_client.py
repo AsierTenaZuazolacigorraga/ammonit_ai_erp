@@ -6,22 +6,22 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.client_public import ClientPublic
+from ...models.client_update import ClientUpdate
 from ...models.http_validation_error import HTTPValidationError
-from ...models.user_public import UserPublic
-from ...models.user_update import UserUpdate
 from ...types import Response
 
 
 def _get_kwargs(
     id: UUID,
     *,
-    body: UserUpdate,
+    body: ClientUpdate,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "patch",
-        "url": f"/api/v1/users/{id}/",
+        "url": f"/api/v1/clients/{id}/",
     }
 
     _body = body.to_dict()
@@ -35,9 +35,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[HTTPValidationError, UserPublic]]:
+) -> Optional[Union[ClientPublic, HTTPValidationError]]:
     if response.status_code == 200:
-        response_200 = UserPublic.from_dict(response.json())
+        response_200 = ClientPublic.from_dict(response.json())
 
         return response_200
     if response.status_code == 422:
@@ -52,7 +52,7 @@ def _parse_response(
 
 def _build_response(
     *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[HTTPValidationError, UserPublic]]:
+) -> Response[Union[ClientPublic, HTTPValidationError]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -65,22 +65,22 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Response[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: ClientUpdate,
+) -> Response[Union[ClientPublic, HTTPValidationError]]:
+    """Update Client
 
-     Update a user.
+     Update a client.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (ClientUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[HTTPValidationError, UserPublic]]
+        Response[Union[ClientPublic, HTTPValidationError]]
     """
 
     kwargs = _get_kwargs(
@@ -99,22 +99,22 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Optional[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: ClientUpdate,
+) -> Optional[Union[ClientPublic, HTTPValidationError]]:
+    """Update Client
 
-     Update a user.
+     Update a client.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (ClientUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[HTTPValidationError, UserPublic]
+        Union[ClientPublic, HTTPValidationError]
     """
 
     return sync_detailed(
@@ -128,22 +128,22 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Response[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: ClientUpdate,
+) -> Response[Union[ClientPublic, HTTPValidationError]]:
+    """Update Client
 
-     Update a user.
+     Update a client.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (ClientUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Union[HTTPValidationError, UserPublic]]
+        Response[Union[ClientPublic, HTTPValidationError]]
     """
 
     kwargs = _get_kwargs(
@@ -160,22 +160,22 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient,
-    body: UserUpdate,
-) -> Optional[Union[HTTPValidationError, UserPublic]]:
-    """Update User
+    body: ClientUpdate,
+) -> Optional[Union[ClientPublic, HTTPValidationError]]:
+    """Update Client
 
-     Update a user.
+     Update a client.
 
     Args:
         id (UUID):
-        body (UserUpdate):
+        body (ClientUpdate):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Union[HTTPValidationError, UserPublic]
+        Union[ClientPublic, HTTPValidationError]
     """
 
     return (
