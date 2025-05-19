@@ -7,26 +7,22 @@ from pydantic import BaseModel
 logger = get_logger(__name__)
 
 
-def _postprocess_order(order_update: OrderUpdate, user: User) -> OrderUpdate:
+def _postprocess_order(user: User) -> tuple[OrderState, datetime | None]:
 
     ##############################################################
-    order_update.state = OrderState.APPROVED
-    is_created_in_erp = False
+    state = OrderState.APPROVED
 
     ##############################################################
     if user.email == "asier.tena.zu@outlook.com":
 
         try:
+            created_in_erp_at = datetime.now(timezone.utc)
             pass
             # raise NotImplementedError("ERP integration not implemented yet")
             # order_update.state = OrderState.INTEGRATED_OK
 
         except Exception as e:
             logger.error(f"Error integrating in ERP order: {e}")
-            order_update.state = OrderState.INTEGRATED_ERROR
+            state = OrderState.INTEGRATED_ERROR
 
-    ##############################################################
-    if is_created_in_erp:
-        order_update.created_in_erp_at = datetime.now(timezone.utc)
-
-    return order_update
+    return state, created_in_erp_at

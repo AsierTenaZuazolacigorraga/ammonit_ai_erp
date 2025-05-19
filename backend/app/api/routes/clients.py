@@ -45,7 +45,8 @@ async def get_client_proposal(
 
     client = client_service.get_proposal(
         base_document=file_bytes,
-        base_document_name=base_document.filename,
+        base_document_name=base_document.filename or "",
+        id=current_user.id,
     )
     return ClientPublic.model_validate(client)
 

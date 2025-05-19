@@ -1,9 +1,10 @@
 import uuid
 
+from app.core.config import settings
 from app.models import Client, ClientCreate, ClientUpdate, OrderCreate
 from app.repositories.base import CRUDRepository
-from app.services.orders import OrderService
 from app.services.users import UserService
+from openai import OpenAI
 from pydantic import BaseModel
 from sqlmodel import Session
 
@@ -15,7 +16,9 @@ class ClientService:
     ) -> None:
         self.repository = CRUDRepository[Client](Client, session)
         self.user_service = UserService(session)
-        self.order_service = OrderService(session)
+
+        # Initialize clients
+        self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     def create(self, client_create: ClientCreate, owner_id: uuid.UUID) -> Client:
         return self.repository.create(
@@ -50,19 +53,19 @@ class ClientService:
         )
 
     async def get_proposal(
-        self, base_document: bytes, base_document_name: str, owner_id: uuid.UUID
+        self, base_document: bytes, base_document_name: str, id: uuid.UUID
     ) -> Client:
-        user = self.user_service.get_by_id(owner_id)
-        clients = self.get_all(skip=0, limit=100, owner_id=owner_id)
-        email_id = None
-        order, client = await self.order_service.process(
+
+        from app.services.orders import process
+
+        user, client, order = await process(
             order_create=OrderCreate(
                 base_document=base_document,
                 base_document_name=base_document_name,
             ),
-            user=user,
-            clients=clients,
-            email_id=email_id,
+            ai_client=self.ai_client,
+            clients=self.get_all(skip=0, limit=100, owner_id=id),
+            user=self.user_service.get_by_id(id),
         )
         return client
 

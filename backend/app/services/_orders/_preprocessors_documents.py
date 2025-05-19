@@ -3,7 +3,7 @@ from io import BytesIO
 
 import PyPDF2
 from app.logger import get_logger
-from app.models import User
+from app.models import OrderCreate, User
 
 logger = get_logger(__name__)
 

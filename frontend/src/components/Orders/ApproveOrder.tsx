@@ -14,10 +14,10 @@ import { FaCheckCircle, FaEye } from "react-icons/fa";
 
 import { type OrderPublic, OrdersService } from "@/client";
 import type { ApiError } from "@/client/core/ApiError";
+import DocumentViewer from "@/components/Common/DocumentViewer";
+import TableViewer from '@/components/Common/TableViewer';
 import useCustomToast from "@/hooks/useCustomToast";
 import { handleError } from "@/utils";
-import DocumentViewer from "../Common/DocumentViewer";
-import TableViewer from "../Common/TableViewer";
 import {
     DialogBody,
     DialogContent,
@@ -115,6 +115,8 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                                 <TableViewer
                                     inputData={order.content_processed || ''}
                                     readOnly={true}
+                                    allowRowEdit={false}
+                                    allowColumnEdit={false}
                                 />
                             </Box>
                         </Grid>
@@ -172,8 +174,11 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                             <Box maxH="80vh" overflow="auto" minW={0} width="100%">
                                 <Text fontWeight="bold" mb={2}>Información Extraída</Text>
                                 <TableViewer
-                                    inputData={order.content_processed || ''}
+                                    inputData={updatedContent}
                                     onDataChange={handleDataChange}
+                                    readOnly={false}
+                                    allowRowEdit={true}
+                                    allowColumnEdit={false}
                                 />
                             </Box>
                         </Grid>

@@ -1,5 +1,6 @@
 """Contains all the data models used in inputs/outputs"""
 
+from .body_clients_get_client_proposal import BodyClientsGetClientProposal
 from .body_emails_create_outlook_token_step_2 import BodyEmailsCreateOutlookTokenStep2
 from .body_login_login_access_token import BodyLoginLoginAccessToken
 from .body_orders_create_order import BodyOrdersCreateOrder
@@ -30,6 +31,7 @@ from .users_public import UsersPublic
 from .validation_error import ValidationError
 
 __all__ = (
+    "BodyClientsGetClientProposal",
     "BodyEmailsCreateOutlookTokenStep2",
     "BodyLoginLoginAccessToken",
     "BodyOrdersCreateOrder",

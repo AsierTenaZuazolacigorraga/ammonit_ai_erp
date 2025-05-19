@@ -15,6 +15,7 @@ import { type ClientCreate, ClientsService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
+import TableViewer from '../Common/TableViewer'
 import {
     DialogBody,
     DialogContent,
@@ -27,6 +28,7 @@ import { Field } from "../ui/field"
 
 const AddClient = () => {
     const [isOpen, setIsOpen] = useState(false)
+    const [structureCsv, setStructureCsv] = useState('Col1;Col2\n;');
     const queryClient = useQueryClient()
     const { showSuccessToast } = useCustomToast()
     const {
@@ -56,7 +58,7 @@ const AddClient = () => {
     })
 
     const onSubmit: SubmitHandler<ClientCreate> = async (data) => {
-        mutation.mutate(data)
+        mutation.mutate({ ...data, base_markdown: structureCsv })
     }
 
     return (
@@ -101,17 +103,13 @@ const AddClient = () => {
                                     })}
                                 />
                             </Field>
-                            {/* <Field
-                                required
-                                invalid={!!errors.structure}
-                                errorText={errors.structure?.message}
-                            >
-                                <Input
-                                    {...register("structure", {
-                                        required: "La estructura es requerida",
-                                    })}
-                                />
-                            </Field> */}
+                            <TableViewer
+                                inputData={structureCsv}
+                                onDataChange={setStructureCsv}
+                                readOnly={false}
+                                allowRowEdit={true}
+                                allowColumnEdit={true}
+                            />
                         </VStack>
                     </DialogBody>
                     <DialogFooter gap={2}>
@@ -128,7 +126,6 @@ const AddClient = () => {
                             Guardar
                         </Button>
                     </DialogFooter>
-                    {/* <DialogCloseTrigger /> */}
                 </form>
             </DialogContent>
         </DialogRoot>

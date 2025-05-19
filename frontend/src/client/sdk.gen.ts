@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsGetClientProposalData, ClientsGetClientProposalResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ClientsService {
     /**
@@ -43,6 +43,26 @@ export class ClientsService {
             url: '/api/v1/clients/',
             body: data.requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Client Proposal
+     * Retrieve clients proposal.
+     * @param data The data for the request.
+     * @param data.formData
+     * @returns ClientPublic Successful Response
+     * @throws ApiError
+     */
+    public static getClientProposal(data: ClientsGetClientProposalData): CancelablePromise<ClientsGetClientProposalResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clients/proposal',
+            formData: data.formData,
+            mediaType: 'multipart/form-data',
             errors: {
                 422: 'Validation Error'
             }
