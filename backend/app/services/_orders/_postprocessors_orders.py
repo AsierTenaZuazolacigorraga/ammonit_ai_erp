@@ -11,12 +11,12 @@ def _postprocess_order(user: User) -> tuple[OrderState, datetime | None]:
 
     ##############################################################
     state = OrderState.APPROVED
+    created_in_erp_at = datetime.now(timezone.utc)
 
     ##############################################################
     if user.email == "asier.tena.zu@outlook.com":
 
         try:
-            created_in_erp_at = datetime.now(timezone.utc)
             pass
             # raise NotImplementedError("ERP integration not implemented yet")
             # order_update.state = OrderState.INTEGRATED_OK

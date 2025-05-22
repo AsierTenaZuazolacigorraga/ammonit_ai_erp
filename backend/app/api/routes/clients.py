@@ -32,7 +32,7 @@ def read_clients(
     return ClientsPublic(data=client_publics, count=count)
 
 
-@router.get("/proposal", response_model=ClientPublic)
+@router.post("/proposal", response_model=ClientPublic)
 async def get_client_proposal(
     client_service: ClientServiceDep,
     current_user: CurrentUserDep,
@@ -43,7 +43,7 @@ async def get_client_proposal(
     """
     file_bytes: bytes = await base_document.read()
 
-    client = client_service.get_proposal(
+    client = await client_service.get_proposal(
         base_document=file_bytes,
         base_document_name=base_document.filename or "",
         id=current_user.id,

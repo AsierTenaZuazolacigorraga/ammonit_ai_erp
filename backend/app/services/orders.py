@@ -124,60 +124,74 @@ async def parse_md_2_order(
     ai_client: OpenAI,
     md: str,
     clients: list[Client],
-) -> tuple[BaseModel, Client]:
+) -> tuple[dict, Client]:
+
+    if len(clients) == 0:
+        raise ValueError("No clients found")
 
     # Extract client
-    response = ai_client.responses.create(
-        model="gpt-4.1-nano",
-        input=[
-            {
-                "role": "system",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": f"""
+    if (
+        clients[0].name == "" and clients[0].clasifier == ""
+    ):  # This means we are in proposal generation
+
+        # Get client
+        client = clients[0]
+
+    else:
+        clients_clasification = [
+            f"name: {client.name}, clasifier: {client.clasifier}" for client in clients
+        ]
+        response = ai_client.responses.create(
+            model="gpt-4.1-nano",
+            input=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
 Which client does this order come from? Select from the following list. Only respond with the client name as is specified in the list.
 If you cannot identify the client, respond with "unknown":
 [
 {clients_clasification}
 ]
-""",
-                    }
-                ],
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": md,
-                    }
-                ],
-            },
-        ],
-        text={"format": {"type": "text"}},
-        reasoning={},
-        tools=[],
-        temperature=0,
-        max_output_tokens=2048,
-        top_p=0,
-        store=True,
-    )
-    client = response.output_text
-    if client is None:
-        raise ValueError("Failed to extract the client info from the order.")
+    """,
+                        }
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": md,
+                        }
+                    ],
+                },
+            ],
+            text={"format": {"type": "text"}},
+            reasoning={},
+            tools=[],
+            temperature=0,
+            max_output_tokens=2048,
+            top_p=0,
+            store=True,
+        )
+        client = response.output_text
+        if client is None:
+            raise ValueError("Failed to extract the client info from the order.")
 
-    # Decide the model
-    client = client.lower()
-    possible_clients = [c for c in clients if c.name.lower() == client]
-    if len(possible_clients) == 0:
-        raise ValueError(f"Unknown client: {client}")
-    if len(possible_clients) > 1:
-        raise ValueError(f"Multiple clients found for {client}: {possible_clients}")
-    client = possible_clients[0]
+        # Get client
+        client = client.lower()
+        possible_clients = [c for c in clients if c.name.lower() == client]
+        if len(possible_clients) == 0:
+            raise ValueError(f"Unknown client: {client}")
+        if len(possible_clients) > 1:
+            raise ValueError(f"Multiple clients found for {client}: {possible_clients}")
+        client = possible_clients[0]
 
     # Extract info
-    response = ai_client.responses.parse(
+    response = ai_client.responses.create(
         model="gpt-4.1-nano",
         input=[
             {
@@ -186,7 +200,7 @@ If you cannot identify the client, respond with "unknown":
             },
             {"role": "user", "content": md},
         ],
-        text_format=client_structure,
+        text={"format": {"type": "json_schema", **client.structure}},  # type: ignore
         reasoning={},
         tools=[],
         temperature=0,
@@ -194,11 +208,10 @@ If you cannot identify the client, respond with "unknown":
         top_p=0,
         store=True,
     )
-
-    if response.output_parsed is None:
+    if response.output_text is None:
         raise ValueError("Failed to parse the order information from the markdown.")
 
-    return response.output_parsed, client
+    return json.loads(response.output_text), client
 
 
 def parse_order_dict_2_csv(order_dict: dict) -> str:
@@ -255,11 +268,11 @@ async def process(
     md = await parse_document_2_md(ai_client, document, order_create.base_document_name)
 
     # Parse md to order
-    order_basemodel, client = await parse_md_2_order(ai_client, md, clients)
+    order_dict, client = await parse_md_2_order(ai_client, md, clients)
 
     # Preprocess order
     order_create.content_processed = preprocess_order(
-        order_basemodel,
+        order_dict,
         user,
     )
 
@@ -276,13 +289,13 @@ def preprocess_document(document: bytes, document_name: str, user: User) -> byte
 
 
 def preprocess_order(
-    order_basemodel: BaseModel,
+    order_dict: dict,
     user: User,
 ) -> str:
 
     from app.services._orders._preprocessors_orders import _preprocess_order
 
-    return parse_order_dict_2_csv(_preprocess_order(order_basemodel, user))
+    return parse_order_dict_2_csv(_preprocess_order(order_dict, user))
 
 
 class OrderService:

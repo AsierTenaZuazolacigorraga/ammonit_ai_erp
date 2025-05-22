@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any, Dict, Type, TypeVar, Union
 
 from pydantic import EmailStr, model_validator
-from sqlalchemy import Column
+from sqlalchemy import JSON, Column
 from sqlalchemy.dialects.postgresql import ENUM as PGEnum
 from sqlmodel import Field, Relationship, SQLModel
 from sqlmodel._compat import sqlmodel_validate
@@ -74,9 +74,13 @@ class UsersPublic(SQLModel):
 
 class ClientBase(SQLModel):
     name: str = Field(nullable=False)
+    base_document: bytes | None = Field(default=None, nullable=False)
+    base_document_name: str | None = Field(default=None, max_length=255)
+    base_document_markdown: str | None = Field(default=None)
+    content_processed: str | None = Field(default=None)
     clasifier: str = Field(nullable=False)
-    base_markdown: str = Field(nullable=False)
-    content_processed: str = Field(nullable=False)
+    structure: dict = Field(sa_column=Column(JSON, nullable=False))
+    additional_info: str | None = Field(default=None)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )

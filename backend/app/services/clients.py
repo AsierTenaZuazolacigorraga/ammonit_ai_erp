@@ -8,6 +8,69 @@ from openai import OpenAI
 from pydantic import BaseModel
 from sqlmodel import Session
 
+ClientExample = Client(
+    name="",
+    clasifier="",
+    base_document=b"",
+    base_document_name="",
+    base_document_markdown="",
+    content_processed="",
+    structure={
+        "name": "order",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "number": {"type": "string", "description": "The number of the order"},
+                "items": {
+                    "type": "array",
+                    "description": "The items in the order",
+                    "items": {"$ref": "#/$defs/item"},
+                },
+            },
+            "required": ["number", "items"],
+            "additionalProperties": False,
+            "$defs": {
+                "item": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "description": "The code of the item",
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "The description of the item",
+                        },
+                        "quantity": {
+                            "type": "integer",
+                            "description": "The quantity of items to order",
+                        },
+                        "unit_price": {
+                            "type": "number",
+                            "description": "The unit price of the item",
+                        },
+                        "deadline": {
+                            "type": "string",
+                            "description": "The deadline or due date for the item",
+                        },
+                    },
+                    "required": [
+                        "code",
+                        "description",
+                        "quantity",
+                        "unit_price",
+                        "deadline",
+                    ],
+                    "additionalProperties": False,
+                }
+            },
+        },
+        "strict": True,
+    },
+    additional_info="",
+    owner_id=uuid.uuid4(),
+)
+
 
 class ClientService:
     def __init__(
@@ -58,13 +121,21 @@ class ClientService:
 
         from app.services.orders import process
 
+        client_proposal = ClientExample.model_copy(
+            update={
+                "owner_id": id,
+                "base_document": base_document,
+                "base_document_name": base_document_name,
+            }
+        )
+
         user, client, order = await process(
             order_create=OrderCreate(
                 base_document=base_document,
                 base_document_name=base_document_name,
             ),
             ai_client=self.ai_client,
-            clients=self.get_all(skip=0, limit=100, owner_id=id),
+            clients=[client_proposal],
             user=self.user_service.get_by_id(id),
         )
         return client

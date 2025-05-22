@@ -59,7 +59,7 @@ export class ClientsService {
      */
     public static getClientProposal(data: ClientsGetClientProposalData): CancelablePromise<ClientsGetClientProposalResponse> {
         return __request(OpenAPI, {
-            method: 'GET',
+            method: 'POST',
             url: '/api/v1/clients/proposal',
             formData: data.formData,
             mediaType: 'multipart/form-data',
