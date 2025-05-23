@@ -103,7 +103,7 @@ const AddClient = () => {
     });
 
     // Step 1: Continue → get proposal
-    const handleContinue = async (data: AddClientFormData) => {
+    const handleContinue = async (_: AddClientFormData) => {
         if (!pdfFile) return;
         setIsLoadingProposal(true);
         try {
