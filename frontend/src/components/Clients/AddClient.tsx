@@ -210,12 +210,21 @@ const AddClient = () => {
                             <div
                                 {...getRootProps()}
                                 style={{
-                                    border: "2px dashed #ccc",
-                                    padding: "10px",
+                                    border: "2.5px dashed #319795",
+                                    borderRadius: "12px",
+                                    boxShadow: "0 2px 8px rgba(49, 151, 149, 0.08)",
+                                    padding: "18px 10px",
                                     textAlign: "center",
-                                    backgroundColor: isSubmitting || isLoadingProposal ? "#f5f5f5" : "transparent",
+                                    backgroundColor: isSubmitting || isLoadingProposal ? "#f5f5f5" : "#f9fafb",
                                     opacity: isSubmitting || isLoadingProposal ? 0.5 : 1,
                                     cursor: isSubmitting || isLoadingProposal ? "not-allowed" : "pointer",
+                                    transition: "border-color 0.2s, box-shadow 0.2s, background 0.2s",
+                                }}
+                                onMouseEnter={e => {
+                                    if (!(isSubmitting || isLoadingProposal)) e.currentTarget.style.borderColor = '#2b6cb0';
+                                }}
+                                onMouseLeave={e => {
+                                    if (!(isSubmitting || isLoadingProposal)) e.currentTarget.style.borderColor = '#319795';
                                 }}
                             >
                                 <input {...getInputProps()} />

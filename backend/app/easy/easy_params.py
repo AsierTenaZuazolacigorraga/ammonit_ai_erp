@@ -1,20 +1,14 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 IS_LOCAL = True
 
-EMAIL = "asier.tena.zu@outlook.com"
+OUTLOOK_ID = os.getenv("OUTLOOK_ID")
+OUTLOOK_SECRET = os.getenv("OUTLOOK_SECRET")
 
-# CLIENT_NAME = "nearby"
-# CLIENT_CLASSIFIER = (
-#     "Contiene la palabra y referencias a la empresa de Nearby Electronics"
-# )
-# CLIENT_STRUCTURE = Order.model_json_schema()
-# CLIENT_STRUCTURE = adapt_schema(CLIENT_STRUCTURE)
-# for defs in CLIENT_STRUCTURE["$defs"]:
-#     CLIENT_STRUCTURE["$defs"][defs] = adapt_schema(CLIENT_STRUCTURE["$defs"][defs])
-# CLIENT_STRUCTURE = {
-#     "format": {
-#         "type": "json_schema",
-#         "name": "order",
-#         "strict": True,
-#         "schema": CLIENT_STRUCTURE,
-#     }
-# }
+EMAIL = "asier.tena.zu@outlook.com"
+# EMAIL = "alberdi.autom@outlook.com"
+# EMAIL = "asier.tena.zu@ammonitammonit.onmicrosoft.com"
