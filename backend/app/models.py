@@ -107,6 +107,30 @@ class ClientPublic(ClientBase):
     id: uuid.UUID
     owner_id: uuid.UUID
 
+    @classmethod
+    def model_validate(
+        cls,
+        obj: Any,
+        *,
+        strict: Union[bool, None] = None,
+        from_attributes: Union[bool, None] = None,
+        context: Union[Dict[str, Any], None] = None,
+        update: Union[Dict[str, Any], None] = None,
+    ):
+        obj_dict = obj.model_dump()
+        if obj_dict.get("base_document") is not None:
+            obj_dict["base_document"] = base64.b64encode(
+                obj_dict["base_document"]
+            ).decode("utf-8")
+        return sqlmodel_validate(
+            cls=cls,
+            obj=cls(**obj_dict),
+            strict=strict,
+            from_attributes=from_attributes,
+            context=context,
+            update=update,
+        )
+
 
 class ClientsPublic(SQLModel):
     data: list[ClientPublic]
@@ -128,6 +152,7 @@ class OrderState(str, Enum):
 class OrderBase(SQLModel):
     base_document: bytes | None = Field(default=None, nullable=False)
     base_document_name: str | None = Field(default=None, max_length=255)
+    base_document_markdown: str | None = Field(default=None)
     content_processed: str | None = Field(default=None)
     state: OrderState = Field(
         sa_column=Column(
@@ -156,7 +181,7 @@ class Order(Entity, OrderBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="client.id", nullable=False, ondelete="CASCADE"
     )
-    email_id: uuid.UUID = Field(
+    email_id: uuid.UUID | None = Field(
         foreign_key="email.id", nullable=True, ondelete="SET NULL"
     )
     owner: Client | None = Relationship(back_populates="orders")

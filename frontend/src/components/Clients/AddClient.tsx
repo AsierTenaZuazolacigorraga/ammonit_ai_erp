@@ -40,15 +40,18 @@ interface AddClientFormData {
 interface ProposalEditData {
     name: string;
     clasifier: string;
-    base_markdown: string;
+    base_document_markdown: string;
     content_processed: string;
+    base_document?: any;
+    base_document_name?: string | null;
 }
 
 const AddClient = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [step, setStep] = useState<1 | 2>(1);
+    const [step, setStep] = useState<'form' | 'proposal'>("form");
     const [pdfFile, setPdfFile] = useState<File | null>(null);
-    const [pdfBase64, setPdfBase64] = useState<string>("");
+    const [_, setPdfBase64] = useState<string>("");
+    const [apiBase64, setApiBase64] = useState<string>("");
     const [proposal, setProposal] = useState<ProposalEditData | null>(null);
     const [tableData, setTableData] = useState<string>("");
     const [isLoadingProposal, setIsLoadingProposal] = useState(false);
@@ -77,7 +80,7 @@ const AddClient = () => {
     // Step 2 form (proposal edit)
     const [editState, setEditState] = useState<ProposalEditData | null>(null);
 
-    // Dropzone logic (from AddOrder)
+    // Dropzone logic
     const onDrop = (acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
         if (file) {
@@ -110,18 +113,23 @@ const AddClient = () => {
             });
             setProposal({
                 name: data.name,
-                clasifier: proposal.clasifier,
-                base_markdown: proposal.base_markdown,
-                content_processed: proposal.content_processed,
+                clasifier: proposal.clasifier ?? "",
+                base_document_markdown: proposal.base_document_markdown ?? "",
+                content_processed: proposal.content_processed ?? "",
+                base_document: (proposal as any).base_document,
+                base_document_name: (proposal as any).base_document_name,
             });
             setEditState({
                 name: data.name,
-                clasifier: proposal.clasifier,
-                base_markdown: proposal.base_markdown,
-                content_processed: proposal.content_processed,
+                clasifier: proposal.clasifier ?? "",
+                base_document_markdown: proposal.base_document_markdown ?? "",
+                content_processed: proposal.content_processed ?? "",
+                base_document: (proposal as any).base_document,
+                base_document_name: (proposal as any).base_document_name,
             });
-            setTableData(proposal.content_processed);
-            setStep(2);
+            setTableData(proposal.content_processed ?? "");
+            setApiBase64((proposal as any).base_document || "");
+            setStep("proposal");
         } catch (err) {
             handleError(err as ApiError);
         } finally {
@@ -131,19 +139,23 @@ const AddClient = () => {
 
     // Save client mutation
     const mutation = useMutation({
-        mutationFn: (data: ProposalEditData) =>
+        mutationFn: (data: ProposalEditData & { structure: any }) =>
             ClientsService.createClient({
                 requestBody: {
                     name: data.name,
                     clasifier: data.clasifier,
-                    base_markdown: data.base_markdown,
+                    base_document_markdown: data.base_document_markdown,
                     content_processed: data.content_processed,
+                    structure: data.structure,
+                    base_document: data.base_document,
+                    base_document_name: data.base_document_name,
+                    // additional_info and other fields can be added if needed
                 },
             }),
         onSuccess: () => {
             showSuccessToast("Cliente guardado correctamente.");
             reset();
-            setStep(1);
+            setStep("form");
             setIsOpen(false);
             setPdfFile(null);
             setPdfBase64("");
@@ -169,7 +181,7 @@ const AddClient = () => {
     const handleDialogChange = ({ open }: { open: boolean }) => {
         setIsOpen(open);
         if (!open) {
-            setStep(1);
+            setStep("form");
             setPdfFile(null);
             setPdfBase64("");
             setProposal(null);
@@ -179,9 +191,165 @@ const AddClient = () => {
         }
     };
 
+    let content = null;
+    if (step === "form") {
+        content = (
+            <form onSubmit={handleSubmit(handleContinue)}>
+                <DialogHeader>
+                    <DialogTitle>Añadir Cliente</DialogTitle>
+                </DialogHeader>
+                <DialogBody>
+                    <VStack gap={4}>
+                        <Field
+                            required
+                            label="Nombre del Cliente"
+                            invalid={!!errors.name}
+                            errorText={errors.name?.message}
+                        >
+                            <Input
+                                {...register("name", { required: "El nombre es requerido" })}
+                                placeholder="Nombre del cliente"
+                            />
+                        </Field>
+                        <Field
+                            required
+                            label="Documento de ejemplo (.pdf)"
+                            invalid={!!errors.base_document_name || !!errors.base_document}
+                            errorText={
+                                errors.base_document_name?.message || errors.base_document?.message
+                            }
+                        >
+                            <div
+                                {...getRootProps()}
+                                style={{
+                                    border: "2px dashed #ccc",
+                                    padding: "10px",
+                                    textAlign: "center",
+                                    backgroundColor: isSubmitting || isLoadingProposal ? "#f5f5f5" : "transparent",
+                                    opacity: isSubmitting || isLoadingProposal ? 0.5 : 1,
+                                    cursor: isSubmitting || isLoadingProposal ? "not-allowed" : "pointer",
+                                }}
+                            >
+                                <input {...getInputProps()} />
+                                <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
+                            </div>
+                            <Input
+                                {...register("base_document_name", {
+                                    required: "Se requiere el documento.",
+                                })}
+                                placeholder="Nombre del documento"
+                                value={currentFileName || ""}
+                                type="text"
+                                readOnly
+                                variant="subtle"
+                                mt={2}
+                            />
+                        </Field>
+                    </VStack>
+                </DialogBody>
+                <DialogFooter gap={2}>
+                    <DialogActionTrigger asChild>
+                        <Button variant="subtle" colorPalette="gray" disabled={isSubmitting || isLoadingProposal}>
+                            Cancelar
+                        </Button>
+                    </DialogActionTrigger>
+                    <Button
+                        variant="solid"
+                        type="submit"
+                        loading={isSubmitting || isLoadingProposal}
+                        loadingText="Procesando..."
+                        disabled={isLoadingProposal}
+                    >
+                        Continuar
+                    </Button>
+                </DialogFooter>
+            </form>
+        );
+    } else if (step === "proposal" && proposal && editState) {
+        content = (
+            <form
+                onSubmit={e => {
+                    e.preventDefault();
+                    mutation.mutate({ ...editState, content_processed: tableData, structure: (proposal as any).structure ?? {} });
+                }}
+            >
+                <DialogHeader>
+                    <DialogTitle>Revisar y Guardar Cliente</DialogTitle>
+                </DialogHeader>
+                <DialogBody>
+                    <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
+                        <Box
+                            width="595px"
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            minW="0"
+                            pr={2}
+                        >
+                            <Text fontWeight="bold" mb={2} alignSelf="flex-start">
+                                Documento Base
+                            </Text>
+                            <DocumentViewer base64Document={apiBase64} />
+                        </Box>
+                        <Box maxH="80vh" overflow="auto" minW={0} width="100%">
+                            <VStack gap={4} align="stretch">
+                                <Field
+                                    required
+                                    label="Clasificador"
+                                    invalid={false}
+                                    errorText={undefined}
+                                >
+                                    <Input
+                                        value={editState.clasifier}
+                                        onChange={e =>
+                                            setEditState({ ...editState, clasifier: e.target.value })
+                                        }
+                                        placeholder="Clasificador propuesto"
+                                    />
+                                </Field>
+                                <Field
+                                    required
+                                    label="Tabla de Extracción"
+                                    invalid={false}
+                                    errorText={undefined}
+                                >
+                                    <TableViewer
+                                        inputData={tableData}
+                                        onDataChange={handleTableDataChange}
+                                        readOnly={false}
+                                        allowRowEdit={true}
+                                    />
+                                </Field>
+                            </VStack>
+                        </Box>
+                    </Grid>
+                </DialogBody>
+                <DialogFooter gap={2}>
+                    <Button
+                        variant="subtle"
+                        colorPalette="gray"
+                        onClick={() => setStep("form")}
+                        disabled={mutation.isPending}
+                    >
+                        Volver
+                    </Button>
+                    <Button
+                        variant="solid"
+                        type="submit"
+                        loading={mutation.isPending}
+                        loadingText="Guardando..."
+                        colorScheme="green"
+                    >
+                        Guardar
+                    </Button>
+                </DialogFooter>
+            </form>
+        );
+    }
+
     return (
         <DialogRoot
-            size={{ base: "xs", md: step === 2 ? "xl" : "md" }}
+            size={{ base: "xs", md: step === "proposal" ? "xl" : "md" }}
             placement="center"
             open={isOpen}
             onOpenChange={handleDialogChange}
@@ -191,159 +359,8 @@ const AddClient = () => {
                     <FaPlus fontSize="16px" /> Añadir Cliente
                 </Button>
             </DialogTrigger>
-            <DialogContent maxW={step === 2 ? "95vw" : undefined}>
-                {step === 1 && (
-                    <form onSubmit={handleSubmit(handleContinue)}>
-                        <DialogHeader>
-                            <DialogTitle>Añadir Cliente</DialogTitle>
-                        </DialogHeader>
-                        <DialogBody>
-                            <VStack gap={4}>
-                                <Field
-                                    required
-                                    label="Nombre del Cliente"
-                                    invalid={!!errors.name}
-                                    errorText={errors.name?.message}
-                                >
-                                    <Input
-                                        {...register("name", { required: "El nombre es requerido" })}
-                                        placeholder="Nombre del cliente"
-                                    />
-                                </Field>
-                                <Field
-                                    required
-                                    label="Documento de ejemplo (.pdf)"
-                                    invalid={!!errors.base_document_name || !!errors.base_document}
-                                    errorText={
-                                        errors.base_document_name?.message || errors.base_document?.message
-                                    }
-                                >
-                                    <div
-                                        {...getRootProps()}
-                                        style={{
-                                            border: "2px dashed #ccc",
-                                            padding: "10px",
-                                            textAlign: "center",
-                                            backgroundColor: isSubmitting || isLoadingProposal ? "#f5f5f5" : "transparent",
-                                            opacity: isSubmitting || isLoadingProposal ? 0.5 : 1,
-                                            cursor: isSubmitting || isLoadingProposal ? "not-allowed" : "pointer",
-                                        }}
-                                    >
-                                        <input {...getInputProps()} />
-                                        <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
-                                    </div>
-                                    <Input
-                                        {...register("base_document_name", {
-                                            required: "Se requiere el documento.",
-                                        })}
-                                        placeholder="Nombre del documento"
-                                        value={currentFileName || ""}
-                                        type="text"
-                                        readOnly
-                                        variant="subtle"
-                                        mt={2}
-                                    />
-                                </Field>
-                            </VStack>
-                        </DialogBody>
-                        <DialogFooter gap={2}>
-                            <DialogActionTrigger asChild>
-                                <Button variant="subtle" colorPalette="gray" disabled={isSubmitting || isLoadingProposal}>
-                                    Cancelar
-                                </Button>
-                            </DialogActionTrigger>
-                            <Button
-                                variant="solid"
-                                type="submit"
-                                loading={isSubmitting || isLoadingProposal}
-                                loadingText="Procesando..."
-                                disabled={isLoadingProposal}
-                            >
-                                Continuar
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                )}
-                {step === 2 && proposal && editState && (
-                    <form
-                        onSubmit={e => {
-                            e.preventDefault();
-                            mutation.mutate({ ...editState, content_processed: tableData });
-                        }}
-                    >
-                        <DialogHeader>
-                            <DialogTitle>Revisar y Guardar Cliente</DialogTitle>
-                        </DialogHeader>
-                        <DialogBody>
-                            <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
-                                <Box
-                                    width="595px"
-                                    display="flex"
-                                    flexDirection="column"
-                                    alignItems="center"
-                                    minW="0"
-                                    pr={2}
-                                >
-                                    <Text fontWeight="bold" mb={2} alignSelf="flex-start">
-                                        Documento Base
-                                    </Text>
-                                    <DocumentViewer base64Document={pdfBase64} />
-                                </Box>
-                                <Box maxH="80vh" overflow="auto" minW={0} width="100%">
-                                    <VStack gap={4} align="stretch">
-                                        <Field
-                                            required
-                                            label="Clasificador"
-                                            invalid={false}
-                                            errorText={undefined}
-                                        >
-                                            <Input
-                                                value={editState.clasifier}
-                                                onChange={e =>
-                                                    setEditState({ ...editState, clasifier: e.target.value })
-                                                }
-                                                placeholder="Clasificador propuesto"
-                                            />
-                                        </Field>
-                                        <Field
-                                            required
-                                            label="Tabla de Extracción"
-                                            invalid={false}
-                                            errorText={undefined}
-                                        >
-                                            <TableViewer
-                                                inputData={tableData}
-                                                onDataChange={handleTableDataChange}
-                                                readOnly={false}
-                                                allowRowEdit={true}
-                                                allowColumnEdit={false}
-                                            />
-                                        </Field>
-                                    </VStack>
-                                </Box>
-                            </Grid>
-                        </DialogBody>
-                        <DialogFooter gap={2}>
-                            <Button
-                                variant="subtle"
-                                colorPalette="gray"
-                                onClick={() => setStep(1)}
-                                disabled={mutation.isPending}
-                            >
-                                Volver
-                            </Button>
-                            <Button
-                                variant="solid"
-                                type="submit"
-                                loading={mutation.isPending}
-                                loadingText="Guardando..."
-                                colorScheme="green"
-                            >
-                                Guardar
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                )}
+            <DialogContent maxW={step === "proposal" ? "95vw" : undefined}>
+                {content}
             </DialogContent>
         </DialogRoot>
     );

@@ -24,17 +24,29 @@ export type Body_orders_create_order = {
 
 export type ClientCreate = {
     name: string;
+    base_document?: ((Blob | File) | null);
+    base_document_name?: (string | null);
+    base_document_markdown?: (string | null);
+    content_processed?: (string | null);
     clasifier: string;
-    base_markdown: string;
-    content_processed: string;
+    structure: {
+        [key: string]: unknown;
+    };
+    additional_info?: (string | null);
     created_at?: string;
 };
 
 export type ClientPublic = {
     name: string;
+    base_document?: ((Blob | File) | null);
+    base_document_name?: (string | null);
+    base_document_markdown?: (string | null);
+    content_processed?: (string | null);
     clasifier: string;
-    base_markdown: string;
-    content_processed: string;
+    structure: {
+        [key: string]: unknown;
+    };
+    additional_info?: (string | null);
     created_at?: string;
     id: string;
     owner_id: string;
@@ -47,9 +59,15 @@ export type ClientsPublic = {
 
 export type ClientUpdate = {
     name: string;
+    base_document?: ((Blob | File) | null);
+    base_document_name?: (string | null);
+    base_document_markdown?: (string | null);
+    content_processed?: (string | null);
     clasifier: string;
-    base_markdown: string;
-    content_processed: string;
+    structure: {
+        [key: string]: unknown;
+    };
+    additional_info?: (string | null);
     created_at?: string;
 };
 
@@ -84,6 +102,7 @@ export type Message = {
 export type OrderPublic = {
     base_document?: (string | null);
     base_document_name?: (string | null);
+    base_document_markdown?: (string | null);
     content_processed?: (string | null);
     state?: OrderState;
     approved_at?: (string | null);
@@ -104,6 +123,7 @@ export type OrderState = 'PENDING' | 'APPROVED' | 'INTEGRATED_OK' | 'INTEGRATED_
 export type OrderUpdate = {
     base_document?: ((Blob | File) | null);
     base_document_name?: (string | null);
+    base_document_markdown?: (string | null);
     content_processed?: (string | null);
     state?: OrderState;
     approved_at?: (string | null);

@@ -19,6 +19,7 @@ class OrderUpdate:
     Attributes:
         base_document (Union[File, None, Unset]):
         base_document_name (Union[None, Unset, str]):
+        base_document_markdown (Union[None, Unset, str]):
         content_processed (Union[None, Unset, str]):
         state (Union[Unset, OrderState]):
         approved_at (Union[None, Unset, datetime.datetime]):
@@ -28,6 +29,7 @@ class OrderUpdate:
 
     base_document: Union[File, None, Unset] = UNSET
     base_document_name: Union[None, Unset, str] = UNSET
+    base_document_markdown: Union[None, Unset, str] = UNSET
     content_processed: Union[None, Unset, str] = UNSET
     state: Union[Unset, OrderState] = UNSET
     approved_at: Union[None, Unset, datetime.datetime] = UNSET
@@ -50,6 +52,12 @@ class OrderUpdate:
             base_document_name = UNSET
         else:
             base_document_name = self.base_document_name
+
+        base_document_markdown: Union[None, Unset, str]
+        if isinstance(self.base_document_markdown, Unset):
+            base_document_markdown = UNSET
+        else:
+            base_document_markdown = self.base_document_markdown
 
         content_processed: Union[None, Unset, str]
         if isinstance(self.content_processed, Unset):
@@ -88,6 +96,8 @@ class OrderUpdate:
             field_dict["base_document"] = base_document
         if base_document_name is not UNSET:
             field_dict["base_document_name"] = base_document_name
+        if base_document_markdown is not UNSET:
+            field_dict["base_document_markdown"] = base_document_markdown
         if content_processed is not UNSET:
             field_dict["content_processed"] = content_processed
         if state is not UNSET:
@@ -130,6 +140,15 @@ class OrderUpdate:
             return cast(Union[None, Unset, str], data)
 
         base_document_name = _parse_base_document_name(d.pop("base_document_name", UNSET))
+
+        def _parse_base_document_markdown(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        base_document_markdown = _parse_base_document_markdown(d.pop("base_document_markdown", UNSET))
 
         def _parse_content_processed(data: object) -> Union[None, Unset, str]:
             if data is None:
@@ -191,6 +210,7 @@ class OrderUpdate:
         order_update = cls(
             base_document=base_document,
             base_document_name=base_document_name,
+            base_document_markdown=base_document_markdown,
             content_processed=content_processed,
             state=state,
             approved_at=approved_at,

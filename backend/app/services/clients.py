@@ -1,4 +1,7 @@
+import ast
+import json
 import uuid
+from datetime import datetime
 
 from app.core.config import settings
 from app.models import Client, ClientCreate, ClientUpdate, OrderCreate
@@ -9,57 +12,122 @@ from pydantic import BaseModel
 from sqlmodel import Session
 
 ClientExample = Client(
-    name="",
-    clasifier="",
+    name="ClientExample",
+    clasifier="""
+El pedido muestra el nombre de cliente NearBy Electronics, y normalmente tiene las columnas de "ITEM", "QTY", "RATE", "AMOUNT".
+""",
     base_document=b"",
     base_document_name="",
-    base_document_markdown="",
-    content_processed="",
+    base_document_markdown="""
+*NearBy Electronics**  
+3741 Glory Road, Jamestown,  
+Tennessee, USA  
+38556  
+
+**Invoice# NL57EPAS7793742478**  
+**Issue date**  
+12-05-2023  
+
+---
+
+# NearBy Electronics  
+We are here to serve you better. Reach out to us in case of any concern or feedbacks.
+
+---
+
+**BILL TO**  
+Willis Koelpin  
+Willis_Koelpin4@yahoo.com  
+783-402-5895  
+353 Cara Shoals  
+Suchitlán  
+
+**DETAILS**  
+minim velit velit fugiat culpa  
+deserunt ex aliquip cillum est  
+aliqua ex amet amet  
+
+**PAYMENT**  
+Due date: 08-07-2023  
+
+**$22337.7**  
+
+---
+
+| **ITEM**                  | **QTY** | **RATE** | **AMOUNT** |
+|---------------------------|---------|----------|------------|
+| Rustic Rubber Gloves       | 102     | 29       | $2958      |
+| Fantastic Granite Salad    | 39      | 27       | $1053      |
+| Small Fresh Salad          | 95      | 69       | $6555      |
+| Fantastic Metal Chips      | 67      | 49       | $3283      |
+| Refined Cotton Pants       | 79      | 72       | $5688      |
+| Ergonomic Concrete Towels  | 35      | 22       | $770       |
+
+---
+
+**Subtotal**  
+$20307  
+
+**Tax %** 
+""",
+    content_processed="""
+Código Pedido;Código Item Propio;Código Item Cliente;Descripción;Cantidad;Precio Unitario;Fecha de entrega
+NL57EPAS7793742478;;Rustic Rubber Gloves;Rustic Rubber Gloves;102;29;2023-07-08
+NL57EPAS7793742478;;Fantastic Granite Salad;Fantastic Granite Salad;39;27;2023-07-08
+NL57EPAS7793742478;;Small Fresh Salad;Small Fresh Salad;95;69;2023-07-08
+NL57EPAS7793742478;;Fantastic Metal Chips;Fantastic Metal Chips;67;49;2023-07-08
+NL57EPAS7793742478;;Refined Cotton Pants;Refined Cotton Pants;79;72;2023-07-08
+NL57EPAS7793742478;;Ergonomic Concrete Towels;Ergonomic Concrete Towels;35;22;2023-07-08
+""",
     structure={
         "name": "order",
         "schema": {
             "type": "object",
             "properties": {
-                "number": {"type": "string", "description": "The number of the order"},
                 "items": {
                     "type": "array",
                     "description": "The items in the order",
                     "items": {"$ref": "#/$defs/item"},
                 },
             },
-            "required": ["number", "items"],
+            "required": ["items"],
             "additionalProperties": False,
             "$defs": {
                 "item": {
                     "type": "object",
                     "properties": {
-                        "code": {
+                        "Código Pedido": {
+                            "type": "string",
+                            "description": "The generic code/number of the order. Repeat it for every item.",
+                        },
+                        "Código Item Cliente": {
                             "type": "string",
                             "description": "The code of the item",
                         },
-                        "description": {
+                        "Descripción": {
                             "type": "string",
                             "description": "The description of the item",
                         },
-                        "quantity": {
+                        "Cantidad": {
                             "type": "integer",
                             "description": "The quantity of items to order",
                         },
-                        "unit_price": {
+                        "Precio Unitario": {
                             "type": "number",
                             "description": "The unit price of the item",
                         },
-                        "deadline": {
+                        "Fecha de entrega": {
                             "type": "string",
                             "description": "The deadline or due date for the item",
                         },
                     },
                     "required": [
-                        "code",
-                        "description",
-                        "quantity",
-                        "unit_price",
-                        "deadline",
+                        "Código Pedido",
+                        "Código Item Cliente",
+                        "Descripción",
+                        "Cantidad",
+                        "Precio Unitario",
+                        "Fecha de entrega",
                     ],
                     "additionalProperties": False,
                 }
@@ -84,6 +152,101 @@ class ClientService:
         self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     def create(self, client_create: ClientCreate, owner_id: uuid.UUID) -> Client:
+
+        class ClientProposalStructure(BaseModel):
+            codigo_pedido: str
+            codigo_item_cliente: str
+            descripcion: str
+            cantidad: int
+            precio_unitario: float
+            fecha_entrega: datetime
+
+        client_proposal = ClientExample.model_copy()
+
+        response = self.ai_client.responses.parse(
+            model="gpt-4.1-mini",
+            input=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
+El usuario te proporcionará:
+- Un texto en formato markdown -> representa un pedido de cliente
+- Una tabla en formato csv -> representa la extracción de datos desde ese pedido
+
+Tu tarea, el proporcionar para cada columna de la tabla csv, unas indicaciones de como extraer los
+datos desde el documento markdown.
+
+Por ejemplo, imaginémonos que el pedido tiene este contenido:
+
+```
+{client_proposal.base_document_markdown}
+```
+
+Y la tabla csv extraída del pedido es esta:
+
+```
+{client_proposal.content_processed}
+```
+
+Entonces, lo que deberías responder es:
+```
+"Código Pedido": "Usually appears after the Invoice# string, at the front page.",
+"Código Item Cliente": "In the ITEM column.",
+"Descripción": "Use the same value as the ITEM column.",
+"Cantidad": "QTY column.",
+"Precio Unitario": "RATE column.",
+"Fecha de entrega": "Provided near PAYMENT and Due date:.",
+```
+   """,
+                        }
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": client_create.content_processed or "",
+                        }
+                    ],
+                },
+            ],
+            text_format=ClientProposalStructure,
+            reasoning={},
+            tools=[],
+            temperature=0,
+            max_output_tokens=2048,
+            top_p=0,
+            store=True,
+        )
+        if response.output_parsed is None:
+            raise ValueError("Failed to parse the client proposal structure")
+
+        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+            "Código Pedido"
+        ]["description"] += response.output_parsed.codigo_pedido
+        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+            "Código Item Cliente"
+        ]["description"] += response.output_parsed.codigo_item_cliente
+        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+            "Descripción"
+        ]["description"] += response.output_parsed.descripcion
+        client_proposal.structure["schema"]["$defs"]["item"]["properties"]["Cantidad"][
+            "description"
+        ] += str(response.output_parsed.cantidad)
+        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+            "Precio Unitario"
+        ]["description"] += str(response.output_parsed.precio_unitario)
+        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+            "Fecha de entrega"
+        ]["description"] += response.output_parsed.fecha_entrega.strftime(
+            "%d-%m-%Y %H:%M:%S"
+        )
+
+        client_create.structure = client_proposal.structure
         return self.repository.create(
             Client.model_validate(client_create, update={"owner_id": owner_id})
         )
@@ -138,20 +301,61 @@ class ClientService:
             clients=[client_proposal],
             user=self.user_service.get_by_id(id),
         )
+        response = self.ai_client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
+El usuario te proporcionará un texto markdown, que corresponde a un pedido de cliente.
+Tu tarea, es responder al usuario con una frase que:
+- Unequívocamente, pueda utilizarse para clasificar el pedido al cliente pertinente,
+  habilitando al que lo lea de relacionar el pedido actual al cliente correcto
+- Se centre en patrones genéricos que puedan utilizarse para esa clasificación
+  (palabras genéricas clave, cabeceras, formato...)
+- No se centre en detalles particulares del actual pedido (número de pedido.. etc,
+  ya que eso cambiará de pedido en pedido)
+
+Responde con una frase de no más de 50 palabras, y en español.
+
+Por ejemplo, imaginémonos que el pedido tiene este contenido:
+
+```
+{client_proposal.base_document_markdown}
+```
+
+Entonces, la frase que deberías responder es:
+
+```
+{client_proposal.clasifier}
+```
+    """,
+                        }
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": order.base_document_markdown or "",
+                        }
+                    ],
+                },
+            ],
+            text={"format": {"type": "text"}},
+            reasoning={},
+            tools=[],
+            temperature=0,
+            max_output_tokens=2048,
+            top_p=0,
+            store=True,
+        )
+
+        client.base_document_markdown = order.base_document_markdown
+        client.content_processed = order.content_processed
+        client.clasifier = response.output_text
         return client
-
-    def get_clasification_prompt(self, owner_id: uuid.UUID) -> str:
-
-        from app.services._clients._clasifiers import _get_clasification_prompt
-
-        user = self.user_service.get_by_id(owner_id)
-        clients = self.get_all(skip=0, limit=100, owner_id=owner_id)
-        return _get_clasification_prompt(user, clients)
-
-    def get_structure(self, id: uuid.UUID) -> type[BaseModel]:
-
-        from app.services._clients._structures import _get_client_structure
-
-        client = self.get_by_id(id)
-        user = self.user_service.get_by_id(client.owner_id)
-        return _get_client_structure(user, client)

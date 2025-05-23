@@ -1,13 +1,18 @@
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union
+from io import BytesIO
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 from uuid import UUID
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
-from ..types import UNSET, Unset
+from ..types import UNSET, File, FileJsonType, Unset
+
+if TYPE_CHECKING:
+    from ..models.client_public_structure import ClientPublicStructure
+
 
 T = TypeVar("T", bound="ClientPublic")
 
@@ -18,19 +23,27 @@ class ClientPublic:
     Attributes:
         name (str):
         clasifier (str):
-        base_markdown (str):
-        content_processed (str):
+        structure (ClientPublicStructure):
         id (UUID):
         owner_id (UUID):
+        base_document (Union[File, None, Unset]):
+        base_document_name (Union[None, Unset, str]):
+        base_document_markdown (Union[None, Unset, str]):
+        content_processed (Union[None, Unset, str]):
+        additional_info (Union[None, Unset, str]):
         created_at (Union[Unset, datetime.datetime]):
     """
 
     name: str
     clasifier: str
-    base_markdown: str
-    content_processed: str
+    structure: "ClientPublicStructure"
     id: UUID
     owner_id: UUID
+    base_document: Union[File, None, Unset] = UNSET
+    base_document_name: Union[None, Unset, str] = UNSET
+    base_document_markdown: Union[None, Unset, str] = UNSET
+    content_processed: Union[None, Unset, str] = UNSET
+    additional_info: Union[None, Unset, str] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -39,13 +52,44 @@ class ClientPublic:
 
         clasifier = self.clasifier
 
-        base_markdown = self.base_markdown
-
-        content_processed = self.content_processed
+        structure = self.structure.to_dict()
 
         id = str(self.id)
 
         owner_id = str(self.owner_id)
+
+        base_document: Union[FileJsonType, None, Unset]
+        if isinstance(self.base_document, Unset):
+            base_document = UNSET
+        elif isinstance(self.base_document, File):
+            base_document = self.base_document.to_tuple()
+
+        else:
+            base_document = self.base_document
+
+        base_document_name: Union[None, Unset, str]
+        if isinstance(self.base_document_name, Unset):
+            base_document_name = UNSET
+        else:
+            base_document_name = self.base_document_name
+
+        base_document_markdown: Union[None, Unset, str]
+        if isinstance(self.base_document_markdown, Unset):
+            base_document_markdown = UNSET
+        else:
+            base_document_markdown = self.base_document_markdown
+
+        content_processed: Union[None, Unset, str]
+        if isinstance(self.content_processed, Unset):
+            content_processed = UNSET
+        else:
+            content_processed = self.content_processed
+
+        additional_info: Union[None, Unset, str]
+        if isinstance(self.additional_info, Unset):
+            additional_info = UNSET
+        else:
+            additional_info = self.additional_info
 
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
@@ -57,12 +101,21 @@ class ClientPublic:
             {
                 "name": name,
                 "clasifier": clasifier,
-                "base_markdown": base_markdown,
-                "content_processed": content_processed,
+                "structure": structure,
                 "id": id,
                 "owner_id": owner_id,
             }
         )
+        if base_document is not UNSET:
+            field_dict["base_document"] = base_document
+        if base_document_name is not UNSET:
+            field_dict["base_document_name"] = base_document_name
+        if base_document_markdown is not UNSET:
+            field_dict["base_document_markdown"] = base_document_markdown
+        if content_processed is not UNSET:
+            field_dict["content_processed"] = content_processed
+        if additional_info is not UNSET:
+            field_dict["additional_info"] = additional_info
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
 
@@ -70,18 +123,71 @@ class ClientPublic:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.client_public_structure import ClientPublicStructure
+
         d = dict(src_dict)
         name = d.pop("name")
 
         clasifier = d.pop("clasifier")
 
-        base_markdown = d.pop("base_markdown")
-
-        content_processed = d.pop("content_processed")
+        structure = ClientPublicStructure.from_dict(d.pop("structure"))
 
         id = UUID(d.pop("id"))
 
         owner_id = UUID(d.pop("owner_id"))
+
+        def _parse_base_document(data: object) -> Union[File, None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, bytes):
+                    raise TypeError()
+                base_document_type_0 = File(payload=BytesIO(data))
+
+                return base_document_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union[File, None, Unset], data)
+
+        base_document = _parse_base_document(d.pop("base_document", UNSET))
+
+        def _parse_base_document_name(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        base_document_name = _parse_base_document_name(d.pop("base_document_name", UNSET))
+
+        def _parse_base_document_markdown(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        base_document_markdown = _parse_base_document_markdown(d.pop("base_document_markdown", UNSET))
+
+        def _parse_content_processed(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        content_processed = _parse_content_processed(d.pop("content_processed", UNSET))
+
+        def _parse_additional_info(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        additional_info = _parse_additional_info(d.pop("additional_info", UNSET))
 
         _created_at = d.pop("created_at", UNSET)
         created_at: Union[Unset, datetime.datetime]
@@ -93,10 +199,14 @@ class ClientPublic:
         client_public = cls(
             name=name,
             clasifier=clasifier,
-            base_markdown=base_markdown,
-            content_processed=content_processed,
+            structure=structure,
             id=id,
             owner_id=owner_id,
+            base_document=base_document,
+            base_document_name=base_document_name,
+            base_document_markdown=base_document_markdown,
+            content_processed=content_processed,
+            additional_info=additional_info,
             created_at=created_at,
         )
 

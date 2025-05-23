@@ -116,7 +116,6 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                                     inputData={order.content_processed || ''}
                                     readOnly={true}
                                     allowRowEdit={false}
-                                    allowColumnEdit={false}
                                 />
                             </Box>
                         </Grid>
@@ -178,7 +177,6 @@ const ApproveOrder = ({ order }: ApproveOrderProps) => {
                                     onDataChange={handleDataChange}
                                     readOnly={false}
                                     allowRowEdit={true}
-                                    allowColumnEdit={false}
                                 />
                             </Box>
                         </Grid>

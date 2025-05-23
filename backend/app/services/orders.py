@@ -130,9 +130,7 @@ async def parse_md_2_order(
         raise ValueError("No clients found")
 
     # Extract client
-    if (
-        clients[0].name == "" and clients[0].clasifier == ""
-    ):  # This means we are in proposal generation
+    if clients[0].name == "ClientExample":  # This means we are in proposal generation
 
         # Get client
         client = clients[0]
@@ -252,7 +250,7 @@ async def process(
     ai_client: OpenAI,
     clients: list[Client],
     user: User,
-) -> tuple[User, Client, Order]:
+) -> tuple[User, Client, OrderCreate]:
 
     if order_create.base_document is None:
         raise ValueError("Base document cannot be None")
@@ -275,11 +273,9 @@ async def process(
         order_dict,
         user,
     )
+    order_create.base_document_markdown = md
 
-    # Create the order
-    order = Order.model_validate(order_create)
-
-    return user, client, order
+    return user, client, order_create
 
 
 def preprocess_document(document: bytes, document_name: str, user: User) -> bytes:
@@ -329,7 +325,7 @@ class OrderService:
         user = self.user_service.get_by_id(owner_id)
 
         # Process parsing
-        user, client, order = await process(
+        user, client, order_create = await process(
             order_create=order_create,
             ai_client=self.ai_client,
             clients=clients,
@@ -337,9 +333,8 @@ class OrderService:
         )
 
         # Adapt the ids
-        order.owner_id = client.id
-        if email_id is not None:
-            order.email_id = email_id
+        update = {"owner_id": client.id, "email_id": email_id}
+        order = Order.model_validate(order_create, update=update)
 
         # Create the order
         self.repository.create(order)

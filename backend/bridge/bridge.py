@@ -100,7 +100,7 @@ def bridge(func):
 
 
 @bridge
-def example_bridge() -> order_state.OrderState:
+def example_bridge(*args, **kwargs) -> order_state.OrderState:
 
     import random
 
