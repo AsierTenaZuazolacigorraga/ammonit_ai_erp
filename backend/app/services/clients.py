@@ -86,7 +86,7 @@ NL57EPAS7793742478;;Ergonomic Concrete Towels;Ergonomic Concrete Towels;35;22;20
             "properties": {
                 "items": {
                     "type": "array",
-                    "description": "The items in the order",
+                    "description": "Los item en el pedido",
                     "items": {"$ref": "#/$defs/item"},
                 },
             },
@@ -98,27 +98,27 @@ NL57EPAS7793742478;;Ergonomic Concrete Towels;Ergonomic Concrete Towels;35;22;20
                     "properties": {
                         "Código Pedido": {
                             "type": "string",
-                            "description": "The generic code/number of the order. Repeat it for every item.",
+                            "description": "El código/número genérico del pedido. Repítelo para cada item.",
                         },
                         "Código Item Cliente": {
                             "type": "string",
-                            "description": "The code of the item",
+                            "description": "El código del item",
                         },
                         "Descripción": {
                             "type": "string",
-                            "description": "The description of the item",
+                            "description": "La descripción del item",
                         },
                         "Cantidad": {
                             "type": "integer",
-                            "description": "The quantity of items to order",
+                            "description": "La cantidad de items a pedir",
                         },
                         "Precio Unitario": {
                             "type": "number",
-                            "description": "The unit price of the item",
+                            "description": "El precio unitario del item",
                         },
                         "Fecha de entrega": {
                             "type": "string",
-                            "description": "The deadline or due date for the item",
+                            "description": "La fecha de entrega del item (proporciona la fecha en el formato 'DD-MM-YYYY HH:MM:SS')",
                         },
                     },
                     "required": [
@@ -157,9 +157,9 @@ class ClientService:
             codigo_pedido: str
             codigo_item_cliente: str
             descripcion: str
-            cantidad: int
-            precio_unitario: float
-            fecha_entrega: datetime
+            cantidad: str
+            precio_unitario: str
+            fecha_entrega: str
 
         client_proposal = ClientExample.model_copy()
 
@@ -173,11 +173,13 @@ class ClientService:
                             "type": "input_text",
                             "text": f"""
 El usuario te proporcionará:
-- Un texto en formato markdown -> representa un pedido de cliente
-- Una tabla en formato csv -> representa la extracción de datos desde ese pedido
+- Un texto en formato markdown que representa un pedido de cliente
+- Una tabla en formato csv que representa la extracción de datos desde ese pedido
 
-Tu tarea, el proporcionar para cada columna de la tabla csv, unas indicaciones de como extraer los
-datos desde el documento markdown.
+Tu tarea, es proporcionar para cada columna de la tabla csv, unas indicaciones de como extraer los
+datos desde el documento markdown. Las indicaciones han de ser genéricas, y no específicas del pedido
+actual. Es decir, no incluyas los datos de las celdas de la tabla csv, sino que
+indica en que parte del documento (que columna, al lado de que texto) se encuentran los datos.
 
 Por ejemplo, imaginémonos que el pedido tiene este contenido:
 
@@ -193,12 +195,12 @@ Y la tabla csv extraída del pedido es esta:
 
 Entonces, lo que deberías responder es:
 ```
-"Código Pedido": "Usually appears after the Invoice# string, at the front page.",
-"Código Item Cliente": "In the ITEM column.",
-"Descripción": "Use the same value as the ITEM column.",
-"Cantidad": "QTY column.",
-"Precio Unitario": "RATE column.",
-"Fecha de entrega": "Provided near PAYMENT and Due date:.",
+"Código Pedido": "Aparece después del texto 'Invoice#' en la primera página.",
+"Código Item Cliente": "En la columna 'ITEM'.",
+"Descripción": "Utiliza el mismo valor que la columna 'ITEM'.",
+"Cantidad": "En la columna 'QTY'.",
+"Precio Unitario": "En la columna 'RATE'.",
+"Fecha de entrega": "Proporciona la fecha en el formato 'DD-MM-YYYY HH:MM:SS'.",
 ```
    """,
                         }
@@ -236,15 +238,13 @@ Entonces, lo que deberías responder es:
         ]["description"] += response.output_parsed.descripcion
         client_proposal.structure["schema"]["$defs"]["item"]["properties"]["Cantidad"][
             "description"
-        ] += str(response.output_parsed.cantidad)
+        ] += response.output_parsed.cantidad
         client_proposal.structure["schema"]["$defs"]["item"]["properties"][
             "Precio Unitario"
-        ]["description"] += str(response.output_parsed.precio_unitario)
+        ]["description"] += response.output_parsed.precio_unitario
         client_proposal.structure["schema"]["$defs"]["item"]["properties"][
             "Fecha de entrega"
-        ]["description"] += response.output_parsed.fecha_entrega.strftime(
-            "%d-%m-%Y %H:%M:%S"
-        )
+        ]["description"] += response.output_parsed.fecha_entrega
 
         client_create.structure = client_proposal.structure
         return self.repository.create(
@@ -320,6 +320,7 @@ Tu tarea, es responder al usuario con una frase que:
   ya que eso cambiará de pedido en pedido)
 
 Responde con una frase de no más de 50 palabras, y en español.
+En la respuesta, menciona siempre el nombre del cliente.
 
 Por ejemplo, imaginémonos que el pedido tiene este contenido:
 

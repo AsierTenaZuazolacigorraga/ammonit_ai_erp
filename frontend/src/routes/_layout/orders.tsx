@@ -35,6 +35,7 @@ const baseOrdersQueryOptionsFn = (
                 skip: (search.page - 1) * PER_PAGE,
                 limit: PER_PAGE,
             }),
+        refetchInterval: 15000,
     }
 }
 

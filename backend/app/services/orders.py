@@ -95,10 +95,12 @@ async def parse_document_2_md(
                     {
                         "type": "input_text",
                         "text": """
-1. Read the document you are provided
-2. Understand the text structure and display of the different contents
-3. Convert the document into markdown text, making sure to keep the same text structure and display
-4. Respond just with the markdown text, using the same language used in the document
+1. Lee el documento que se te proporciona
+2. Comprende la estructura del texto y la visualización de los diferentes contenidos
+3. Convierte el documento a texto markdown, asegurándote de mantener la misma estructura y visualización del texto
+4. Responde solo con el texto markdown, usando el mismo idioma que se usa en el documento
+
+Nota: Si el documento contiene imágenes, transcríbelas e inclúyelas en el texto markdown.	
 """,
                     }
                 ],
@@ -134,11 +136,6 @@ async def parse_md_2_order(
 
         # Get client
         client = clients[0]
-
-    else:
-        clients_clasification = [
-            f"name: {client.name}, clasifier: {client.clasifier}" for client in clients
-        ]
         response = ai_client.responses.create(
             model="gpt-4.1-nano",
             input=[
@@ -148,11 +145,62 @@ async def parse_md_2_order(
                         {
                             "type": "input_text",
                             "text": f"""
-Which client does this order come from? Select from the following list. Only respond with the client name as is specified in the list.
-If you cannot identify the client, respond with "unknown":
-[
+El usuario te proporcionará un texto en formato markdown que representa un pedido.
+El pedido lo envía la empresa cliente.
+Tu tarea es identificar el nombre de la empresa cliente.
+Responde únicamente con el nombre de la empresa cliente.
+    """,
+                        }
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": md,
+                        }
+                    ],
+                },
+            ],
+            text={"format": {"type": "text"}},
+            reasoning={},
+            tools=[],
+            temperature=0,
+            max_output_tokens=2048,
+            top_p=0,
+            store=True,
+        )
+        client.name = response.output_text
+    else:
+        clients_clasification = """
+|Nombre|Clasificador|
+|---|---|
+"""
+        for client in clients:
+            clients_clasification += f"|{client.name}|{client.clasifier}|\n"
+
+        response = ai_client.responses.create(
+            model="gpt-4.1-nano",
+            input=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
+El usuario te proporcionará un texto en formato markdown que representa un pedido.
+Tu tarea es identificar el nombre de la empresa cliente a la que pertenece el pedido.
+Para ello, deberás de seleccionar el nombre de cliente desde la siguiente tabla:
+
 {clients_clasification}
-]
+
+En la columna "Nombre" aparecen los nombres de los clientes.
+En la columna "Clasificador" aparece una frase que relaciona el pedido con el nombre del cliente.
+
+Notas:
+- Responde únicamente con el nombre del cliente tal como aparece en la columna "Nombre".
+- Si no puedes identificar el cliente, o el cliente identificado no aparece en la tabla, responde con "unknown"
     """,
                         }
                     ],
@@ -194,7 +242,7 @@ If you cannot identify the client, respond with "unknown":
         input=[
             {
                 "role": "system",
-                "content": "Extract the order information",
+                "content": "Extrae la información del pedido",
             },
             {"role": "user", "content": md},
         ],

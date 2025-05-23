@@ -70,7 +70,6 @@ const AddClient = () => {
         mode: "onBlur",
         criteriaMode: "all",
         defaultValues: {
-            name: "",
             base_document: null,
             base_document_name: null,
         },
@@ -112,7 +111,7 @@ const AddClient = () => {
                 formData: { base_document: pdfFile },
             });
             setProposal({
-                name: data.name,
+                name: proposal.name ?? "",
                 clasifier: proposal.clasifier ?? "",
                 base_document_markdown: proposal.base_document_markdown ?? "",
                 content_processed: proposal.content_processed ?? "",
@@ -120,7 +119,7 @@ const AddClient = () => {
                 base_document_name: (proposal as any).base_document_name,
             });
             setEditState({
-                name: data.name,
+                name: proposal.name ?? "",
                 clasifier: proposal.clasifier ?? "",
                 base_document_markdown: proposal.base_document_markdown ?? "",
                 content_processed: proposal.content_processed ?? "",
@@ -200,17 +199,6 @@ const AddClient = () => {
                 </DialogHeader>
                 <DialogBody>
                     <VStack gap={4}>
-                        <Field
-                            required
-                            label="Nombre del Cliente"
-                            invalid={!!errors.name}
-                            errorText={errors.name?.message}
-                        >
-                            <Input
-                                {...register("name", { required: "El nombre es requerido" })}
-                                placeholder="Nombre del cliente"
-                            />
-                        </Field>
                         <Field
                             required
                             label="Documento de ejemplo (.pdf)"
@@ -293,6 +281,18 @@ const AddClient = () => {
                         </Box>
                         <Box maxH="80vh" overflow="auto" minW={0} width="100%">
                             <VStack gap={4} align="stretch">
+                                <Field
+                                    required
+                                    label="Nombre del Cliente"
+                                    invalid={false}
+                                    errorText={undefined}
+                                >
+                                    <Input
+                                        value={editState.name}
+                                        onChange={e => setEditState({ ...editState, name: e.target.value })}
+                                        placeholder="Nombre del cliente"
+                                    />
+                                </Field>
                                 <Field
                                     required
                                     label="Clasificador"

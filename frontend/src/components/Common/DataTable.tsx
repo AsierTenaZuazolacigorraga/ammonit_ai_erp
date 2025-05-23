@@ -180,7 +180,7 @@ export function DataTable<T, TSearch extends { page: number }>({
                 <Table.Body>
                     {items.map((item: T, rowIndex: number) => (
                         <Table.Row
-                            key={rowIndex}
+                            key={(item as any).id}
                             opacity={isPlaceholderData ? 0.5 : 1}
                             bg={rowIndex % 2 === 0 ? "gray.50" : "transparent"}
                             _hover={{ bg: "gray.100" }}

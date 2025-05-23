@@ -38,7 +38,10 @@ ORDER_matisa = (
 ORDER_matisa2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/MATISA/aaaaaaaaaaaaaaaaaaaaaaaa.pdf"
 ORDER_ulma1 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/598153.pdf"
 ORDER_ulma2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/4595390.pdf"
-ORDER = ORDER_2
+ORDERS = [
+    ORDER_ulma1,
+    ORDER_ulma2,
+]
 
 
 async def main():
@@ -57,22 +60,23 @@ async def main():
                     order_service = OrderService(
                         session=session,
                     )
-                    with open(ORDER, "rb") as f:
-                        base_document = f.read()
-                    base_document_name = os.path.basename(ORDER)
+                    for order in ORDERS:
+                        with open(order, "rb") as f:
+                            base_document = f.read()
+                        base_document_name = os.path.basename(order)
 
-                    order = await order_service.create(
-                        order_create=OrderCreate(
-                            base_document=base_document or None,
-                            base_document_name=base_document_name or None,
-                        ),
-                        owner_id=user.id,
-                    )
-                    logger.info(order.content_processed)
+                        order = await order_service.create(
+                            order_create=OrderCreate(
+                                base_document=base_document or None,
+                                base_document_name=base_document_name or None,
+                            ),
+                            owner_id=user.id,
+                        )
+                        logger.info(order.content_processed)
 
-                    # Check if out_document is None
-                    if order.content_processed is None:
-                        raise ValueError("The order output document is None.")
+                        # Check if out_document is None
+                        if order.content_processed is None:
+                            raise ValueError("The order output document is None.")
 
 
 if __name__ == "__main__":
