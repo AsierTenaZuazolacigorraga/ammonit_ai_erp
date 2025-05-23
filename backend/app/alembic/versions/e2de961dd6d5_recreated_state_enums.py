@@ -41,13 +41,14 @@ def upgrade():
         name="email_state_enum",
     )
     email_state_enum.create(op.get_bind(), checkfirst=True)
-    op.add_column(
-        "emaildata",
-        sa.Column(
-            "state", email_state_enum, nullable=False, server_default="PROCESSED_OK"
-        ),
-    )
-    op.alter_column("emaildata", "state", server_default=None)
+    # Removed duplicate op.add_column for 'emaildata.state' as it already exists
+    # op.add_column(
+    #     "emaildata",
+    #     sa.Column(
+    #         "state", email_state_enum, nullable=False, server_default="PROCESSED_OK"
+    #     ),
+    # )
+    # op.alter_column("emaildata", "state", server_default=None)
     # ### end Alembic commands ###
 
 
@@ -64,7 +65,7 @@ def downgrade():
     order_state_enum.drop(op.get_bind(), checkfirst=True)
 
     # Drop EmailDataState enum and column
-    op.drop_column("emaildata", "state")
+    # op.drop_column("emaildata", "state")
     email_state_enum = postgresql.ENUM(
         "PROCESSED_OK",
         "PROCESSED_ERROR",
