@@ -39,6 +39,14 @@ ORDER_matisa2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/MATISA/a
 ORDER_ulma1 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/598153.pdf"
 ORDER_ulma2 = r"/home/atena/my_projects/iot_bind/.gitignores/Eskariak/ULMA/4595390.pdf"
 ORDERS = [
+    ORDER_1,
+    ORDER_2,
+    ORDER_3,
+    ORDER_4,
+    ORDER_danobat,
+    ORDER_fagor,
+    ORDER_inola,
+    ORDER_matisa,
     ORDER_ulma1,
     ORDER_ulma2,
 ]

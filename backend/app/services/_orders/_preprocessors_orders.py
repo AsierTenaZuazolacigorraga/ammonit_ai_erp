@@ -19,6 +19,6 @@ def _preprocess_order(order_dict: dict, user: User) -> dict:
 
         # Populate order with ERP data firts, before creating it
         for item in order_dict["items"]:
-            item["Código Item Propio"] = "1234"
+            item["Código Item Propio"] = ""
 
     return order_dict

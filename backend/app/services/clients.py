@@ -135,6 +135,14 @@ NL57EPAS7793742478;;Ergonomic Concrete Towels;Ergonomic Concrete Towels;35;22;20
         },
         "strict": True,
     },
+    structure_descriptions={
+        "Código Pedido": "",
+        "Código Item Cliente": "",
+        "Descripción": "",
+        "Cantidad": "",
+        "Precio Unitario": "",
+        "Fecha de entrega": "",
+    },
     additional_info="",
     owner_id=uuid.uuid4(),
 )
@@ -153,100 +161,25 @@ class ClientService:
 
     def create(self, client_create: ClientCreate, owner_id: uuid.UUID) -> Client:
 
-        class ClientProposalStructure(BaseModel):
-            codigo_pedido: str
-            codigo_item_cliente: str
-            descripcion: str
-            cantidad: str
-            precio_unitario: str
-            fecha_entrega: str
-
-        client_proposal = ClientExample.model_copy()
-
-        response = self.ai_client.responses.parse(
-            model="gpt-4.1-mini",
-            input=[
-                {
-                    "role": "system",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": f"""
-El usuario te proporcionará:
-- Un texto en formato markdown que representa un pedido de cliente
-- Una tabla en formato csv que representa la extracción de datos desde ese pedido
-
-Tu tarea, es proporcionar para cada columna de la tabla csv, unas indicaciones de como extraer los
-datos desde el documento markdown. Las indicaciones han de ser genéricas, y no específicas del pedido
-actual. Es decir, no incluyas los datos de las celdas de la tabla csv, sino que
-indica en que parte del documento (que columna, al lado de que texto) se encuentran los datos.
-
-Por ejemplo, imaginémonos que el pedido tiene este contenido:
-
-```
-{client_proposal.base_document_markdown}
-```
-
-Y la tabla csv extraída del pedido es esta:
-
-```
-{client_proposal.content_processed}
-```
-
-Entonces, lo que deberías responder es:
-```
-"Código Pedido": "Aparece después del texto 'Invoice#' en la primera página.",
-"Código Item Cliente": "En la columna 'ITEM'.",
-"Descripción": "Utiliza el mismo valor que la columna 'ITEM'.",
-"Cantidad": "En la columna 'QTY'.",
-"Precio Unitario": "En la columna 'RATE'.",
-"Fecha de entrega": "Proporciona la fecha en el formato 'DD-MM-YYYY HH:MM:SS'.",
-```
-   """,
-                        }
-                    ],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": client_create.content_processed or "",
-                        }
-                    ],
-                },
-            ],
-            text_format=ClientProposalStructure,
-            reasoning={},
-            tools=[],
-            temperature=0,
-            max_output_tokens=2048,
-            top_p=0,
-            store=True,
-        )
-        if response.output_parsed is None:
-            raise ValueError("Failed to parse the client proposal structure")
-
-        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+        client_create.structure["schema"]["$defs"]["item"]["properties"][
             "Código Pedido"
-        ]["description"] += response.output_parsed.codigo_pedido
-        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+        ]["description"] += client_create.structure_descriptions["Código Pedido"]
+        client_create.structure["schema"]["$defs"]["item"]["properties"][
             "Código Item Cliente"
-        ]["description"] += response.output_parsed.codigo_item_cliente
-        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
-            "Descripción"
-        ]["description"] += response.output_parsed.descripcion
-        client_proposal.structure["schema"]["$defs"]["item"]["properties"]["Cantidad"][
+        ]["description"] += client_create.structure_descriptions["Código Item Cliente"]
+        client_create.structure["schema"]["$defs"]["item"]["properties"]["Descripción"][
             "description"
-        ] += response.output_parsed.cantidad
-        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+        ] += client_create.structure_descriptions["Descripción"]
+        client_create.structure["schema"]["$defs"]["item"]["properties"]["Cantidad"][
+            "description"
+        ] += client_create.structure_descriptions["Cantidad"]
+        client_create.structure["schema"]["$defs"]["item"]["properties"][
             "Precio Unitario"
-        ]["description"] += response.output_parsed.precio_unitario
-        client_proposal.structure["schema"]["$defs"]["item"]["properties"][
+        ]["description"] += client_create.structure_descriptions["Precio Unitario"]
+        client_create.structure["schema"]["$defs"]["item"]["properties"][
             "Fecha de entrega"
-        ]["description"] += response.output_parsed.fecha_entrega
+        ]["description"] += client_create.structure_descriptions["Fecha de entrega"]
 
-        client_create.structure = client_proposal.structure
         return self.repository.create(
             Client.model_validate(client_create, update={"owner_id": owner_id})
         )
@@ -301,7 +234,7 @@ Entonces, lo que deberías responder es:
             clients=[client_proposal],
             user=self.user_service.get_by_id(id),
         )
-        response = self.ai_client.responses.create(
+        clasifier_response = self.ai_client.responses.create(
             model="gpt-4.1-mini",
             input=[
                 {
@@ -323,13 +256,11 @@ Responde con una frase de no más de 50 palabras, y en español.
 En la respuesta, menciona siempre el nombre del cliente.
 
 Por ejemplo, imaginémonos que el pedido tiene este contenido:
-
 ```
 {client_proposal.base_document_markdown}
 ```
 
 Entonces, la frase que deberías responder es:
-
 ```
 {client_proposal.clasifier}
 ```
@@ -355,8 +286,112 @@ Entonces, la frase que deberías responder es:
             top_p=0,
             store=True,
         )
+        if clasifier_response.output_text is None:
+            raise ValueError("Failed to parse the client proposal clasifier")
 
+        class ClientProposalStructure(BaseModel):
+            codigo_pedido: str
+            codigo_item_cliente: str
+            descripcion: str
+            cantidad: str
+            precio_unitario: str
+            fecha_entrega: str
+
+        structure_response = self.ai_client.responses.parse(
+            model="gpt-4.1-mini",
+            input=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
+El usuario te proporcionará:
+- Un texto en formato markdown que representa un pedido de cliente
+- Una tabla en formato csv que representa la extracción de datos desde ese pedido
+
+Tu tarea, es proporcionar para cada columna de la tabla csv, unas indicaciones de como extraer los
+datos desde el documento markdown. Las indicaciones han de ser genéricas, y no específicas del pedido
+actual. Es decir, no incluyas los datos de las celdas de la tabla csv, sino que
+indica en que parte del documento (que columna, al lado de que texto) se encuentran los datos.
+No utilices más de 15 palabras para cada indicación.
+
+Por ejemplo, imaginémonos que el pedido tiene este contenido:
+```
+{client_proposal.base_document_markdown}
+```
+
+Y la tabla csv extraída del pedido es esta:
+```
+{client_proposal.content_processed}
+```
+
+Entonces, lo que deberías responder es:
+```
+"Código Pedido": "Aparece después del texto 'Invoice#' en la primera página.",
+"Código Item Cliente": "En la columna 'ITEM'.",
+"Descripción": "Utiliza el mismo valor que la columna 'ITEM'.",
+"Cantidad": "En la columna 'QTY'.",
+"Precio Unitario": "En la columna 'RATE'.",
+"Fecha de entrega": "En la columna 'Due date'.",
+```
+   """,
+                        }
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
+Pedido:
+```
+{order.base_document_markdown}
+```
+
+Extracción:
+```
+{order.content_processed}
+```
+""",
+                        }
+                    ],
+                },
+            ],
+            text_format=ClientProposalStructure,
+            reasoning={},
+            tools=[],
+            temperature=0,
+            max_output_tokens=2048,
+            top_p=0,
+            store=True,
+        )
+        if structure_response.output_parsed is None:
+            raise ValueError("Failed to parse the client proposal structure")
+
+        # Add values to client
         client.base_document_markdown = order.base_document_markdown
         client.content_processed = order.content_processed
-        client.clasifier = response.output_text
+        client.clasifier = clasifier_response.output_text
+        client.structure_descriptions["Código Pedido"] = (
+            structure_response.output_parsed.codigo_pedido
+        )
+        client.structure_descriptions["Código Item Cliente"] = (
+            structure_response.output_parsed.codigo_item_cliente
+        )
+        client.structure_descriptions["Descripción"] = (
+            structure_response.output_parsed.descripcion
+        )
+        client.structure_descriptions["Cantidad"] = (
+            structure_response.output_parsed.cantidad
+        )
+        client.structure_descriptions["Precio Unitario"] = (
+            structure_response.output_parsed.precio_unitario
+        )
+        client.structure_descriptions["Fecha de entrega"] = (
+            structure_response.output_parsed.fecha_entrega
+        )
+        client.structure = client_proposal.structure
+
         return client

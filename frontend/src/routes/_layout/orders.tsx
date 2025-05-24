@@ -1,5 +1,6 @@
 import { ApiError, OrderPublic, OrdersService } from "@/client"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
+import AddOrder from "@/components/Orders/AddOrder"
 import ApproveOrder from "@/components/Orders/ApproveOrder"
 import DeleteOrder from "@/components/Orders/DeleteOrder"
 import {
@@ -179,7 +180,7 @@ function Orders() {
             <Heading size="lg" py={6}>
                 Listado de Documentos
             </Heading>
-            {/* <AddOrder /> */}
+            <AddOrder />
             <DataTable
                 queryKeyBase="orders"
                 baseQueryOptionsFn={baseOrdersQueryOptionsFn}

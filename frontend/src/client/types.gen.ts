@@ -32,6 +32,9 @@ export type ClientCreate = {
     structure: {
         [key: string]: unknown;
     };
+    structure_descriptions: {
+        [key: string]: unknown;
+    };
     additional_info?: (string | null);
     created_at?: string;
 };
@@ -44,6 +47,9 @@ export type ClientPublic = {
     content_processed?: (string | null);
     clasifier: string;
     structure: {
+        [key: string]: unknown;
+    };
+    structure_descriptions: {
         [key: string]: unknown;
     };
     additional_info?: (string | null);
@@ -65,6 +71,9 @@ export type ClientUpdate = {
     content_processed?: (string | null);
     clasifier: string;
     structure: {
+        [key: string]: unknown;
+    };
+    structure_descriptions: {
         [key: string]: unknown;
     };
     additional_info?: (string | null);

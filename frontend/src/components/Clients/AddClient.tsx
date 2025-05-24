@@ -44,6 +44,8 @@ interface ProposalEditData {
     content_processed: string;
     base_document?: any;
     base_document_name?: string | null;
+    structure_descriptions: Record<string, string>;
+    structure: any;
 }
 
 const AddClient = () => {
@@ -117,6 +119,8 @@ const AddClient = () => {
                 content_processed: proposal.content_processed ?? "",
                 base_document: (proposal as any).base_document,
                 base_document_name: (proposal as any).base_document_name,
+                structure_descriptions: (proposal as any).structure_descriptions ?? {},
+                structure: (proposal as any).structure,
             });
             setEditState({
                 name: proposal.name ?? "",
@@ -125,6 +129,8 @@ const AddClient = () => {
                 content_processed: proposal.content_processed ?? "",
                 base_document: (proposal as any).base_document,
                 base_document_name: (proposal as any).base_document_name,
+                structure_descriptions: (proposal as any).structure_descriptions ?? {},
+                structure: (proposal as any).structure,
             });
             setTableData(proposal.content_processed ?? "");
             setApiBase64((proposal as any).base_document || "");
@@ -148,6 +154,7 @@ const AddClient = () => {
                     structure: data.structure,
                     base_document: data.base_document,
                     base_document_name: data.base_document_name,
+                    structure_descriptions: data.structure_descriptions,
                     // additional_info and other fields can be added if needed
                 },
             }),
@@ -267,7 +274,12 @@ const AddClient = () => {
             <form
                 onSubmit={e => {
                     e.preventDefault();
-                    mutation.mutate({ ...editState, content_processed: tableData, structure: (proposal as any).structure ?? {} });
+                    mutation.mutate({
+                        ...editState,
+                        content_processed: tableData,
+                        structure: editState.structure,
+                        structure_descriptions: editState.structure_descriptions,
+                    });
                 }}
             >
                 <DialogHeader>
@@ -289,6 +301,7 @@ const AddClient = () => {
                             <DocumentViewer base64Document={apiBase64} />
                         </Box>
                         <Box maxH="80vh" overflow="auto" minW={0} width="100%">
+                            <Text fontWeight="bold" mb={2}>Información Extraída</Text>
                             <VStack gap={4} align="stretch">
                                 <Field
                                     required
@@ -315,6 +328,44 @@ const AddClient = () => {
                                         }
                                         placeholder="Clasificador propuesto"
                                     />
+                                </Field>
+                                <Field
+                                    required
+                                    label="Descripciones de las Columnas"
+                                    invalid={false}
+                                    errorText={undefined}
+                                >
+                                    <Box width="100%">
+                                        <table style={{ width: "100%" }}>
+                                            <tbody>
+                                                {Object.entries(editState.structure_descriptions).map(([key, value]) => (
+                                                    <tr key={key}>
+                                                        <td style={{ width: "260px", fontWeight: 500, verticalAlign: "middle", paddingRight: 10, whiteSpace: "nowrap" }}>
+                                                            {key}
+                                                        </td>
+                                                        <td style={{ width: "100%" }}>
+                                                            <Input
+                                                                value={value}
+                                                                onChange={e => {
+                                                                    setEditState({
+                                                                        ...editState,
+                                                                        structure_descriptions: {
+                                                                            ...editState.structure_descriptions,
+                                                                            [key]: e.target.value,
+                                                                        },
+                                                                    });
+                                                                }}
+                                                                placeholder={`Descripción para ${key}`}
+                                                                size="sm"
+                                                                variant="outline"
+                                                                width="100%"
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </Box>
                                 </Field>
                                 <Field
                                     required

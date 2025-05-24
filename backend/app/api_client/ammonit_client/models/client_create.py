@@ -11,6 +11,7 @@ from ..types import UNSET, File, FileJsonType, Unset
 
 if TYPE_CHECKING:
     from ..models.client_create_structure import ClientCreateStructure
+    from ..models.client_create_structure_descriptions import ClientCreateStructureDescriptions
 
 
 T = TypeVar("T", bound="ClientCreate")
@@ -23,6 +24,7 @@ class ClientCreate:
         name (str):
         clasifier (str):
         structure (ClientCreateStructure):
+        structure_descriptions (ClientCreateStructureDescriptions):
         base_document (Union[File, None, Unset]):
         base_document_name (Union[None, Unset, str]):
         base_document_markdown (Union[None, Unset, str]):
@@ -34,6 +36,7 @@ class ClientCreate:
     name: str
     clasifier: str
     structure: "ClientCreateStructure"
+    structure_descriptions: "ClientCreateStructureDescriptions"
     base_document: Union[File, None, Unset] = UNSET
     base_document_name: Union[None, Unset, str] = UNSET
     base_document_markdown: Union[None, Unset, str] = UNSET
@@ -48,6 +51,8 @@ class ClientCreate:
         clasifier = self.clasifier
 
         structure = self.structure.to_dict()
+
+        structure_descriptions = self.structure_descriptions.to_dict()
 
         base_document: Union[FileJsonType, None, Unset]
         if isinstance(self.base_document, Unset):
@@ -93,6 +98,7 @@ class ClientCreate:
                 "name": name,
                 "clasifier": clasifier,
                 "structure": structure,
+                "structure_descriptions": structure_descriptions,
             }
         )
         if base_document is not UNSET:
@@ -113,6 +119,7 @@ class ClientCreate:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.client_create_structure import ClientCreateStructure
+        from ..models.client_create_structure_descriptions import ClientCreateStructureDescriptions
 
         d = dict(src_dict)
         name = d.pop("name")
@@ -120,6 +127,8 @@ class ClientCreate:
         clasifier = d.pop("clasifier")
 
         structure = ClientCreateStructure.from_dict(d.pop("structure"))
+
+        structure_descriptions = ClientCreateStructureDescriptions.from_dict(d.pop("structure_descriptions"))
 
         def _parse_base_document(data: object) -> Union[File, None, Unset]:
             if data is None:
@@ -185,6 +194,7 @@ class ClientCreate:
             name=name,
             clasifier=clasifier,
             structure=structure,
+            structure_descriptions=structure_descriptions,
             base_document=base_document,
             base_document_name=base_document_name,
             base_document_markdown=base_document_markdown,

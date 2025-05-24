@@ -33,7 +33,7 @@ const AddEmail = () => {
     const [showConnect, setShowConnect] = useState(false)
 
     // Create new email
-    const createEmailMutation = useMutation({
+    const mutation = useMutation({
         mutationFn: (data: { email: string }) =>
             EmailsService.createEmail({ requestBody: data }),
         onSuccess: (data) => {
@@ -47,7 +47,7 @@ const AddEmail = () => {
     })
 
     const onSubmit = (data: { email: string }) => {
-        createEmailMutation.mutate(data)
+        mutation.mutate(data)
     }
 
     let content = (
@@ -86,8 +86,9 @@ const AddEmail = () => {
                     variant="solid"
                     colorScheme="blue"
                     type="submit"
-                    loading={isSubmitting}
+                    loading={isSubmitting || mutation.isPending}
                     disabled={!emailValue}
+                    loadingText="Guardando..."
                 >
                     Guardar
                 </Button>

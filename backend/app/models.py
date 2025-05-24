@@ -80,6 +80,7 @@ class ClientBase(SQLModel):
     content_processed: str | None = Field(default=None)
     clasifier: str = Field(nullable=False)
     structure: dict = Field(sa_column=Column(JSON, nullable=False))
+    structure_descriptions: dict = Field(sa_column=Column(JSON, nullable=False))
     additional_info: str | None = Field(default=None)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True

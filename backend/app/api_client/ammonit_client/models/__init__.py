@@ -6,10 +6,13 @@ from .body_login_login_access_token import BodyLoginLoginAccessToken
 from .body_orders_create_order import BodyOrdersCreateOrder
 from .client_create import ClientCreate
 from .client_create_structure import ClientCreateStructure
+from .client_create_structure_descriptions import ClientCreateStructureDescriptions
 from .client_public import ClientPublic
 from .client_public_structure import ClientPublicStructure
+from .client_public_structure_descriptions import ClientPublicStructureDescriptions
 from .client_update import ClientUpdate
 from .client_update_structure import ClientUpdateStructure
+from .client_update_structure_descriptions import ClientUpdateStructureDescriptions
 from .clients_public import ClientsPublic
 from .email_create import EmailCreate
 from .email_public import EmailPublic
@@ -40,11 +43,14 @@ __all__ = (
     "BodyOrdersCreateOrder",
     "ClientCreate",
     "ClientCreateStructure",
+    "ClientCreateStructureDescriptions",
     "ClientPublic",
     "ClientPublicStructure",
+    "ClientPublicStructureDescriptions",
     "ClientsPublic",
     "ClientUpdate",
     "ClientUpdateStructure",
+    "ClientUpdateStructureDescriptions",
     "EmailCreate",
     "EmailPublic",
     "EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2",

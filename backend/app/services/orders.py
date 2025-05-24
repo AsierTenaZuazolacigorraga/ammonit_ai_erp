@@ -173,14 +173,15 @@ Responde únicamente con el nombre de la empresa cliente.
         )
         client.name = response.output_text
     else:
-        clients_clasification = """
-|Nombre|Clasificador|
-|---|---|
-"""
-        for client in clients:
-            clients_clasification += f"|{client.name}|{client.clasifier}|\n"
 
-        response = ai_client.responses.create(
+        clients_clasification = ""
+        for i, client in enumerate(clients):
+            clients_clasification += f"""Número: {i}\nNombre: "{client.name}"\nClasificador: "{client.clasifier}"\n\n"""
+
+        class ClientNumber(BaseModel):
+            client_number: int
+
+        response = ai_client.responses.parse(
             model="gpt-4.1-nano",
             input=[
                 {
@@ -189,18 +190,18 @@ Responde únicamente con el nombre de la empresa cliente.
                         {
                             "type": "input_text",
                             "text": f"""
-El usuario te proporcionará un texto en formato markdown que representa un pedido.
-Tu tarea es identificar el nombre de la empresa cliente a la que pertenece el pedido.
-Para ello, deberás de seleccionar el nombre de cliente desde la siguiente tabla:
+El usuario te proporcionará un texto en formato markdown, que representa un pedido.
+Tu tarea es identificar el nombre de la empresa cliente a la que pertenece el pedido,
+seleccionando desde la siguiente lista:
 
+```
 {clients_clasification}
-
-En la columna "Nombre" aparecen los nombres de los clientes.
-En la columna "Clasificador" aparece una frase que relaciona el pedido con el nombre del cliente.
+```
 
 Notas:
-- Responde únicamente con el nombre del cliente tal como aparece en la columna "Nombre".
-- Si no puedes identificar el cliente, o el cliente identificado no aparece en la tabla, responde con "unknown"
+- Responde únicamente con el "Número" del cliente
+- Si no puedes identificar correctamente el cliente, responde con "-1"
+- Si el cliente identificado no aparece en la lista, responde con "-1"
     """,
                         }
                     ],
@@ -215,7 +216,7 @@ Notas:
                     ],
                 },
             ],
-            text={"format": {"type": "text"}},
+            text_format=ClientNumber,
             reasoning={},
             tools=[],
             temperature=0,
@@ -223,18 +224,14 @@ Notas:
             top_p=0,
             store=True,
         )
-        client = response.output_text
-        if client is None:
+        client_number = response.output_parsed
+        if client_number is None:
             raise ValueError("Failed to extract the client info from the order.")
+        if client_number == -1:
+            raise ValueError("Unknown client")
 
         # Get client
-        client = client.lower()
-        possible_clients = [c for c in clients if c.name.lower() == client]
-        if len(possible_clients) == 0:
-            raise ValueError(f"Unknown client: {client}")
-        if len(possible_clients) > 1:
-            raise ValueError(f"Multiple clients found for {client}: {possible_clients}")
-        client = possible_clients[0]
+        client = clients[client_number.client_number]
 
     # Extract info
     response = ai_client.responses.create(

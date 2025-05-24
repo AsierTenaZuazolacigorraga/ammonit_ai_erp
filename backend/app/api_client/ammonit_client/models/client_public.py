@@ -12,6 +12,7 @@ from ..types import UNSET, File, FileJsonType, Unset
 
 if TYPE_CHECKING:
     from ..models.client_public_structure import ClientPublicStructure
+    from ..models.client_public_structure_descriptions import ClientPublicStructureDescriptions
 
 
 T = TypeVar("T", bound="ClientPublic")
@@ -24,6 +25,7 @@ class ClientPublic:
         name (str):
         clasifier (str):
         structure (ClientPublicStructure):
+        structure_descriptions (ClientPublicStructureDescriptions):
         id (UUID):
         owner_id (UUID):
         base_document (Union[File, None, Unset]):
@@ -37,6 +39,7 @@ class ClientPublic:
     name: str
     clasifier: str
     structure: "ClientPublicStructure"
+    structure_descriptions: "ClientPublicStructureDescriptions"
     id: UUID
     owner_id: UUID
     base_document: Union[File, None, Unset] = UNSET
@@ -53,6 +56,8 @@ class ClientPublic:
         clasifier = self.clasifier
 
         structure = self.structure.to_dict()
+
+        structure_descriptions = self.structure_descriptions.to_dict()
 
         id = str(self.id)
 
@@ -102,6 +107,7 @@ class ClientPublic:
                 "name": name,
                 "clasifier": clasifier,
                 "structure": structure,
+                "structure_descriptions": structure_descriptions,
                 "id": id,
                 "owner_id": owner_id,
             }
@@ -124,6 +130,7 @@ class ClientPublic:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.client_public_structure import ClientPublicStructure
+        from ..models.client_public_structure_descriptions import ClientPublicStructureDescriptions
 
         d = dict(src_dict)
         name = d.pop("name")
@@ -131,6 +138,8 @@ class ClientPublic:
         clasifier = d.pop("clasifier")
 
         structure = ClientPublicStructure.from_dict(d.pop("structure"))
+
+        structure_descriptions = ClientPublicStructureDescriptions.from_dict(d.pop("structure_descriptions"))
 
         id = UUID(d.pop("id"))
 
@@ -200,6 +209,7 @@ class ClientPublic:
             name=name,
             clasifier=clasifier,
             structure=structure,
+            structure_descriptions=structure_descriptions,
             id=id,
             owner_id=owner_id,
             base_document=base_document,
