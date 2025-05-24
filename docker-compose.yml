@@ -118,7 +118,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+    volumes:
+      - ./backend/.gitignores/azure_tokens:/app/.gitignores/azure_tokens
     build:
       context: ./backend
     labels:
