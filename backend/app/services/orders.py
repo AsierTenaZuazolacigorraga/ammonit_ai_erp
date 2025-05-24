@@ -182,7 +182,7 @@ Responde únicamente con el nombre de la empresa cliente.
             client_number: int
 
         response = ai_client.responses.parse(
-            model="gpt-4.1-nano",
+            model="gpt-4.1-mini",
             input=[
                 {
                     "role": "system",
