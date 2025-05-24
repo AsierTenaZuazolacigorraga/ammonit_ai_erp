@@ -239,7 +239,12 @@ Notas:
         input=[
             {
                 "role": "system",
-                "content": "Extrae la información del pedido",
+                "content": f"""
+El usuario te proporcionará un texto en formato markdown, que representa un pedido.
+Tu tarea es extraer la siguiente información del pedido, teniendo en cuenta las consideraciones:
+
+{json.dumps(client.structure_descriptions, indent=4, ensure_ascii=False)}
+""",
             },
             {"role": "user", "content": md},
         ],

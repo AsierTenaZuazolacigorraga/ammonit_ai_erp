@@ -160,26 +160,6 @@ class ClientService:
         self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     def create(self, client_create: ClientCreate, owner_id: uuid.UUID) -> Client:
-
-        client_create.structure["schema"]["$defs"]["item"]["properties"][
-            "Código Pedido"
-        ]["description"] += client_create.structure_descriptions["Código Pedido"]
-        client_create.structure["schema"]["$defs"]["item"]["properties"][
-            "Código Item Cliente"
-        ]["description"] += client_create.structure_descriptions["Código Item Cliente"]
-        client_create.structure["schema"]["$defs"]["item"]["properties"]["Descripción"][
-            "description"
-        ] += client_create.structure_descriptions["Descripción"]
-        client_create.structure["schema"]["$defs"]["item"]["properties"]["Cantidad"][
-            "description"
-        ] += client_create.structure_descriptions["Cantidad"]
-        client_create.structure["schema"]["$defs"]["item"]["properties"][
-            "Precio Unitario"
-        ]["description"] += client_create.structure_descriptions["Precio Unitario"]
-        client_create.structure["schema"]["$defs"]["item"]["properties"][
-            "Fecha de entrega"
-        ]["description"] += client_create.structure_descriptions["Fecha de entrega"]
-
         return self.repository.create(
             Client.model_validate(client_create, update={"owner_id": owner_id})
         )
