@@ -13,5 +13,11 @@
             "command": "cd ${workspaceFolder}/frontend/ && npm run build",
             "problemMatcher": []
         },
+        {
+            "label": "build-.NET",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/backend/app/services/erps/ && dotnet clean sap_b1 && dotnet build sap_b1",
+            "problemMatcher": []
+        },
     ]
 }

@@ -2,6 +2,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": ".NET",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-.NET",
+            "program": "${workspaceFolder}/backend/app/services/erps/sap_b1/bin/Debug/net8.0/sap_b1.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/backend/app/services/erps/sap_b1",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "Python",
             "type": "debugpy",
             "request": "launch",

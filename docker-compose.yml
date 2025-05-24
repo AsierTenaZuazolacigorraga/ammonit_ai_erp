@@ -149,6 +149,8 @@ services:
         restart: true
     env_file:
       - .env
+    volumes:
+      - ./backend/.gitignores/azure_tokens:/app/.gitignores/azure_tokens
     environment:
       - DOMAIN=${DOMAIN}
       - POSTGRES_SERVER=db
