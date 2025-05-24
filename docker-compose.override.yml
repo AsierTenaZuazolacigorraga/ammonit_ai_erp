@@ -79,6 +79,7 @@ services:
     # TODO: remove once coverage is done locally
     volumes:
       - ./backend/htmlcov:/app/htmlcov
+      - ./backend/.gitignores/azure_tokens:/app/.gitignores/azure_tokens
     environment:
       SMTP_HOST: "mailcatcher"
       SMTP_PORT: "1025"

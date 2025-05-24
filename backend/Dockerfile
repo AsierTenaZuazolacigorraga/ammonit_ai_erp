@@ -42,8 +42,6 @@ COPY ./bridge /app/bridge
 COPY ./scheduler /app/scheduler
 COPY ./prestart /app/prestart
 
-COPY ./.gitignores/azure_tokens /app/.gitignores/azure_tokens
-
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \
