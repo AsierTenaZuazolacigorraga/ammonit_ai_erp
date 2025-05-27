@@ -25,13 +25,8 @@ from app.logger import get_logger
 
 logger = get_logger(__name__)
 
-IS_LOCAL = True
 
-if IS_LOCAL:
-    BASE_URL = "http://localhost:8000"
-else:
-    BASE_URL = os.getenv("FASTAPI_HOST_PROD")
-
+BASE_URL = os.getenv("FASTAPI_HOST_PROD")  # "http://localhost:8000"
 EMAIL = os.getenv("FIRST_SUPERUSER")
 PASSWORD = os.getenv("FIRST_SUPERUSER_PASSWORD")
 

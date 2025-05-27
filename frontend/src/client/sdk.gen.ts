@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsGetClientProposalData, ClientsGetClientProposalResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ClientsReadClientsData, ClientsReadClientsResponse, ClientsCreateClientData, ClientsCreateClientResponse, ClientsGetClientProposalData, ClientsGetClientProposalResponse, ClientsDeleteClientData, ClientsDeleteClientResponse, ClientsUpdateClientData, ClientsUpdateClientResponse, EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, EmailsDeleteEmailData, EmailsDeleteEmailResponse, EmailsUpdateEmailData, EmailsUpdateEmailResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ClientsService {
     /**
@@ -192,6 +192,51 @@ export class EmailsService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/emails/outlook-token-step-2/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Email
+     * Delete an email.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteEmail(data: EmailsDeleteEmailData): CancelablePromise<EmailsDeleteEmailResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/emails/{id}/',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Email
+     * Update a email.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns EmailPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateEmail(data: EmailsUpdateEmailData): CancelablePromise<EmailsUpdateEmailResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/emails/{id}/',
+            path: {
+                id: data.id
+            },
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {

@@ -81,8 +81,8 @@ function Admin() {
       accessor: (user) => (user.is_superuser ? "Superuser" : "Usuario"),
     },
     {
-      header: "Estado",
-      accessor: (user) => (user.is_active ? "Activo" : "Inactivo"),
+      header: "Habilitado",
+      accessor: (user) => (user.is_active ? "Sí" : "No"),
     },
   ]
 

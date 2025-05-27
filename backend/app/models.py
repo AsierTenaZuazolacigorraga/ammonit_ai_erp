@@ -180,7 +180,7 @@ class OrderUpdate(OrderBase):
 class Order(Entity, OrderBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
-        foreign_key="client.id", nullable=False, ondelete="CASCADE"
+        foreign_key="client.id", nullable=True, ondelete="SET NULL"
     )
     email_id: uuid.UUID | None = Field(
         foreign_key="email.id", nullable=True, ondelete="SET NULL"
@@ -233,6 +233,7 @@ class OrdersPublic(SQLModel):
 
 class EmailBase(SQLModel):
     email: str = Field(nullable=False)
+    is_active: bool = True
     filter: str | None = Field(default=None)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True

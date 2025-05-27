@@ -6,7 +6,7 @@ import type { IconType } from "react-icons/lib"
 import useAuth from "@/hooks/useAuth"
 
 const items = [
-  { icon: FiHome, title: "Listado de Documentos", path: "/orders" },
+  { icon: FiHome, title: "Gestión de Documentos", path: "/orders" },
   { icon: FiUserPlus, title: "Gestión de Clientes", path: "/clients" },
   { icon: FiMail, title: "Configuración Outlook", path: "/emails" },
   { icon: FiSettings, title: "Ajustes de Usuario", path: "/settings" },

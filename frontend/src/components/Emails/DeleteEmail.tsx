@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { FiTrash2 } from "react-icons/fi"
 
-import { ClientsService } from "@/client"
+import { EmailsService } from "@/client"
 import {
     DialogActionTrigger,
     DialogBody,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import useCustomToast from "@/hooks/useCustomToast"
 
-const DeleteClient = ({ id }: { id: string }) => {
+const DeleteEmail = ({ id }: { id: string }) => {
     const [isOpen, setIsOpen] = useState(false)
     const queryClient = useQueryClient()
     const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -25,18 +25,18 @@ const DeleteClient = ({ id }: { id: string }) => {
         formState: { isSubmitting },
     } = useForm()
 
-    const deleteClient = async (id: string) => {
-        await ClientsService.deleteClient({ id: id })
+    const deleteEmail = async (id: string) => {
+        await EmailsService.deleteEmail({ id: id })
     }
 
     const mutation = useMutation({
-        mutationFn: deleteClient,
+        mutationFn: deleteEmail,
         onSuccess: () => {
-            showSuccessToast("El cliente fue eliminado correctamente")
+            showSuccessToast("El email fue eliminado correctamente")
             setIsOpen(false)
         },
         onError: () => {
-            showErrorToast("Ocurrió un error al eliminar el cliente")
+            showErrorToast("Ocurrió un error al eliminar el email")
         },
         onSettled: () => {
             queryClient.invalidateQueries()
@@ -63,10 +63,10 @@ const DeleteClient = ({ id }: { id: string }) => {
             <DialogContent>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogHeader>
-                        <DialogTitle>Eliminar Cliente</DialogTitle>
+                        <DialogTitle>Eliminar Email</DialogTitle>
                     </DialogHeader>
                     <DialogBody>
-                        <Text>¿Estás seguro de que quieres eliminar este cliente?</Text>
+                        <Text>¿Estás seguro de que quieres eliminar este email?</Text>
                     </DialogBody>
                     <DialogFooter gap={2}>
                         <DialogActionTrigger asChild>
@@ -93,4 +93,4 @@ const DeleteClient = ({ id }: { id: string }) => {
     )
 }
 
-export default DeleteClient 
+export default DeleteEmail 

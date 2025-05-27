@@ -1,4 +1,4 @@
-import { Container, Heading, HStack, Text } from "@chakra-ui/react"
+import { Container, Heading, HStack, Icon } from "@chakra-ui/react"
 import { UseQueryOptions } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
@@ -7,6 +7,9 @@ import { ApiError, EmailPublic, EmailsService } from "@/client"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 import AddEmail from "@/components/Emails/AddEmail"
 import ConnectEmail from "@/components/Emails/ConnectEmail"
+import DeleteEmail from "@/components/Emails/DeleteEmail"
+import EditEmail from "@/components/Emails/EditEmail"
+import { MdCheckCircle, MdError } from "react-icons/md"
 
 const emailsSearchSchema = z.object({
     page: z.number().int().positive().catch(1),
@@ -44,6 +47,8 @@ function EmailsConfig() {
             accessor: (email) => (
                 <HStack gap={2}>
                     <ConnectEmail email={email.email} is_connected={email.is_connected} />
+                    <DeleteEmail id={email.id} />
+                    <EditEmail email={email} />
                 </HStack>
             )
         },
@@ -52,17 +57,36 @@ function EmailsConfig() {
             accessor: (email) => email.email
         },
         {
+            header: "Estado",
+            accessor: (email) => (
+                <HStack gap={2}>
+                    <Icon
+                        as={
+                            email.is_connected
+                                ? MdCheckCircle
+                                : MdError
+                        }
+                        color={
+                            email.is_connected
+                                ? "green"
+                                : "red"
+                        }
+                        boxSize="16px"
+                    />
+                    {email.is_connected
+                        ? "Conectado"
+                        : "No conectado"}
+                </HStack>
+            )
+        },
+        {
             header: "Filtro",
             accessor: (email) => email.filter
         },
         {
-            header: "Estado",
-            accessor: (email) => (
-                <Text color={email.is_connected ? "green.500" : "orange.500"}>
-                    {email.is_connected ? "Conectado" : "No conectado"}
-                </Text>
-            )
-        }
+            header: "Habilitado",
+            accessor: (email) => (email.is_active ? "Sí" : "No"),
+        },
     ]
 
     return (

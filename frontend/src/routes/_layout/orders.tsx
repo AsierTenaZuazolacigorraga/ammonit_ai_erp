@@ -178,7 +178,7 @@ function Orders() {
     return (
         <Container maxW="full">
             <Heading size="lg" py={6}>
-                Listado de Documentos
+                Gestión de Documentos
             </Heading>
             <AddOrder />
             <DataTable

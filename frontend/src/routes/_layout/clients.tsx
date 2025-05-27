@@ -12,6 +12,7 @@ import { z } from "zod"
 import { ApiError, ClientPublic, ClientsService } from "@/client"
 import AddClient from "@/components/Clients/AddClient"
 import DeleteClient from "@/components/Clients/DeleteClient"
+import EditClient from "@/components/Clients/EditClient"
 import { DataTable, type Column, type PaginatedData } from "@/components/Common/DataTable"
 
 const clientsSearchSchema = z.object({
@@ -54,7 +55,7 @@ function Clients() {
             accessor: (client) => (
                 <HStack gap={2}>
                     <DeleteClient id={client.id} />
-                    {/* <EditClient client={client} /> */}
+                    <EditClient client={client} />
                 </HStack>
             )
         },

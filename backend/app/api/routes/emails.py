@@ -1,7 +1,7 @@
 import uuid
 
 from app.api.deps import CurrentUserDep, EmailServiceDep
-from app.models import EmailCreate, EmailPublic, EmailsPublic, Message
+from app.models import EmailCreate, EmailPublic, EmailsPublic, EmailUpdate, Message
 from app.services.emails import EmailService
 from app.services.orders import OrderService
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -24,8 +24,8 @@ def read_emails(
     emails = email_service.get_all(skip=skip, limit=limit, owner_id=current_user.id)
     count = email_service.get_count(owner_id=current_user.id)
     email_service.load_all(owner_id=current_user.id)
-    return EmailsPublic(
-        data=[
+    if email_service.accounts:
+        emails_public = [
             EmailPublic.model_validate(
                 email,
                 update={
@@ -35,7 +35,17 @@ def read_emails(
                 },
             )
             for email in emails
-        ],
+        ]
+    else:
+        emails_public = [
+            EmailPublic.model_validate(
+                email,
+                update={},
+            )
+            for email in emails
+        ]
+    return EmailsPublic(
+        data=emails_public,
         count=count,
     )
 
@@ -113,3 +123,45 @@ def create_outlook_token_step_2(
     if not success:
         raise HTTPException(status_code=400, detail="Authentication failed.")
     return {"detail": "Authentication successful."}
+
+
+@router.delete("/{id}/")
+def delete_email(
+    email_service: EmailServiceDep,
+    current_user: CurrentUserDep,
+    id: uuid.UUID,
+) -> Message:
+    """
+    Delete an email.
+    """
+    email = email_service.get_by_id(id)
+    if not email:
+        raise HTTPException(status_code=404, detail="Email no encontrado")
+    if not current_user.is_superuser and (email.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+    email_service.delete(id=id)
+    return Message(message="Email eliminado correctamente")
+
+
+@router.patch(
+    "/{id}/",
+    response_model=EmailPublic,
+)
+def update_email(
+    *,
+    email_service: EmailServiceDep,
+    current_user: CurrentUserDep,
+    id: uuid.UUID,
+    email_in: EmailUpdate,
+) -> EmailPublic:
+    """
+    Update a email.
+    """
+
+    email = email_service.get_by_id(id)
+    if not email:
+        raise HTTPException(status_code=404, detail="Email no encontrado")
+    if not current_user.is_superuser and (email.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Permisos insuficientes")
+    email = email_service.update(email_update=email_in, id=id)
+    return EmailPublic.model_validate(email)

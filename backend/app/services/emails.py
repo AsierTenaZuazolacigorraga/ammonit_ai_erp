@@ -16,6 +16,7 @@ from app.models import (
     EmailData,
     EmailDataCreate,
     EmailDataState,
+    EmailUpdate,
     OrderCreate,
     User,
 )
@@ -165,6 +166,17 @@ class EmailService:
     def get_count(self, owner_id: uuid.UUID) -> int:
         return self.email_repository.count_by_kwargs(**{"owner_id": owner_id})
 
+    def delete(self, id: uuid.UUID) -> None:
+        self.email_repository.delete(id)
+
+    def update(self, email_update: EmailUpdate, id: uuid.UUID) -> Email:
+        email = self.get_by_id(id)
+        if not email:
+            raise ValueError("Email not found")
+        return self.email_repository.update(
+            email, update=email_update.model_dump(exclude_unset=True)
+        )
+
     async def fetch(self, *, owner_id: uuid.UUID) -> None:
 
         user = self.user_service.get_by_id(owner_id)
@@ -175,6 +187,9 @@ class EmailService:
             email = self.get_by_email(email=k)
             if not email:
                 logger.warning(f"Email {k} not found")
+                continue
+            if not email.is_active:
+                logger.info(f"Email {k} is not active")
                 continue
 
             account = v["account"]

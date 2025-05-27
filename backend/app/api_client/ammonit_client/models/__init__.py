@@ -16,6 +16,7 @@ from .client_update_structure_descriptions import ClientUpdateStructureDescripti
 from .clients_public import ClientsPublic
 from .email_create import EmailCreate
 from .email_public import EmailPublic
+from .email_update import EmailUpdate
 from .emails_create_outlook_token_step_2_response_emails_create_outlook_token_step_2 import (
     EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2,
 )
@@ -55,6 +56,7 @@ __all__ = (
     "EmailPublic",
     "EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2",
     "EmailsPublic",
+    "EmailUpdate",
     "HTTPValidationError",
     "Message",
     "OrderPublic",

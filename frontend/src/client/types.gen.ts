@@ -82,12 +82,14 @@ export type ClientUpdate = {
 
 export type EmailCreate = {
     email: string;
+    is_active?: boolean;
     filter?: (string | null);
     created_at?: string;
 };
 
 export type EmailPublic = {
     email: string;
+    is_active?: boolean;
     filter?: (string | null);
     created_at?: string;
     id: string;
@@ -98,6 +100,13 @@ export type EmailPublic = {
 export type EmailsPublic = {
     data: Array<EmailPublic>;
     count: number;
+};
+
+export type EmailUpdate = {
+    email: string;
+    is_active?: boolean;
+    filter?: (string | null);
+    created_at?: string;
 };
 
 export type HTTPValidationError = {
@@ -259,6 +268,19 @@ export type EmailsCreateOutlookTokenStep2Data = {
 export type EmailsCreateOutlookTokenStep2Response = ({
     [key: string]: (string);
 });
+
+export type EmailsDeleteEmailData = {
+    id: string;
+};
+
+export type EmailsDeleteEmailResponse = (Message);
+
+export type EmailsUpdateEmailData = {
+    id: string;
+    requestBody: EmailUpdate;
+};
+
+export type EmailsUpdateEmailResponse = (EmailPublic);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;

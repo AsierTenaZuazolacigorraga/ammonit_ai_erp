@@ -1,7 +1,6 @@
 import datetime
 from collections.abc import Mapping
 from typing import Any, TypeVar, Union, cast
-from uuid import UUID
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
@@ -9,37 +8,27 @@ from dateutil.parser import isoparse
 
 from ..types import UNSET, Unset
 
-T = TypeVar("T", bound="EmailPublic")
+T = TypeVar("T", bound="EmailUpdate")
 
 
 @_attrs_define
-class EmailPublic:
+class EmailUpdate:
     """
     Attributes:
         email (str):
-        id (UUID):
-        owner_id (UUID):
         is_active (Union[Unset, bool]):  Default: True.
         filter_ (Union[None, Unset, str]):
         created_at (Union[Unset, datetime.datetime]):
-        is_connected (Union[Unset, bool]):  Default: False.
     """
 
     email: str
-    id: UUID
-    owner_id: UUID
     is_active: Union[Unset, bool] = True
     filter_: Union[None, Unset, str] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
-    is_connected: Union[Unset, bool] = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         email = self.email
-
-        id = str(self.id)
-
-        owner_id = str(self.owner_id)
 
         is_active = self.is_active
 
@@ -53,15 +42,11 @@ class EmailPublic:
         if not isinstance(self.created_at, Unset):
             created_at = self.created_at.isoformat()
 
-        is_connected = self.is_connected
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
             {
                 "email": email,
-                "id": id,
-                "owner_id": owner_id,
             }
         )
         if is_active is not UNSET:
@@ -70,8 +55,6 @@ class EmailPublic:
             field_dict["filter"] = filter_
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
-        if is_connected is not UNSET:
-            field_dict["is_connected"] = is_connected
 
         return field_dict
 
@@ -79,10 +62,6 @@ class EmailPublic:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
         email = d.pop("email")
-
-        id = UUID(d.pop("id"))
-
-        owner_id = UUID(d.pop("owner_id"))
 
         is_active = d.pop("is_active", UNSET)
 
@@ -102,20 +81,15 @@ class EmailPublic:
         else:
             created_at = isoparse(_created_at)
 
-        is_connected = d.pop("is_connected", UNSET)
-
-        email_public = cls(
+        email_update = cls(
             email=email,
-            id=id,
-            owner_id=owner_id,
             is_active=is_active,
             filter_=filter_,
             created_at=created_at,
-            is_connected=is_connected,
         )
 
-        email_public.additional_properties = d
-        return email_public
+        email_update.additional_properties = d
+        return email_update
 
     @property
     def additional_keys(self) -> list[str]:
