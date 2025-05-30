@@ -188,9 +188,6 @@ class EmailService:
             if not email:
                 logger.warning(f"Email {k} not found")
                 continue
-            if not email.is_active:
-                logger.info(f"Email {k} is not active")
-                continue
 
             account = v["account"]
 
@@ -229,25 +226,29 @@ class EmailService:
                     logger.info(f"Received: {msg_complete.received}")
                     logger.info(f"Body: {msg_complete.body_preview}")
 
-                    for order in self.filter_orders(msg_complete, user, email):
-                        try:
-                            # Create the order
-                            await self.order_service.create(
-                                order_create=OrderCreate(
-                                    base_document=order["base_document"] or None,
-                                    base_document_name=order["base_document_name"]
-                                    or None,
-                                ),
-                                owner_id=owner_id,
-                                email_id=email.id,
-                            )
-                        except Exception as e:
-                            state = EmailDataState.PROCESSED_ERROR
-                            logger.error(
-                                "Failed to create order: %s\nTraceback:\n%s",
-                                str(e),
-                                traceback.format_exc(),
-                            )
+                    # Only process if email is active
+                    if email.is_active:
+                        for order in self.filter_orders(msg_complete, user, email):
+                            try:
+                                # Create the order
+                                await self.order_service.create(
+                                    order_create=OrderCreate(
+                                        base_document=order["base_document"] or None,
+                                        base_document_name=order["base_document_name"]
+                                        or None,
+                                    ),
+                                    owner_id=owner_id,
+                                    email_id=email.id,
+                                )
+                            except Exception as e:
+                                state = EmailDataState.PROCESSED_ERROR
+                                logger.error(
+                                    "Failed to create order: %s\nTraceback:\n%s",
+                                    str(e),
+                                    traceback.format_exc(),
+                                )
+                    else:
+                        logger.info(f"Email {k} is not active")
 
                     # Save it for tracing
                     new_messages.append(msg)

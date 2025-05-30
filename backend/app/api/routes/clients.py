@@ -32,7 +32,7 @@ def read_clients(
     return ClientsPublic(data=client_publics, count=count)
 
 
-@router.post("/proposal", response_model=ClientPublic)
+@router.post("/proposal/", response_model=ClientPublic)
 async def get_client_proposal(
     client_service: ClientServiceDep,
     current_user: CurrentUserDep,

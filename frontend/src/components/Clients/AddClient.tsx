@@ -1,17 +1,12 @@
 import { ClientsService } from "@/client";
 import type { ApiError } from "@/client/core/ApiError";
-import DocumentViewer from "@/components/Common/DocumentViewer";
-import TableViewer from "@/components/Common/TableViewer";
 import useCustomToast from "@/hooks/useCustomToast";
 import { handleError } from "@/utils";
 import {
-    Box,
     Button,
     DialogActionTrigger,
     DialogTitle,
-    Grid,
     Input,
-    Text,
     VStack
 } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +23,7 @@ import {
     DialogTrigger,
 } from "../ui/dialog";
 import { Field } from "../ui/field";
+import ClientViewer from "./ClientViewer";
 
 // Step 1: Enter name & upload PDF
 interface AddClientFormData {
@@ -55,7 +51,6 @@ const AddClient = () => {
     const [_, setPdfBase64] = useState<string>("");
     const [apiBase64, setApiBase64] = useState<string>("");
     const [proposal, setProposal] = useState<ProposalEditData | null>(null);
-    const [tableData, setTableData] = useState<string>("");
     const [isLoadingProposal, setIsLoadingProposal] = useState(false);
     const queryClient = useQueryClient();
     const { showSuccessToast } = useCustomToast();
@@ -77,9 +72,6 @@ const AddClient = () => {
         },
     });
     const currentFileName = watch("base_document_name");
-
-    // Step 2 form (proposal edit)
-    const [editState, setEditState] = useState<ProposalEditData | null>(null);
 
     // Dropzone logic
     const onDrop = (acceptedFiles: File[]) => {
@@ -122,17 +114,6 @@ const AddClient = () => {
                 structure_descriptions: (proposal as any).structure_descriptions ?? {},
                 structure: (proposal as any).structure,
             });
-            setEditState({
-                name: proposal.name ?? "",
-                clasifier: proposal.clasifier ?? "",
-                base_document_markdown: proposal.base_document_markdown ?? "",
-                content_processed: proposal.content_processed ?? "",
-                base_document: (proposal as any).base_document,
-                base_document_name: (proposal as any).base_document_name,
-                structure_descriptions: (proposal as any).structure_descriptions ?? {},
-                structure: (proposal as any).structure,
-            });
-            setTableData(proposal.content_processed ?? "");
             setApiBase64((proposal as any).base_document || "");
             setStep("proposal");
         } catch (err) {
@@ -144,20 +125,30 @@ const AddClient = () => {
 
     // Save client mutation
     const mutation = useMutation({
-        mutationFn: (data: ProposalEditData & { structure: any }) =>
-            ClientsService.createClient({
-                requestBody: {
-                    name: data.name,
-                    clasifier: data.clasifier,
-                    base_document_markdown: data.base_document_markdown,
-                    content_processed: data.content_processed,
-                    structure: data.structure,
-                    base_document: data.base_document,
-                    base_document_name: data.base_document_name,
-                    structure_descriptions: data.structure_descriptions,
-                    // additional_info and other fields can be added if needed
-                },
-            }),
+        mutationFn: async (data: ProposalEditData & { structure: any }) => {
+            // Convert original PDF file to base64 for JSON transport
+            let fileBase64: string | null = null;
+            if (pdfFile) {
+                const arrayBuffer = await pdfFile.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                fileBase64 = btoa(String.fromCharCode(...uint8Array));
+            }
+
+            const createData = {
+                name: data.name,
+                clasifier: data.clasifier,
+                base_document_markdown: data.base_document_markdown,
+                content_processed: data.content_processed,
+                structure: data.structure,
+                base_document: fileBase64, // Send as base64 string for JSON transport
+                base_document_name: data.base_document_name,
+                structure_descriptions: data.structure_descriptions,
+            };
+
+            return ClientsService.createClient({
+                requestBody: createData,
+            });
+        },
         onSuccess: () => {
             showSuccessToast("Cliente guardado correctamente.");
             reset();
@@ -166,8 +157,6 @@ const AddClient = () => {
             setPdfFile(null);
             setPdfBase64("");
             setProposal(null);
-            setEditState(null);
-            setTableData("");
         },
         onError: (err: ApiError) => {
             handleError(err);
@@ -177,12 +166,6 @@ const AddClient = () => {
         },
     });
 
-    // TableViewer data change
-    const handleTableDataChange = (csv: string) => {
-        setTableData(csv);
-        if (editState) setEditState({ ...editState, content_processed: csv });
-    };
-
     // Reset dialog state on close
     const handleDialogChange = ({ open }: { open: boolean }) => {
         setIsOpen(open);
@@ -191,11 +174,40 @@ const AddClient = () => {
             setPdfFile(null);
             setPdfBase64("");
             setProposal(null);
-            setEditState(null);
-            setTableData("");
             reset();
         }
     };
+
+    const handleProposalChange = (updatedClient: any) => {
+        // Convert back from ClientViewer format to ProposalEditData format
+        const updatedProposal: ProposalEditData = {
+            ...updatedClient,
+            base_document_name: updatedClient.base_document_name || null,
+        };
+        setProposal(updatedProposal);
+    };
+
+    const handleProposalSubmit = () => {
+        if (proposal) {
+            mutation.mutate({
+                ...proposal,
+                structure: proposal.structure,
+                structure_descriptions: proposal.structure_descriptions,
+            });
+        }
+    };
+
+    // Transform proposal to match ClientViewer's expected format
+    const getProposalForViewer = (proposal: ProposalEditData) => ({
+        name: proposal.name,
+        clasifier: proposal.clasifier,
+        base_document_markdown: proposal.base_document_markdown,
+        content_processed: proposal.content_processed,
+        base_document: proposal.base_document,
+        base_document_name: proposal.base_document_name || undefined,
+        structure_descriptions: proposal.structure_descriptions,
+        structure: proposal.structure,
+    });
 
     let content = null;
     if (step === "form") {
@@ -269,141 +281,25 @@ const AddClient = () => {
                 </DialogFooter>
             </form>
         );
-    } else if (step === "proposal" && proposal && editState) {
+    } else if (step === "proposal" && proposal) {
         content = (
-            <form
-                onSubmit={e => {
-                    e.preventDefault();
-                    mutation.mutate({
-                        ...editState,
-                        content_processed: tableData,
-                        structure: editState.structure,
-                        structure_descriptions: editState.structure_descriptions,
-                    });
-                }}
-            >
+            <>
                 <DialogHeader>
                     <DialogTitle>Revisar y Guardar Cliente</DialogTitle>
                 </DialogHeader>
                 <DialogBody>
-                    <Grid templateColumns="auto 1fr" gap={8} alignItems="flex-start">
-                        <Box
-                            width="595px"
-                            display="flex"
-                            flexDirection="column"
-                            alignItems="center"
-                            minW="0"
-                            pr={2}
-                        >
-                            <Text fontWeight="bold" mb={2} alignSelf="flex-start">
-                                Documento Base
-                            </Text>
-                            <DocumentViewer base64Document={apiBase64} />
-                        </Box>
-                        <Box maxH="80vh" overflow="auto" minW={0} width="100%">
-                            <Text fontWeight="bold" mb={2}>Información Extraída</Text>
-                            <VStack gap={4} align="stretch">
-                                <Field
-                                    required
-                                    label="Nombre del Cliente"
-                                    invalid={false}
-                                    errorText={undefined}
-                                >
-                                    <Input
-                                        value={editState.name}
-                                        onChange={e => setEditState({ ...editState, name: e.target.value })}
-                                        placeholder="Nombre del cliente"
-                                    />
-                                </Field>
-                                <Field
-                                    required
-                                    label="Clasificador"
-                                    invalid={false}
-                                    errorText={undefined}
-                                >
-                                    <Input
-                                        value={editState.clasifier}
-                                        onChange={e =>
-                                            setEditState({ ...editState, clasifier: e.target.value })
-                                        }
-                                        placeholder="Clasificador propuesto"
-                                    />
-                                </Field>
-                                <Field
-                                    required
-                                    label="Descripciones de las Columnas"
-                                    invalid={false}
-                                    errorText={undefined}
-                                >
-                                    <Box width="100%">
-                                        <table style={{ width: "100%" }}>
-                                            <tbody>
-                                                {Object.entries(editState.structure_descriptions).map(([key, value]) => (
-                                                    <tr key={key}>
-                                                        <td style={{ width: "260px", fontWeight: 500, verticalAlign: "middle", paddingRight: 10, whiteSpace: "nowrap" }}>
-                                                            {key}
-                                                        </td>
-                                                        <td style={{ width: "100%" }}>
-                                                            <Input
-                                                                value={value}
-                                                                onChange={e => {
-                                                                    setEditState({
-                                                                        ...editState,
-                                                                        structure_descriptions: {
-                                                                            ...editState.structure_descriptions,
-                                                                            [key]: e.target.value,
-                                                                        },
-                                                                    });
-                                                                }}
-                                                                placeholder={`Descripción para ${key}`}
-                                                                size="sm"
-                                                                variant="outline"
-                                                                width="100%"
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </Box>
-                                </Field>
-                                <Field
-                                    required
-                                    label="Tabla de Extracción"
-                                    invalid={false}
-                                    errorText={undefined}
-                                >
-                                    <TableViewer
-                                        inputData={tableData}
-                                        onDataChange={handleTableDataChange}
-                                        readOnly={false}
-                                        allowRowEdit={true}
-                                    />
-                                </Field>
-                            </VStack>
-                        </Box>
-                    </Grid>
+                    <ClientViewer
+                        client={getProposalForViewer(proposal)}
+                        onClientChange={handleProposalChange}
+                        onSubmit={handleProposalSubmit}
+                        onCancel={() => setStep("form")}
+                        isSubmitting={mutation.isPending}
+                        submitButtonText="Guardar"
+                        cancelButtonText="Volver"
+                        showDocument={true}
+                    />
                 </DialogBody>
-                <DialogFooter gap={2}>
-                    <Button
-                        variant="subtle"
-                        colorPalette="gray"
-                        onClick={() => setStep("form")}
-                        disabled={mutation.isPending}
-                    >
-                        Volver
-                    </Button>
-                    <Button
-                        variant="solid"
-                        type="submit"
-                        loading={mutation.isPending}
-                        loadingText="Guardando..."
-                        colorScheme="green"
-                    >
-                        Guardar
-                    </Button>
-                </DialogFooter>
-            </form>
+            </>
         );
     }
 

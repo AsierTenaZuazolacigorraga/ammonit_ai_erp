@@ -15,18 +15,18 @@ import { useState } from "react"
 
 import { type UserPublic, type UserUpdate, UsersService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
-import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
-import { FiEdit2 } from "react-icons/fi"
-import { Checkbox } from "../ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle
-} from "../ui/dialog"
-import { Field } from "../ui/field"
+} from "@/components/ui/dialog"
+import { Field } from "@/components/ui/field"
+import useCustomToast from "@/hooks/useCustomToast"
+import { emailPattern, handleError } from "@/utils"
+import { FiEdit2 } from "react-icons/fi"
 
 interface EditUserProps {
   user: UserPublic

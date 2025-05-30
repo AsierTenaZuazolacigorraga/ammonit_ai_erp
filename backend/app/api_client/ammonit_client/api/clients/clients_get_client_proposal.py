@@ -19,7 +19,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/api/v1/clients/proposal",
+        "url": "/api/v1/clients/proposal/",
     }
 
     _body = body.to_multipart()
