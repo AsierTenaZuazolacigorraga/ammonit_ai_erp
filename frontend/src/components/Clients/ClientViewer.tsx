@@ -1,5 +1,7 @@
+import { type ClientPublic } from "@/client";
 import DocumentViewer from "@/components/Common/DocumentViewer";
 import TableViewer from "@/components/Common/TableViewer";
+import { Field } from "@/components/ui/field";
 import {
     Box,
     Button,
@@ -9,26 +11,16 @@ import {
     VStack
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { Field } from "../ui/field";
 
 interface ClientViewerProps {
-    client: {
-        name: string;
-        clasifier: string;
-        base_document_markdown: string;
-        content_processed: string;
-        base_document?: string; // base64 PDF
-        base_document_name?: string;
-        structure_descriptions: Record<string, string>;
-        structure: any;
-    };
-    onClientChange: (client: ClientViewerProps['client']) => void;
+    client: ClientPublic | any; // Allow both ClientPublic and the create proposal format
+    onClientChange: (client: any) => void;
     onSubmit: () => void;
     onCancel?: () => void;
     isSubmitting?: boolean;
     submitButtonText?: string;
     cancelButtonText?: string;
-    showDocument?: boolean;
+    mode?: 'create' | 'edit'; // New mode prop
 }
 
 const ClientViewer = ({
@@ -39,11 +31,11 @@ const ClientViewer = ({
     isSubmitting = false,
     submitButtonText = "Guardar",
     cancelButtonText = "Cancelar",
-    showDocument = true,
+    mode = 'create',
 }: ClientViewerProps) => {
-    const [tableData, setTableData] = useState(client.content_processed);
+    const [tableData, setTableData] = useState(client.content_processed || "");
 
-    const handleFieldChange = (field: keyof typeof client, value: any) => {
+    const handleFieldChange = (field: string, value: any) => {
         const updatedClient = { ...client, [field]: value };
         onClientChange(updatedClient);
     };
@@ -65,6 +57,9 @@ const ClientViewer = ({
         e.preventDefault();
         onSubmit();
     };
+
+    // Show document in create mode or if we have one in edit mode
+    const showDocument = mode === 'create' || (mode === 'edit' && client.base_document);
 
     const documentSection = showDocument && client.base_document ? (
         <Box
@@ -93,9 +88,11 @@ const ClientViewer = ({
                     errorText={undefined}
                 >
                     <Input
-                        value={client.name}
+                        value={client.name || ""}
                         onChange={e => handleFieldChange('name', e.target.value)}
                         placeholder="Nombre del cliente"
+                        readOnly={mode === 'edit'}
+                        variant={mode === 'edit' ? 'subtle' : 'outline'}
                     />
                 </Field>
                 <Field
@@ -105,12 +102,12 @@ const ClientViewer = ({
                     errorText={undefined}
                 >
                     <Input
-                        value={client.clasifier}
+                        value={client.clasifier || ""}
                         onChange={e => handleFieldChange('clasifier', e.target.value)}
                         placeholder="Clasificador"
                     />
                 </Field>
-                {Object.keys(client.structure_descriptions).length > 0 && (
+                {client.structure_descriptions && Object.keys(client.structure_descriptions).length > 0 && (
                     <Field
                         required
                         label="Descripciones de las Columnas"
@@ -133,7 +130,7 @@ const ClientViewer = ({
                                             </td>
                                             <td style={{ width: "100%" }}>
                                                 <Input
-                                                    value={value}
+                                                    value={value as string || ""}
                                                     onChange={e => handleStructureDescriptionChange(key, e.target.value)}
                                                     placeholder={`Descripción para ${key}`}
                                                     size="sm"
@@ -192,7 +189,7 @@ const ClientViewer = ({
                     variant="solid"
                     type="submit"
                     loading={isSubmitting}
-                    loadingText="Guardando..."
+                    loadingText="Procesando..."
                     colorScheme="green"
                 >
                     {submitButtonText}

@@ -31,8 +31,15 @@ const EditClient = ({ client }: EditClientProps) => {
     const { showSuccessToast } = useCustomToast()
 
     const mutation = useMutation({
-        mutationFn: (data: ClientPublic) =>
-            ClientsService.updateClient({ id: client.id, requestBody: data }),
+        mutationFn: (data: ClientPublic) => {
+            // Exclude document fields for updates
+            const { base_document, base_document_name, ...updateData } = data
+
+            return ClientsService.updateClient({
+                id: client.id,
+                requestBody: updateData as any
+            })
+        },
         onSuccess: () => {
             showSuccessToast("Cliente actualizado correctamente.")
             setIsOpen(false)
@@ -56,21 +63,8 @@ const EditClient = ({ client }: EditClientProps) => {
     const handleDialogChange = ({ open }: { open: boolean }) => {
         setIsOpen(open)
         if (open) {
-            // Reset editing state when opening
             setEditingClient(client)
         }
-    }
-
-    // Transform ClientPublic to match ClientViewer's expected format
-    const clientForViewer = {
-        name: editingClient.name || "",
-        clasifier: editingClient.clasifier || "",
-        base_document_markdown: editingClient.base_document_markdown || "",
-        content_processed: editingClient.content_processed || "",
-        base_document: editingClient.base_document,
-        base_document_name: editingClient.base_document_name,
-        structure_descriptions: editingClient.structure_descriptions || {},
-        structure: editingClient.structure || {},
     }
 
     return (
@@ -91,14 +85,14 @@ const EditClient = ({ client }: EditClientProps) => {
                 </DialogHeader>
                 <DialogBody>
                     <ClientViewer
-                        client={clientForViewer}
+                        client={editingClient}
                         onClientChange={handleClientChange}
                         onSubmit={handleSubmit}
                         onCancel={() => setIsOpen(false)}
                         isSubmitting={mutation.isPending}
-                        submitButtonText="Actualizar"
+                        submitButtonText="Guardar"
                         cancelButtonText="Cancelar"
-                        showDocument={!!client.base_document}
+                        mode="edit" // Indicate this is edit mode
                     />
                 </DialogBody>
             </DialogContent>

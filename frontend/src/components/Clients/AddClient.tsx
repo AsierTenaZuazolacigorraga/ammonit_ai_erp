@@ -48,8 +48,6 @@ const AddClient = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [step, setStep] = useState<'form' | 'proposal'>("form");
     const [pdfFile, setPdfFile] = useState<File | null>(null);
-    const [_, setPdfBase64] = useState<string>("");
-    const [apiBase64, setApiBase64] = useState<string>("");
     const [proposal, setProposal] = useState<ProposalEditData | null>(null);
     const [isLoadingProposal, setIsLoadingProposal] = useState(false);
     const queryClient = useQueryClient();
@@ -80,12 +78,6 @@ const AddClient = () => {
             setValue("base_document_name", file.name, { shouldValidate: true });
             setValue("base_document", file, { shouldValidate: true });
             setPdfFile(file);
-            // Convert to base64 for DocumentViewer
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setPdfBase64((e.target?.result as string) || "");
-            };
-            reader.readAsDataURL(file);
         }
     };
     const { getRootProps, getInputProps } = useDropzone({
@@ -99,11 +91,13 @@ const AddClient = () => {
     // Step 1: Continue → get proposal
     const handleContinue = async (_: AddClientFormData) => {
         if (!pdfFile) return;
+
         setIsLoadingProposal(true);
         try {
             const proposal = await ClientsService.getClientProposal({
                 formData: { base_document: pdfFile },
             });
+
             setProposal({
                 name: proposal.name ?? "",
                 clasifier: proposal.clasifier ?? "",
@@ -114,7 +108,6 @@ const AddClient = () => {
                 structure_descriptions: (proposal as any).structure_descriptions ?? {},
                 structure: (proposal as any).structure,
             });
-            setApiBase64((proposal as any).base_document || "");
             setStep("proposal");
         } catch (err) {
             handleError(err as ApiError);
@@ -126,7 +119,7 @@ const AddClient = () => {
     // Save client mutation
     const mutation = useMutation({
         mutationFn: async (data: ProposalEditData & { structure: any }) => {
-            // Convert original PDF file to base64 for JSON transport
+            // Convert PDF file to base64 for JSON transport (create endpoint expects JSON, not multipart)
             let fileBase64: string | null = null;
             if (pdfFile) {
                 const arrayBuffer = await pdfFile.arrayBuffer();
@@ -134,6 +127,7 @@ const AddClient = () => {
                 fileBase64 = btoa(String.fromCharCode(...uint8Array));
             }
 
+            // Create JSON payload with base64 encoded file
             const createData = {
                 name: data.name,
                 clasifier: data.clasifier,
@@ -146,7 +140,7 @@ const AddClient = () => {
             };
 
             return ClientsService.createClient({
-                requestBody: createData,
+                requestBody: createData as any, // Type assertion to bypass incorrect auto-generated types
             });
         },
         onSuccess: () => {
@@ -155,7 +149,6 @@ const AddClient = () => {
             setStep("form");
             setIsOpen(false);
             setPdfFile(null);
-            setPdfBase64("");
             setProposal(null);
         },
         onError: (err: ApiError) => {
@@ -172,7 +165,6 @@ const AddClient = () => {
         if (!open) {
             setStep("form");
             setPdfFile(null);
-            setPdfBase64("");
             setProposal(null);
             reset();
         }
@@ -296,7 +288,7 @@ const AddClient = () => {
                         isSubmitting={mutation.isPending}
                         submitButtonText="Guardar"
                         cancelButtonText="Volver"
-                        showDocument={true}
+                        mode="create"
                     />
                 </DialogBody>
             </>

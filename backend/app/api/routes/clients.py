@@ -1,3 +1,4 @@
+import base64
 import uuid
 from typing import Any
 
@@ -60,6 +61,11 @@ def create_client(
     """
     Create new client.
     """
+
+    # Patch for base64 decoding into bytes
+    if client_in.base_document is not None:
+        client_in.base_document = base64.b64decode(client_in.base_document)
+
     client = client_service.create(client_create=client_in, owner_id=current_user.id)
     return ClientPublic.model_validate(client)
 
