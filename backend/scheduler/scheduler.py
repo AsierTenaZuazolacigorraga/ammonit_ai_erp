@@ -75,7 +75,7 @@ def main():
     sched = Scheduler()
 
     # Add tasks
-    sched.add_task(task_health_check, 30)
+    sched.add_task(task_health_check, 60)
 
     # Add tasks for each user
     with Session(engine) as session:
@@ -84,7 +84,7 @@ def main():
             user for user in user_service.get_all(skip=0, limit=100) if user.is_active
         ]:
             sched.add_task(
-                lambda s, u=user: task_for_each_user_email_service_fetch(s, u), 15
+                lambda s, u=user: task_for_each_user_email_service_fetch(s, u), 20
             )
 
     # Keep the main thread running for further task additions or a graceful exit.

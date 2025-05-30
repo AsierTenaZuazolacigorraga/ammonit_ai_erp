@@ -3,20 +3,7 @@ from app.models import User, UserCreate
 from app.services.users import UserService
 from sqlmodel import Session, create_engine, select
 
-engine = create_engine(
-    str(settings.SQLALCHEMY_DATABASE_URI),
-    # Connection pool settings
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,
-    pool_recycle=settings.DB_POOL_RECYCLE,
-    pool_timeout=settings.DB_POOL_TIMEOUT,
-    # Additional settings for cloud environments
-    connect_args={
-        "connect_timeout": settings.DB_CONNECT_TIMEOUT,
-        "application_name": "iot_bind_app",
-    },
-)
+engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
