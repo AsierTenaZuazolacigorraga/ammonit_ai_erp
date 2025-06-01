@@ -1,19 +1,7 @@
 import { ClientsService } from "@/client";
 import type { ApiError } from "@/client/core/ApiError";
-import useCustomToast from "@/hooks/useCustomToast";
-import { handleError } from "@/utils";
-import {
-    Button,
-    DialogActionTrigger,
-    DialogTitle,
-    Input,
-    VStack
-} from "@chakra-ui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useDropzone } from "react-dropzone";
-import { useForm } from "react-hook-form";
-import { FaPlus } from "react-icons/fa";
+import ClientViewer from "@/components/Clients/ClientViewer";
+import DropZone from "@/components/Common/DropZone";
 import {
     DialogBody,
     DialogContent,
@@ -21,9 +9,19 @@ import {
     DialogHeader,
     DialogRoot,
     DialogTrigger,
-} from "../ui/dialog";
-import { Field } from "../ui/field";
-import ClientViewer from "./ClientViewer";
+} from "@/components/ui/dialog";
+import useCustomToast from "@/hooks/useCustomToast";
+import { handleError } from "@/utils";
+import {
+    Button,
+    DialogActionTrigger,
+    DialogTitle,
+    VStack
+} from "@chakra-ui/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { FaPlus } from "react-icons/fa";
 
 // Step 1: Enter name & upload PDF
 interface AddClientFormData {
@@ -55,7 +53,6 @@ const AddClient = () => {
 
     // Step 1 form
     const {
-        register,
         handleSubmit,
         setValue,
         watch,
@@ -72,21 +69,11 @@ const AddClient = () => {
     const currentFileName = watch("base_document_name");
 
     // Dropzone logic
-    const onDrop = (acceptedFiles: File[]) => {
-        const file = acceptedFiles[0];
-        if (file) {
-            setValue("base_document_name", file.name, { shouldValidate: true });
-            setValue("base_document", file, { shouldValidate: true });
-            setPdfFile(file);
-        }
+    const handleFileDrop = (file: File) => {
+        setValue("base_document_name", file.name, { shouldValidate: true });
+        setValue("base_document", file, { shouldValidate: true });
+        setPdfFile(file);
     };
-    const { getRootProps, getInputProps } = useDropzone({
-        onDrop,
-        accept: { "application/pdf": [".pdf"] },
-        maxFiles: 1,
-        maxSize: 5 * 1024 * 1024,
-        disabled: isSubmitting || isLoadingProposal,
-    });
 
     // Step 1: Continue → get proposal
     const handleContinue = async (_: AddClientFormData) => {
@@ -122,9 +109,18 @@ const AddClient = () => {
             // Convert PDF file to base64 for JSON transport (create endpoint expects JSON, not multipart)
             let fileBase64: string | null = null;
             if (pdfFile) {
-                const arrayBuffer = await pdfFile.arrayBuffer();
-                const uint8Array = new Uint8Array(arrayBuffer);
-                fileBase64 = btoa(String.fromCharCode(...uint8Array));
+                // Use FileReader API for robust base64 conversion - handles large files efficiently
+                fileBase64 = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = reader.result as string;
+                        // Remove the data URL prefix (data:application/pdf;base64,)
+                        const base64 = result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(pdfFile);
+                });
             }
 
             // Create JSON payload with base64 encoded file
@@ -210,49 +206,12 @@ const AddClient = () => {
                 </DialogHeader>
                 <DialogBody>
                     <VStack gap={4}>
-                        <Field
-                            required
-                            label="Documento de ejemplo (.pdf)"
-                            invalid={!!errors.base_document_name || !!errors.base_document}
-                            errorText={
-                                errors.base_document_name?.message || errors.base_document?.message
-                            }
-                        >
-                            <div
-                                {...getRootProps()}
-                                style={{
-                                    border: "2.5px dashed #319795",
-                                    borderRadius: "12px",
-                                    boxShadow: "0 2px 8px rgba(49, 151, 149, 0.08)",
-                                    padding: "18px 10px",
-                                    textAlign: "center",
-                                    backgroundColor: isSubmitting || isLoadingProposal ? "#f5f5f5" : "#f9fafb",
-                                    opacity: isSubmitting || isLoadingProposal ? 0.5 : 1,
-                                    cursor: isSubmitting || isLoadingProposal ? "not-allowed" : "pointer",
-                                    transition: "border-color 0.2s, box-shadow 0.2s, background 0.2s",
-                                }}
-                                onMouseEnter={e => {
-                                    if (!(isSubmitting || isLoadingProposal)) e.currentTarget.style.borderColor = '#2b6cb0';
-                                }}
-                                onMouseLeave={e => {
-                                    if (!(isSubmitting || isLoadingProposal)) e.currentTarget.style.borderColor = '#319795';
-                                }}
-                            >
-                                <input {...getInputProps()} />
-                                <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
-                            </div>
-                            <Input
-                                {...register("base_document_name", {
-                                    required: "Se requiere el documento.",
-                                })}
-                                placeholder="Nombre del documento"
-                                value={currentFileName || ""}
-                                type="text"
-                                readOnly
-                                variant="subtle"
-                                mt={2}
-                            />
-                        </Field>
+                        <DropZone
+                            onFileDrop={handleFileDrop}
+                            fileName={currentFileName}
+                            isDisabled={isSubmitting || isLoadingProposal}
+                            error={errors.base_document_name?.message || errors.base_document?.message}
+                        />
                     </VStack>
                 </DialogBody>
                 <DialogFooter gap={2}>

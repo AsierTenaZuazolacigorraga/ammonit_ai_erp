@@ -5,7 +5,6 @@ import {
   Button,
   DialogActionTrigger,
   DialogTitle,
-  Input,
   VStack
 } from "@chakra-ui/react"
 import { useState } from "react"
@@ -13,9 +12,9 @@ import { FaPlus } from "react-icons/fa"
 
 import { OrdersService } from "@/client"
 import { ApiError } from "@/client/core/ApiError"
+import DropZone from "@/components/Common/DropZone"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import { useDropzone } from "react-dropzone"
 import {
   DialogBody,
   DialogContent,
@@ -24,7 +23,6 @@ import {
   DialogRoot,
   DialogTrigger
 } from "../ui/dialog"
-import { Field } from "../ui/field"
 
 // Define local type for the form's state
 interface AddOrderFormData {
@@ -37,7 +35,6 @@ const AddOrder = () => {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
   const {
-    register,
     handleSubmit,
     reset,
     setValue,
@@ -54,6 +51,12 @@ const AddOrder = () => {
 
   // Watch filename for display input
   const currentFileName = watch("base_document_name");
+
+  // File drop handler
+  const handleFileDrop = (file: File) => {
+    setValue("base_document_name", file.name, { shouldValidate: true })
+    setValue("base_document", file, { shouldValidate: true })
+  }
 
   const mutation = useMutation({
     mutationFn: (data: AddOrderFormData) => {
@@ -86,23 +89,6 @@ const AddOrder = () => {
     mutation.mutate(data)
   }
 
-  // onDrop sets fields for local form type (no change needed)
-  const onDrop = (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0]
-    if (file) {
-      setValue("base_document_name", file.name, { shouldValidate: true })
-      setValue("base_document", file, { shouldValidate: true })
-    }
-  }
-  // useDropzone setup (no change needed)
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
-    maxFiles: 1,
-    maxSize: 5 * 1024 * 1024,
-    disabled: isSubmitting || mutation.isPending,
-  })
-
   return (
     <DialogRoot
       size={{ base: "xs", md: "md" }}
@@ -123,36 +109,13 @@ const AddOrder = () => {
           </DialogHeader>
           <DialogBody>
             <VStack gap={4}>
-              <Field
-                required
+              <DropZone
+                onFileDrop={handleFileDrop}
+                fileName={currentFileName}
+                isDisabled={isSubmitting || mutation.isPending}
+                error={errors.base_document_name?.message || errors.base_document?.message}
                 label="Documento"
-                // Use correct field names for errors
-                invalid={!!errors.base_document_name || !!errors.base_document}
-                errorText={errors.base_document_name?.message || errors.base_document?.message}
-              >
-                <div {...getRootProps()} style={{
-                  border: "2px dashed #ccc",
-                  padding: "10px",
-                  textAlign: "center", // Center text
-                  backgroundColor: isSubmitting || mutation.isPending ? "#f5f5f5" : "transparent",
-                  opacity: isSubmitting || mutation.isPending ? 0.5 : 1,
-                  cursor: isSubmitting || mutation.isPending ? "not-allowed" : "pointer",
-                }}>
-                  <input {...getInputProps()} />
-                  <p>Arrastra y suelta el archivo aquí o haz clic para seleccionar uno (.pdf hasta 5MB)</p>
-                </div>
-                <Input
-                  {...register("base_document_name", { // Register for validation
-                    required: "Se requiere el documento.",
-                  })}
-                  placeholder="Nombre del documento"
-                  value={currentFileName || ""} // Display watched name
-                  type="text"
-                  readOnly
-                  variant="subtle"
-                  mt={2} // Add margin
-                />
-              </Field>
+              />
             </VStack>
           </DialogBody>
           <DialogFooter gap={2}>

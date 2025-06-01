@@ -8,17 +8,17 @@ import { useState } from "react"
 
 import { type ClientPublic, ClientsService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
-import { FiEdit2 } from "react-icons/fi"
+import ClientViewer from "@/components/Clients/ClientViewer"
 import {
     DialogBody,
     DialogContent,
     DialogHeader,
     DialogRoot,
     DialogTrigger
-} from "../ui/dialog"
-import ClientViewer from "./ClientViewer"
+} from "@/components/ui/dialog"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
+import { FiEdit2 } from "react-icons/fi"
 
 interface EditClientProps {
     client: ClientPublic
