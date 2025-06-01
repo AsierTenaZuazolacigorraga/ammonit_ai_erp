@@ -3,7 +3,6 @@ import { type SubmitHandler, useForm } from "react-hook-form"
 
 import {
   Button,
-  DialogActionTrigger,
   DialogTitle,
   VStack
 } from "@chakra-ui/react"
@@ -119,17 +118,9 @@ const AddOrder = () => {
             </VStack>
           </DialogBody>
           <DialogFooter gap={2}>
-            {!(isSubmitting || mutation.isPending) && (
-              <DialogActionTrigger asChild>
-                <Button
-                  variant="subtle"
-                  colorPalette="gray"
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-              </DialogActionTrigger>
-            )}
+            <Button variant="subtle" colorPalette="gray" disabled={isSubmitting || mutation.isPending}>
+              Cancelar
+            </Button>
             <Button
               variant="solid"
               type="submit"

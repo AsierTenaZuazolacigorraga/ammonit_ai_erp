@@ -8,10 +8,17 @@
             "problemMatcher": []
         },
         {
-            "label": "build-frontend",
+            "label": "build-and-dev-frontend",
             "type": "shell",
-            "command": "cd ${workspaceFolder}/frontend/ && npm run build",
+            "command": "cd ${workspaceFolder}/frontend/ && npm run build && npm run dev",
             "problemMatcher": []
+        },
+        {
+            "label": "build-and-preview-frontend",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/frontend/ && npm run build && npm run preview",
+            "problemMatcher": [],
+            "group": "build"
         },
         {
             "label": "build-.NET",
