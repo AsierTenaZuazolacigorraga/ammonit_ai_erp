@@ -22,70 +22,83 @@ from app.api_client.ammonit_client.models.body_login_login_access_token import (
 )
 from app.api_client.ammonit_client.models.order_update import OrderUpdate
 from app.logger import get_logger
+from dotenv import load_dotenv
 
 logger = get_logger(__name__)
 
 
-def bridge(func):
-    @wraps(func)
-    def wrapper(
-        ammonit_user: str, ammonit_psw: str, ammonit_base_url: str, *args, **kwargs
-    ):
-        while True:
-            try:
+def bridge(func, *args, **kwargs):
 
-                logger.info("Tying to connect to ammonit api ...")
+    if func is None:
+        raise ValueError("A function must be provided as an argument")
+    while True:
+        try:
+
+            logger.info("Tying to connect to ammonit api ...")
+            time.sleep(10)
+
+            # Get arguments
+            load_dotenv()
+            ammonit_base_url = (
+                os.getenv("BASE_URL_LOCAL")
+                if os.getenv("IS_LOCAL")
+                else os.getenv("BASE_URL_PROD")
+            )
+            if ammonit_base_url is None:
+                raise ValueError("AMMONIT_BASE_URL is not set")
+            ammonit_user = os.getenv("EMAIL")
+            if ammonit_user is None:
+                raise ValueError("AMMONIT_USER is not set")
+            ammonit_psw = os.getenv("PASSWORD")
+            if ammonit_psw is None:
+                raise ValueError("AMMONIT_PSW is not set")
+
+            # Login
+            auth_client = AuthenticatedClient(
+                base_url=ammonit_base_url,
+                token=login(
+                    client=ApiClient(base_url=ammonit_base_url),
+                    body=BodyLoginLoginAccessToken(
+                        username=ammonit_user, password=ammonit_psw
+                    ),
+                ).access_token,
+            )
+
+            while True:
+
+                logger.info("Processing orders ...")
                 time.sleep(10)
 
-                auth_client = AuthenticatedClient(
-                    base_url=ammonit_base_url,
-                    token=login(
-                        client=ApiClient(base_url=ammonit_base_url),
-                        body=BodyLoginLoginAccessToken(
-                            username=EMAIL, password=PASSWORD
-                        ),
-                    ).access_token,
-                )
+                orders = read_orders(client=auth_client)
+                if orders:
+                    orders = [
+                        order
+                        for order in orders.data
+                        if order.state == order_state.OrderState.APPROVED
+                    ]
+                    for order in orders:
 
-                while True:
+                        logger.info(f"Processing order: {order.id}")
+                        try:
+                            order_state_value = func(*args, **kwargs)
+                        except Exception as e:
+                            logger.error(f"Error processing order: {e}")
+                            order_state_value = order_state.OrderState.INTEGRATED_ERROR
 
-                    logger.info("Processing orders ...")
-                    time.sleep(10)
+                        # Update the order
+                        update_order_erp_state(
+                            client=auth_client,
+                            body=OrderUpdate(
+                                state=order_state_value,
+                                created_in_erp_at=datetime.now(timezone.utc),
+                            ),
+                            id=order.id,
+                        )
 
-                    orders = read_orders(client=auth_client)
-                    if orders:
-                        orders = [
-                            order
-                            for order in orders.data
-                            if order.state == order_state.OrderState.APPROVED
-                        ]
-                        for order in orders:
-
-                            logger.info(f"Processing order: {order.id}")
-                            try:
-                                order_state_value = func(*args, **kwargs)
-                            except Exception as e:
-                                logger.error(f"Error processing order: {e}")
-                                order_state_value = (
-                                    order_state.OrderState.INTEGRATED_ERROR
-                                )
-
-                            # Update the order
-                            update_order_erp_state(
-                                client=auth_client,
-                                body=OrderUpdate(
-                                    state=order_state_value,
-                                    created_in_erp_at=datetime.now(timezone.utc),
-                                ),
-                                id=order.id,
-                            )
-
-            except Exception as e:
-                logger.error(
-                    "Error in task %s: %s\nTraceback:\n%s",
-                    func.__name__,
-                    str(e),
-                    traceback.format_exc(),
-                )
-
-    return wrapper
+        except Exception as e:
+            logger.error(
+                "Error in task %s: %s\nTraceback:\n%s",
+                func.__name__,
+                str(e),
+                traceback.format_exc(),
+            )

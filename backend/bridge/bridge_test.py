@@ -1,18 +1,18 @@
 import getpass
 import os
 import time
-from app.bridge.bridge import bridge
+
+from app.api_client.ammonit_client.models import order_state
 from app.logger import get_logger
+from dotenv import load_dotenv
+
+from backend.bridge.bridge import bridge
+
+load_dotenv()
 
 logger = get_logger(__name__)
 
-BASE_URL = os.getenv("FASTAPI_HOST")
-# BASE_URL = os.getenv("FASTAPI_HOST_PROD")
-EMAIL = os.getenv("FIRST_SUPERUSER")
-PASSWORD = os.getenv("FIRST_SUPERUSER_PASSWORD")
 
-
-@bridge
 def bridge_instance(*args, **kwargs) -> order_state.OrderState:
 
     import random
@@ -25,10 +25,4 @@ def bridge_instance(*args, **kwargs) -> order_state.OrderState:
     return order_state_value
 
 
-def main():
-
-    bridge_instance(EMAIL, PASSWORD, BASE_URL)
-
-
-if __name__ == "__main__":
-    main()
+bridge(bridge_instance)
