@@ -38,12 +38,8 @@ def bridge(func, *args, **kwargs):
             time.sleep(10)
 
             # Get arguments
-            load_dotenv()
-            ammonit_base_url = (
-                os.getenv("BASE_URL_LOCAL")
-                if os.getenv("IS_LOCAL")
-                else os.getenv("BASE_URL_PROD")
-            )
+            load_dotenv(override=True)
+            ammonit_base_url = os.getenv("BASE_URL")
             if ammonit_base_url is None:
                 raise ValueError("AMMONIT_BASE_URL is not set")
             ammonit_user = os.getenv("EMAIL")
@@ -54,14 +50,17 @@ def bridge(func, *args, **kwargs):
                 raise ValueError("AMMONIT_PSW is not set")
 
             # Login
+            auth_login = login(
+                client=ApiClient(base_url=ammonit_base_url),
+                body=BodyLoginLoginAccessToken(
+                    username=ammonit_user, password=ammonit_psw
+                ),
+            )
+            if auth_login is None:
+                raise ValueError("Failed to login, check credentials")
             auth_client = AuthenticatedClient(
                 base_url=ammonit_base_url,
-                token=login(
-                    client=ApiClient(base_url=ammonit_base_url),
-                    body=BodyLoginLoginAccessToken(
-                        username=ammonit_user, password=ammonit_psw
-                    ),
-                ).access_token,
+                token=auth_login.access_token,
             )
 
             while True:
