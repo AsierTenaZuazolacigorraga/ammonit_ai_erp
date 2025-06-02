@@ -26,14 +26,11 @@ from app.logger import get_logger
 logger = get_logger(__name__)
 
 
-BASE_URL = os.getenv("FASTAPI_HOST_PROD")  # "http://localhost:8000"
-EMAIL = os.getenv("FIRST_SUPERUSER")
-PASSWORD = os.getenv("FIRST_SUPERUSER_PASSWORD")
-
-
 def bridge(func):
     @wraps(func)
-    def wrapper(ammonit_user: str, ammonit_psw: str, *args, **kwargs):
+    def wrapper(
+        ammonit_user: str, ammonit_psw: str, ammonit_base_url: str, *args, **kwargs
+    ):
         while True:
             try:
 
@@ -41,9 +38,9 @@ def bridge(func):
                 time.sleep(10)
 
                 auth_client = AuthenticatedClient(
-                    base_url=BASE_URL,
+                    base_url=ammonit_base_url,
                     token=login(
-                        client=ApiClient(base_url=BASE_URL),
+                        client=ApiClient(base_url=ammonit_base_url),
                         body=BodyLoginLoginAccessToken(
                             username=EMAIL, password=PASSWORD
                         ),
@@ -92,25 +89,3 @@ def bridge(func):
                 )
 
     return wrapper
-
-
-@bridge
-def example_bridge(*args, **kwargs) -> order_state.OrderState:
-
-    import random
-
-    random_number = random.randint(1, 10)
-    if random_number > 5:
-        order_state_value = order_state.OrderState.INTEGRATED_OK
-    else:
-        order_state_value = order_state.OrderState.INTEGRATED_ERROR
-    return order_state_value
-
-
-def main():
-
-    example_bridge(EMAIL, PASSWORD)
-
-
-if __name__ == "__main__":
-    main()
