@@ -6,20 +6,10 @@ cd ..
 
 source .env
 
-# Stop docker
-docker compose down
-
-# Remove all docker info
-if [ "$(docker ps -aq)" ]; then
-    docker stop $(docker ps -aq)
-fi
-docker rm $(docker ps -aq)
-docker rmi $(docker images -q) 
-# docker volume rm $(docker volume ls -q) 
-docker network rm $(docker network ls -q) 
-docker builder prune --all --force
+# Add hosts
+sudo sh -c 'echo "127.0.0.1 dashboard.localhost.tiangolo.com" >> /etc/hosts'
+sudo sh -c 'echo "127.0.0.1 api.localhost.tiangolo.com" >> /etc/hosts'
 
 # Up docker
-docker network create traefik-public
 docker compose -f docker-compose.traefik.yml up -d --build
 docker compose -f docker-compose.yml up -d --build
