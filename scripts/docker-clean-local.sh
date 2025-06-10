@@ -10,6 +10,10 @@ source .env
 sudo sh -c 'echo "127.0.0.1 dashboard.localhost.tiangolo.com" >> /etc/hosts'
 sudo sh -c 'echo "127.0.0.1 api.localhost.tiangolo.com" >> /etc/hosts'
 
+# Down docker
+docker compose down
+
 # Up docker
-docker compose -f docker-compose.traefik.yml up -d --build
-docker compose -f docker-compose.yml up -d --build
+# docker compose -f docker-compose.traefik.yml up -d --build
+# docker compose -f docker-compose.yml up -d --build
+docker compose up -d --build
