@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 cd ..
 
 # Load params
-source ./scripts/db-params.sh
+sh ./scripts/db-params.sh
 
 # Create db_backup directory if it doesn't exist
 mkdir -p $backup_dir

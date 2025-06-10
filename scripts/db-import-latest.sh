@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 cd ..
 
 # Load params
-source ./scripts/db-params.sh
+sh ./scripts/db-params.sh
 
 # Import db
 cd $backup_dir
