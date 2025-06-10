@@ -11,4 +11,5 @@ source ./scripts/db-params.sh
 cd $backup_dir
 
 # Import db
-docker run --rm -v $volume_name:/volume -v $(pwd):/backup busybox tar xzf /backup/$latest_backup -C /volume .
+# docker run --rm -v $volume_name:/volume -v $(pwd):/backup busybox:1.35.0 tar xzf /backup/$latest_backup -C /volume .
+echo "Import database from $latest_backup manually by now ..."
