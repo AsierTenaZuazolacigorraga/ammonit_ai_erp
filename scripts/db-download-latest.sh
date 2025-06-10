@@ -11,6 +11,7 @@ bash ./scripts/db-backup.sh
 
 # Backup remote db
 ssh -i "${AWS_KEY_PATH}" -t "${AWS_USER}@${AWS_HOST}" << EOF
+    cd ${AWS_CLONED_IN}
     bash ./scripts/db-backup.sh
 EOF
 
