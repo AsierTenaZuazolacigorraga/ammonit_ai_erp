@@ -57,11 +57,11 @@ additional_rules = """
 - La empresa para la que trabajas es Alberdi Mekanizatuak (C.I.F. B01896885). Bajo ningún concepto puedes identificar como cliente a Alberdi Mekanizatuak
 """
 particular_rules = """
-- Para Ulma Packaging:
+- Para pedidos del cliente Ulma Packaging:
   - En el documento, el número de pedido suele acompañarse de cierto texto dentro de paréntesis (). Has de ignorar ese texto en paréntesis y considerar soloamente el valor
     númerico para el campo order_number
 
-- Para Fagor Arrasate S.COOP:
+- Para pedidos del cliente Fagor Arrasate S.COOP:
   - El número de pedido suele aparecer al lado de la palabra "Eskari"
 """
 
@@ -130,7 +130,7 @@ Notas:
 - Se admite y se entiende que "null" y null son equivalentes
 """
 
-EVAL_ID = 10
+EVAL_ID = 11
 
 
 async def main():
