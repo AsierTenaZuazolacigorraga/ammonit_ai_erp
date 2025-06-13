@@ -100,7 +100,9 @@ async def parse_document_2_md(
 3. Convierte el documento a texto markdown, asegurándote de mantener la misma estructura y visualización del texto
 4. Responde solo con el texto markdown, usando el mismo idioma que se usa en el documento
 
-Nota: Si el documento contiene imágenes, transcríbelas e inclúyelas en el texto markdown.	
+Notas:
+- Si el documento contiene imágenes, transcríbelas e inclúyelas en el texto markdown
+- Si las imágenes contienen texto, incluye el texto en el texto markdown
 """,
                     }
                 ],
