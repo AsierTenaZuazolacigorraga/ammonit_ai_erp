@@ -6,7 +6,6 @@ import traceback
 from app.core.config import settings
 from app.core.db import engine
 from app.logger import get_logger
-from app.services.clients import ClientService
 from app.services.emails import EmailService
 from app.services.orders import OrderService
 from app.services.users import UserService

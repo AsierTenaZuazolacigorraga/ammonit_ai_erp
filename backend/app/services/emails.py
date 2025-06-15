@@ -24,6 +24,7 @@ from app.repositories.base import CRUDRepository
 from app.services.orders import OrderService
 from app.services.users import UserService
 from O365 import Account, FileSystemTokenBackend, Message
+from openai import OpenAI
 from sqlmodel import Session
 
 logger = get_logger(__name__)
@@ -41,6 +42,9 @@ class EmailService:
         self.id = settings.OUTLOOK_ID
         self.secret = settings.OUTLOOK_SECRET
         self.accounts = {}
+
+        # Initialize clients
+        self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     def authenticate(self, email: str) -> None:
         if not self.accounts[email]["account"].is_authenticated:
@@ -227,7 +231,7 @@ class EmailService:
                     logger.info(f"Body: {msg_complete.body_preview}")
 
                     # Only process if email is active
-                    if email.is_active:
+                    if email.is_orders:
                         for order in self.filter_orders(msg_complete, user, email):
                             try:
                                 # Create the order
@@ -248,7 +252,11 @@ class EmailService:
                                     traceback.format_exc(),
                                 )
                     else:
-                        logger.info(f"Email {k} is not active")
+                        logger.info(f"Email {k} is not active for orders")
+                    if email.is_offers:
+                        logger.info(f"Email {k} is active for offers, comming soon ...")
+                    else:
+                        logger.info(f"Email {k} is not active for offers")
 
                     # Save it for tracing
                     new_messages.append(msg)
@@ -266,6 +274,58 @@ class EmailService:
     def filter_orders(
         self, msg_complete: Message, user: User, email: Email
     ) -> list[dict]:
+
         from app.services._emails._filters import _filter_orders
 
-        return _filter_orders(msg_complete, user, email)
+        orders = _filter_orders(msg_complete, user, email)
+
+        # Decide to process or not
+        process = False
+        if email.orders_filter:
+            logger.info(f"TBD a filter according to {email.orders_filter} ...")
+            # response = self.ai_client.responses.create(
+            #     model="gpt-4.1-nano",
+            #     input=[
+            #         {
+            #             "role": "developer",
+            #             "content": [
+            #                 {
+            #                     "type": "input_text",
+            #                     "text": "",  # TODO
+            #                 }
+            #             ],
+            #         },
+            #         {
+            #             "role": "user",
+            #             "content": [
+            #                 {
+            #                     "type": "input_text",
+            #                     "text": "",  # TODO
+            #                 }
+            #             ],
+            #         },
+            #     ],
+            #     text={"format": {"type": "text"}},
+            #     reasoning={},
+            #     tools=[],
+            #     temperature=0,
+            #     max_output_tokens=2048,
+            #     top_p=0,
+            #     store=True,
+            #     metadata={
+            #         "service": "emails",
+            #         "query": "filter_orders",
+            #         "user_id": str(user.id),
+            #         "user_email": user.email,
+            #     },
+            # )
+            # process = response.output_text
+            # if process is None:
+            #     raise ValueError("Failed to filter orders.")
+        else:
+            process = True
+
+        if process:
+            return orders
+        else:
+            return []

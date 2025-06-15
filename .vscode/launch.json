@@ -56,12 +56,24 @@
             "preLaunchTask": "refresh-openapi-client"
         },
         {
-            "name": "Frontend Dev Env",
+            "name": "Frontend Dev Run",
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:5173",
             "webRoot": "${workspaceFolder}/frontend",
-            "preLaunchTask": "build-and-dev-frontend"
+            "preLaunchTask": "build-frontend"
+        },
+        {
+            "name": "Frontend Dev Env",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/frontend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "console": "integratedTerminal"
         },
         {
             "name": "Frontend Prod Env",

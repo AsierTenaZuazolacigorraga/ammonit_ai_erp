@@ -15,9 +15,8 @@ import pandas as pd
 import PyPDF2
 from app.core.config import settings
 from app.logger import get_logger
-from app.models import Client, Email, Order, OrderCreate, OrderState, OrderUpdate, User
+from app.models import Email, Order, OrderCreate, OrderState, OrderUpdate, User
 from app.repositories.base import CRUDRepository
-from app.services.clients import ClientService
 from app.services.users import UserService
 from dotenv import load_dotenv
 from fastapi import HTTPException
@@ -53,61 +52,36 @@ def parse_pdf_binary_2_base64(pdf_binary: bytes) -> str:
 
 
 async def parse_document_2_md(
-    ai_client: OpenAI, document: bytes, document_name: str
+    ai_client: OpenAI, document: bytes, document_name: str, user: User
 ) -> str:
 
     # Convert to md
-    if document_name.endswith(".pdf"):
-        user_prompt = {
-            "role": "user",
-            "content": [
-                {
-                    "type": "input_image",
-                    "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(document)}",
-                }
-            ],
-            # "content": [
-            #     {
-            #         "type": "input_file",
-            #         "filename": pdf_name,
-            #         "file_data": f"data:application/pdf;base64,{parse_pdf_binary_2_base64(pdf_binary)}",
-            #     }
-            # ],
-        }
-    elif document_name.endswith(".txt"):
-        user_prompt = {
-            "role": "user",
-            "content": [
-                {
-                    "type": "input_text",
-                    "text": document,
-                }
-            ],
-        }
-    else:
+    if not document_name.endswith(".pdf"):
         raise ValueError(f"Unsupported file type: {document_name}")
+
+    from app.services._orders._prompts import DOCUMENT_2_MD_PROMPT
+
     response = ai_client.responses.create(
         model="gpt-4.1-mini",
         input=[
             {
-                "role": "system",
+                "role": "developer",
                 "content": [
                     {
                         "type": "input_text",
-                        "text": """
-1. Lee el documento que se te proporciona
-2. Comprende la estructura del texto y la visualización de los diferentes contenidos
-3. Convierte el documento a texto markdown, asegurándote de mantener la misma estructura y visualización del texto
-4. Responde solo con el texto markdown, usando el mismo idioma que se usa en el documento
-
-Notas:
-- Si el documento contiene imágenes, transcríbelas e inclúyelas en el texto markdown
-- Si las imágenes contienen texto, incluye el texto en el texto markdown
-""",
+                        "text": DOCUMENT_2_MD_PROMPT,
                     }
                 ],
             },
-            user_prompt,  # type: ignore
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_image",
+                        "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(document)}",
+                    }
+                ],
+            },  # type: ignore
         ],
         text={"format": {"type": "text"}},
         reasoning={},
@@ -116,152 +90,107 @@ Notas:
         max_output_tokens=2048,
         top_p=0,
         store=True,
+        metadata={
+            "service": "orders",
+            "query": "document_2_md",
+            "user_id": str(user.id),
+            "user_email": user.email,
+        },
     )
-
     md = response.output_text
     if md is None:
         raise ValueError("Failed to parse the PDF to markdown.")
     return md
 
 
-async def parse_md_2_order(
-    ai_client: OpenAI,
-    md: str,
-    clients: list[Client],
-) -> tuple[dict, Client]:
+async def parse_md_2_order(ai_client: OpenAI, md: str, user: User) -> dict:
 
-    if len(clients) == 0:
-        raise ValueError("No clients found")
+    from app.services._orders._prompts import MD_2_ORDER_PROMPT
 
-    # Extract client
-    if clients[0].name == "ClientExample":  # This means we are in proposal generation
-
-        # Get client
-        client = clients[0]
-        response = ai_client.responses.create(
-            model="gpt-4.1-nano",
-            input=[
-                {
-                    "role": "system",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": f"""
-El usuario te proporcionará un texto en formato markdown que representa un pedido.
-El pedido lo envía la empresa cliente.
-Tu tarea es identificar el nombre de la empresa cliente.
-Responde únicamente con el nombre de la empresa cliente.
-    """,
-                        }
-                    ],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": md,
-                        }
-                    ],
-                },
-            ],
-            text={"format": {"type": "text"}},
-            reasoning={},
-            tools=[],
-            temperature=0,
-            max_output_tokens=2048,
-            top_p=0,
-            store=True,
-        )
-        client.name = response.output_text
-    else:
-
-        clients_clasification = ""
-        for i, client in enumerate(clients):
-            clients_clasification += f"""Número: {i}\nNombre: "{client.name}"\nClasificador: "{client.clasifier}"\n\n"""
-
-        class ClientNumber(BaseModel):
-            client_number: int
-
-        response = ai_client.responses.parse(
-            model="gpt-4.1-mini",
-            input=[
-                {
-                    "role": "system",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": f"""
-El usuario te proporcionará un texto en formato markdown, que representa un pedido.
-Tu tarea es identificar el nombre de la empresa cliente a la que pertenece el pedido,
-seleccionando desde la siguiente lista:
-
-```
-{clients_clasification}
-```
-
-Notas:
-- Responde únicamente con el "Número" del cliente
-- Si no puedes identificar correctamente el cliente, responde con "-1"
-- Si el cliente identificado no aparece en la lista, responde con "-1"
-    """,
-                        }
-                    ],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_text",
-                            "text": md,
-                        }
-                    ],
-                },
-            ],
-            text_format=ClientNumber,
-            reasoning={},
-            tools=[],
-            temperature=0,
-            max_output_tokens=2048,
-            top_p=0,
-            store=True,
-        )
-        client_number = response.output_parsed
-        if client_number is None:
-            raise ValueError("Failed to extract the client info from the order.")
-        if client_number == -1:
-            raise ValueError("Unknown client")
-
-        # Get client
-        client = clients[client_number.client_number]
-
-    # Extract info
     response = ai_client.responses.create(
-        model="gpt-4.1-nano",
+        model="gpt-4.1-mini",
         input=[
             {
-                "role": "system",
-                "content": f"""
-El usuario te proporcionará un texto en formato markdown, que representa un pedido.
-Tu tarea es extraer la siguiente información del pedido, teniendo en cuenta las consideraciones:
-
-{json.dumps(client.structure_descriptions, indent=4, ensure_ascii=False)}
-""",
+                "role": "developer",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": MD_2_ORDER_PROMPT.replace(
+                            "{ADDITIONAL_RULES}",
+                            user.orders_additional_rules or "",
+                        ).replace(
+                            "{PARTICULAR_RULES}",
+                            user.orders_particular_rules or "",
+                        ),
+                    }
+                ],
             },
-            {"role": "user", "content": md},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": md,
+                    }
+                ],
+            },
         ],
-        text={"format": {"type": "json_schema", **client.structure}},  # type: ignore
+        text={"format": {"type": "text"}},
         reasoning={},
         tools=[],
         temperature=0,
         max_output_tokens=2048,
         top_p=0,
         store=True,
+        metadata={
+            "service": "orders",
+            "query": "md_2_order",
+            "user_id": str(user.id),
+            "user_email": user.email,
+        },
+    )
+    order = response.output_text
+    if order is None:
+        raise ValueError("Failed to parse the markdown to order.")
+
+    from app.services._orders._prompts import ORDER_SCHEMA
+
+    # Extract structured info
+    response = ai_client.responses.create(
+        model="gpt-4.1-nano",
+        input=[
+            {
+                "role": "developer",
+                "content": f"""
+El usuario te proporcionará un texto con cierto formato json.
+Tu tarea es analizar el texto y responder con un json estructurado acorde a esta especificación:
+
+{json.dumps(ORDER_SCHEMA, indent=4, ensure_ascii=False)}
+""",
+            },
+            {
+                "role": "user",
+                "content": order,
+            },
+        ],
+        text={"format": {"type": "json_schema", **ORDER_SCHEMA}},  # type: ignore
+        reasoning={},
+        tools=[],
+        temperature=0,
+        max_output_tokens=2048,
+        top_p=0,
+        store=True,
+        metadata={
+            "service": "orders",
+            "query": "order_2_dict",
+            "user_id": str(user.id),
+            "user_email": user.email,
+        },
     )
     if response.output_text is None:
         raise ValueError("Failed to parse the order information from the markdown.")
 
-    return json.loads(response.output_text), client
+    return json.loads(response.output_text)
 
 
 def parse_order_dict_2_csv(order_dict: dict) -> str:
@@ -298,11 +227,8 @@ def parse_order_dict_2_csv(order_dict: dict) -> str:
 
 
 async def process(
-    order_create: OrderCreate,
-    ai_client: OpenAI,
-    clients: list[Client],
-    user: User,
-) -> tuple[User, Client, OrderCreate]:
+    order_create: OrderCreate, ai_client: OpenAI, user: User
+) -> tuple[User, OrderCreate]:
 
     if order_create.base_document is None:
         raise ValueError("Base document cannot be None")
@@ -315,19 +241,19 @@ async def process(
     )
 
     # Parse document to md
-    md = await parse_document_2_md(ai_client, document, order_create.base_document_name)
+    md = await parse_document_2_md(
+        ai_client, document, order_create.base_document_name, user
+    )
 
     # Parse md to order
-    order_dict, client = await parse_md_2_order(ai_client, md, clients)
+    order_dict = await parse_md_2_order(ai_client, md, user)
 
     # Preprocess order
-    order_create.content_processed = preprocess_order(
-        order_dict,
-        user,
-    )
+    order_create.content_processed = preprocess_order(order_dict, user)
+    order_create.content_structured = order_dict
     order_create.base_document_markdown = md
 
-    return user, client, order_create
+    return user, order_create
 
 
 def preprocess_document(document: bytes, document_name: str, user: User) -> bytes:
@@ -336,11 +262,7 @@ def preprocess_document(document: bytes, document_name: str, user: User) -> byte
     return _preprocess_document(document, document_name, user)
 
 
-def preprocess_order(
-    order_dict: dict,
-    user: User,
-) -> str:
-
+def preprocess_order(order_dict: dict, user: User) -> str:
     from app.services._orders._preprocessors_orders import _preprocess_order
 
     return parse_order_dict_2_csv(_preprocess_order(order_dict, user))
@@ -352,7 +274,6 @@ class OrderService:
         session: Session,
     ) -> None:
         self.repository = CRUDRepository[Order](Order, session)
-        self.client_service = ClientService(session)
         self.user_service = UserService(session)
         self.session = session
 
@@ -373,19 +294,17 @@ class OrderService:
             raise ValueError("Base document name cannot be None")
 
         # Get from external service
-        clients = self.client_service.get_all(skip=0, limit=100, owner_id=owner_id)
         user = self.user_service.get_by_id(owner_id)
 
         # Process parsing
-        user, client, order_create = await process(
+        user, order_create = await process(
             order_create=order_create,
             ai_client=self.ai_client,
-            clients=clients,
             user=user,
         )
 
         # Adapt the ids
-        update = {"owner_id": client.id, "email_id": email_id}
+        update = {"owner_id": user.id, "email_id": email_id}
         order = Order.model_validate(order_create, update=update)
 
         # Create the order
@@ -427,18 +346,10 @@ class OrderService:
         )
 
     def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Order]:
-        clients = self.client_service.get_all(
-            skip=0,
-            limit=100,
-            owner_id=owner_id,
-        )
-        if not clients:
-            return []
-        client_ids = [client.id for client in clients]
         return self.repository.get_all_by_kwargs(
             skip=skip,
             limit=limit,
-            **{"owner_id": client_ids},
+            **{"owner_id": owner_id},
         )
 
     def get_by_id(self, id: uuid.UUID) -> Order:
@@ -448,15 +359,7 @@ class OrderService:
         return order
 
     def get_count(self, owner_id: uuid.UUID) -> int:
-        clients = self.client_service.get_all(
-            skip=0,
-            limit=100,
-            owner_id=owner_id,
-        )
-        if not clients:
-            return 0
-        client_ids = [client.id for client in clients]
-        return self.repository.count_by_kwargs(**{"owner_id": client_ids})
+        return self.repository.count_by_kwargs(**{"owner_id": owner_id})
 
     def delete(self, id: uuid.UUID) -> None:
         self.repository.delete(id)

@@ -1,19 +1,8 @@
 """Contains all the data models used in inputs/outputs"""
 
-from .body_clients_get_client_proposal import BodyClientsGetClientProposal
 from .body_emails_create_outlook_token_step_2 import BodyEmailsCreateOutlookTokenStep2
 from .body_login_login_access_token import BodyLoginLoginAccessToken
 from .body_orders_create_order import BodyOrdersCreateOrder
-from .client_create import ClientCreate
-from .client_create_structure import ClientCreateStructure
-from .client_create_structure_descriptions import ClientCreateStructureDescriptions
-from .client_public import ClientPublic
-from .client_public_structure import ClientPublicStructure
-from .client_public_structure_descriptions import ClientPublicStructureDescriptions
-from .client_update import ClientUpdate
-from .client_update_structure import ClientUpdateStructure
-from .client_update_structure_descriptions import ClientUpdateStructureDescriptions
-from .clients_public import ClientsPublic
 from .email_create import EmailCreate
 from .email_public import EmailPublic
 from .email_update import EmailUpdate
@@ -24,8 +13,10 @@ from .emails_public import EmailsPublic
 from .http_validation_error import HTTPValidationError
 from .message import Message
 from .order_public import OrderPublic
+from .order_public_content_structured_type_0 import OrderPublicContentStructuredType0
 from .order_state import OrderState
 from .order_update import OrderUpdate
+from .order_update_content_structured_type_0 import OrderUpdateContentStructuredType0
 from .orders_public import OrdersPublic
 from .outlook_token_step_2 import OutlookTokenStep2
 from .token import Token
@@ -38,20 +29,9 @@ from .users_public import UsersPublic
 from .validation_error import ValidationError
 
 __all__ = (
-    "BodyClientsGetClientProposal",
     "BodyEmailsCreateOutlookTokenStep2",
     "BodyLoginLoginAccessToken",
     "BodyOrdersCreateOrder",
-    "ClientCreate",
-    "ClientCreateStructure",
-    "ClientCreateStructureDescriptions",
-    "ClientPublic",
-    "ClientPublicStructure",
-    "ClientPublicStructureDescriptions",
-    "ClientsPublic",
-    "ClientUpdate",
-    "ClientUpdateStructure",
-    "ClientUpdateStructureDescriptions",
     "EmailCreate",
     "EmailPublic",
     "EmailsCreateOutlookTokenStep2ResponseEmailsCreateOutlookTokenStep2",
@@ -60,9 +40,11 @@ __all__ = (
     "HTTPValidationError",
     "Message",
     "OrderPublic",
+    "OrderPublicContentStructuredType0",
     "OrdersPublic",
     "OrderState",
     "OrderUpdate",
+    "OrderUpdateContentStructuredType0",
     "OutlookTokenStep2",
     "Token",
     "UpdatePassword",

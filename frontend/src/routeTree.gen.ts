@@ -16,8 +16,8 @@ import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutOrdersImport } from './routes/_layout/orders'
+import { Route as LayoutOffersImport } from './routes/_layout/offers'
 import { Route as LayoutEmailsImport } from './routes/_layout/emails'
-import { Route as LayoutClientsImport } from './routes/_layout/clients'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
 
 // Create/Update Routes
@@ -47,13 +47,13 @@ const LayoutOrdersRoute = LayoutOrdersImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutEmailsRoute = LayoutEmailsImport.update({
-  path: '/emails',
+const LayoutOffersRoute = LayoutOffersImport.update({
+  path: '/offers',
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutClientsRoute = LayoutClientsImport.update({
-  path: '/clients',
+const LayoutEmailsRoute = LayoutEmailsImport.update({
+  path: '/emails',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -78,12 +78,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminImport
       parentRoute: typeof LayoutImport
     }
-    '/_layout/clients': {
-      preLoaderRoute: typeof LayoutClientsImport
-      parentRoute: typeof LayoutImport
-    }
     '/_layout/emails': {
       preLoaderRoute: typeof LayoutEmailsImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/offers': {
+      preLoaderRoute: typeof LayoutOffersImport
       parentRoute: typeof LayoutImport
     }
     '/_layout/orders': {
@@ -106,8 +106,8 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutAdminRoute,
-    LayoutClientsRoute,
     LayoutEmailsRoute,
+    LayoutOffersRoute,
     LayoutOrdersRoute,
     LayoutSettingsRoute,
     LayoutIndexRoute,

@@ -25,13 +25,7 @@ def _filter_orders(msg_complete: Message, user: User, email: Email) -> list[dict
 
         ##########################################################
         if email.email == "asier.tena.zu@outlook.com":
-            if not msg_complete.has_attachments:
-                orders.append(
-                    {
-                        "base_document_name": "email_body.txt",
-                        "base_document": msg_complete.body,
-                    }
-                )
+            pass
 
     ##############################################################
     if orders == []:

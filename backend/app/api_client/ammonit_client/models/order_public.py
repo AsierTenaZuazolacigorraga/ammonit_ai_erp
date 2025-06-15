@@ -1,6 +1,6 @@
 import datetime
 from collections.abc import Mapping
-from typing import Any, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 from uuid import UUID
 
 from attrs import define as _attrs_define
@@ -9,6 +9,10 @@ from dateutil.parser import isoparse
 
 from ..models.order_state import OrderState
 from ..types import UNSET, Unset
+
+if TYPE_CHECKING:
+    from ..models.order_public_content_structured_type_0 import OrderPublicContentStructuredType0
+
 
 T = TypeVar("T", bound="OrderPublic")
 
@@ -23,6 +27,7 @@ class OrderPublic:
         base_document_name (Union[None, Unset, str]):
         base_document_markdown (Union[None, Unset, str]):
         content_processed (Union[None, Unset, str]):
+        content_structured (Union['OrderPublicContentStructuredType0', None, Unset]):
         state (Union[Unset, OrderState]):
         approved_at (Union[None, Unset, datetime.datetime]):
         created_in_erp_at (Union[None, Unset, datetime.datetime]):
@@ -36,6 +41,7 @@ class OrderPublic:
     base_document_name: Union[None, Unset, str] = UNSET
     base_document_markdown: Union[None, Unset, str] = UNSET
     content_processed: Union[None, Unset, str] = UNSET
+    content_structured: Union["OrderPublicContentStructuredType0", None, Unset] = UNSET
     state: Union[Unset, OrderState] = UNSET
     approved_at: Union[None, Unset, datetime.datetime] = UNSET
     created_in_erp_at: Union[None, Unset, datetime.datetime] = UNSET
@@ -44,6 +50,8 @@ class OrderPublic:
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.order_public_content_structured_type_0 import OrderPublicContentStructuredType0
+
         id = str(self.id)
 
         owner_id = str(self.owner_id)
@@ -71,6 +79,14 @@ class OrderPublic:
             content_processed = UNSET
         else:
             content_processed = self.content_processed
+
+        content_structured: Union[None, Unset, dict[str, Any]]
+        if isinstance(self.content_structured, Unset):
+            content_structured = UNSET
+        elif isinstance(self.content_structured, OrderPublicContentStructuredType0):
+            content_structured = self.content_structured.to_dict()
+        else:
+            content_structured = self.content_structured
 
         state: Union[Unset, str] = UNSET
         if not isinstance(self.state, Unset):
@@ -118,6 +134,8 @@ class OrderPublic:
             field_dict["base_document_markdown"] = base_document_markdown
         if content_processed is not UNSET:
             field_dict["content_processed"] = content_processed
+        if content_structured is not UNSET:
+            field_dict["content_structured"] = content_structured
         if state is not UNSET:
             field_dict["state"] = state
         if approved_at is not UNSET:
@@ -133,6 +151,8 @@ class OrderPublic:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.order_public_content_structured_type_0 import OrderPublicContentStructuredType0
+
         d = dict(src_dict)
         id = UUID(d.pop("id"))
 
@@ -173,6 +193,23 @@ class OrderPublic:
             return cast(Union[None, Unset, str], data)
 
         content_processed = _parse_content_processed(d.pop("content_processed", UNSET))
+
+        def _parse_content_structured(data: object) -> Union["OrderPublicContentStructuredType0", None, Unset]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                content_structured_type_0 = OrderPublicContentStructuredType0.from_dict(data)
+
+                return content_structured_type_0
+            except:  # noqa: E722
+                pass
+            return cast(Union["OrderPublicContentStructuredType0", None, Unset], data)
+
+        content_structured = _parse_content_structured(d.pop("content_structured", UNSET))
 
         _state = d.pop("state", UNSET)
         state: Union[Unset, OrderState]
@@ -238,6 +275,7 @@ class OrderPublic:
             base_document_name=base_document_name,
             base_document_markdown=base_document_markdown,
             content_processed=content_processed,
+            content_structured=content_structured,
             state=state,
             approved_at=approved_at,
             created_in_erp_at=created_in_erp_at,

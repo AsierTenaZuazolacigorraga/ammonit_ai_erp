@@ -8,7 +8,6 @@ from app.core.db import engine
 from app.easy.easy_params import *
 from app.logger import get_logger
 from app.models import OrderCreate
-from app.services.clients import ClientService
 from app.services.orders import OrderService, parse_document_2_md, preprocess_document
 from app.services.users import UserService
 from dotenv import load_dotenv

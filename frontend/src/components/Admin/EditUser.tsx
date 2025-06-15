@@ -9,6 +9,7 @@ import {
   Flex,
   Input,
   Text,
+  Textarea,
   VStack,
 } from "@chakra-ui/react"
 import { useState } from "react"
@@ -57,9 +58,9 @@ const EditUser = ({ user, disabled = false }: EditUserProps) => {
   const mutation = useMutation({
     mutationFn: (data: UserUpdateForm) =>
       UsersService.updateUser({ id: user.id, requestBody: data }),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       showSuccessToast("Usuario actualizado correctamente.")
-      reset()
+      reset(updatedUser)
       setIsOpen(false)
     },
     onError: (err: ApiError) => {
@@ -167,8 +168,33 @@ const EditUser = ({ user, disabled = false }: EditUserProps) => {
                   type="password"
                 />
               </Field>
+              <Field
+                invalid={!!errors.orders_additional_rules}
+                errorText={errors.orders_additional_rules?.message}
+                label="Reglas adicionales para pedidos"
+              >
+                <Textarea
+                  id="orders_additional_rules"
+                  {...register("orders_additional_rules")}
+                  placeholder="Reglas adicionales para pedidos"
+                  rows={6}
+                  minH="150px"
+                />
+              </Field>
+              <Field
+                invalid={!!errors.orders_particular_rules}
+                errorText={errors.orders_particular_rules?.message}
+                label="Reglas particulares para pedidos"
+              >
+                <Textarea
+                  id="orders_particular_rules"
+                  {...register("orders_particular_rules")}
+                  placeholder="Reglas particulares para pedidos"
+                  rows={6}
+                  minH="150px"
+                />
+              </Field>
             </VStack>
-
             <Flex mt={4} direction="column" gap={4}>
               <Controller
                 control={control}

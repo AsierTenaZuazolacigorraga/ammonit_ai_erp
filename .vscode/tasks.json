@@ -8,6 +8,18 @@
             "problemMatcher": []
         },
         {
+            "label": "build-frontend",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/frontend/ && npm run build",
+            "problemMatcher": []
+        },
+        {
+            "label": "dev-frontend",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/frontend/ && npm run dev",
+            "problemMatcher": []
+        },
+        {
             "label": "build-and-dev-frontend",
             "type": "shell",
             "command": "cd ${workspaceFolder}/frontend/ && npm run build && npm run dev",

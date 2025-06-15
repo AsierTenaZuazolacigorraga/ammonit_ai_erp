@@ -53,7 +53,7 @@ function Admin() {
       accessor: (user) => (
         <HStack gap={2}>
           <DeleteUser id={user.id} disabled={currentUser?.id === user.id} />
-          <EditUser user={user} disabled={currentUser?.id === user.id} />
+          <EditUser user={user} />
         </HStack>
       )
     },

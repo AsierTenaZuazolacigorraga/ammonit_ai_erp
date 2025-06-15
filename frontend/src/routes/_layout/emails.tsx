@@ -80,12 +80,20 @@ function EmailsConfig() {
             )
         },
         {
-            header: "Filtro",
-            accessor: (email) => email.filter
+            header: "Habilitado para Pedidos",
+            accessor: (email) => (email.is_orders ? "Sí" : "No"),
         },
         {
-            header: "Habilitado",
-            accessor: (email) => (email.is_active ? "Sí" : "No"),
+            header: "Filtro para Pedidos",
+            accessor: (email) => email.orders_filter || "No hay filtros definidos, se procesan todos los email que se reciben"
+        },
+        {
+            header: "Habilitado para Ofertas",
+            accessor: (email) => (email.is_offers ? "Sí" : "No"),
+        },
+        {
+            header: "Filtro para Ofertas",
+            accessor: (email) => email.offers_filter || "No hay filtros definidos, se procesan todos los email que se reciben"
         },
     ]
 

@@ -19,8 +19,10 @@ class EmailPublic:
         email (str):
         id (UUID):
         owner_id (UUID):
-        is_active (Union[Unset, bool]):  Default: True.
-        filter_ (Union[None, Unset, str]):
+        is_orders (Union[Unset, bool]):  Default: False.
+        orders_filter (Union[None, Unset, str]):
+        is_offers (Union[Unset, bool]):  Default: False.
+        offers_filter (Union[None, Unset, str]):
         created_at (Union[Unset, datetime.datetime]):
         is_connected (Union[Unset, bool]):  Default: False.
     """
@@ -28,8 +30,10 @@ class EmailPublic:
     email: str
     id: UUID
     owner_id: UUID
-    is_active: Union[Unset, bool] = True
-    filter_: Union[None, Unset, str] = UNSET
+    is_orders: Union[Unset, bool] = False
+    orders_filter: Union[None, Unset, str] = UNSET
+    is_offers: Union[Unset, bool] = False
+    offers_filter: Union[None, Unset, str] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
     is_connected: Union[Unset, bool] = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -41,13 +45,21 @@ class EmailPublic:
 
         owner_id = str(self.owner_id)
 
-        is_active = self.is_active
+        is_orders = self.is_orders
 
-        filter_: Union[None, Unset, str]
-        if isinstance(self.filter_, Unset):
-            filter_ = UNSET
+        orders_filter: Union[None, Unset, str]
+        if isinstance(self.orders_filter, Unset):
+            orders_filter = UNSET
         else:
-            filter_ = self.filter_
+            orders_filter = self.orders_filter
+
+        is_offers = self.is_offers
+
+        offers_filter: Union[None, Unset, str]
+        if isinstance(self.offers_filter, Unset):
+            offers_filter = UNSET
+        else:
+            offers_filter = self.offers_filter
 
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
@@ -64,10 +76,14 @@ class EmailPublic:
                 "owner_id": owner_id,
             }
         )
-        if is_active is not UNSET:
-            field_dict["is_active"] = is_active
-        if filter_ is not UNSET:
-            field_dict["filter"] = filter_
+        if is_orders is not UNSET:
+            field_dict["is_orders"] = is_orders
+        if orders_filter is not UNSET:
+            field_dict["orders_filter"] = orders_filter
+        if is_offers is not UNSET:
+            field_dict["is_offers"] = is_offers
+        if offers_filter is not UNSET:
+            field_dict["offers_filter"] = offers_filter
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
         if is_connected is not UNSET:
@@ -84,16 +100,27 @@ class EmailPublic:
 
         owner_id = UUID(d.pop("owner_id"))
 
-        is_active = d.pop("is_active", UNSET)
+        is_orders = d.pop("is_orders", UNSET)
 
-        def _parse_filter_(data: object) -> Union[None, Unset, str]:
+        def _parse_orders_filter(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(Union[None, Unset, str], data)
 
-        filter_ = _parse_filter_(d.pop("filter", UNSET))
+        orders_filter = _parse_orders_filter(d.pop("orders_filter", UNSET))
+
+        is_offers = d.pop("is_offers", UNSET)
+
+        def _parse_offers_filter(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        offers_filter = _parse_offers_filter(d.pop("offers_filter", UNSET))
 
         _created_at = d.pop("created_at", UNSET)
         created_at: Union[Unset, datetime.datetime]
@@ -108,8 +135,10 @@ class EmailPublic:
             email=email,
             id=id,
             owner_id=owner_id,
-            is_active=is_active,
-            filter_=filter_,
+            is_orders=is_orders,
+            orders_filter=orders_filter,
+            is_offers=is_offers,
+            offers_filter=offers_filter,
             created_at=created_at,
             is_connected=is_connected,
         )

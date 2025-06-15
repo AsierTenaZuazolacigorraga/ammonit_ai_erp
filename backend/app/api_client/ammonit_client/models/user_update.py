@@ -21,6 +21,8 @@ class UserUpdate:
         full_name (Union[None, Unset, str]):
         is_auto_approved (Union[Unset, bool]):  Default: False.
         created_at (Union[Unset, datetime.datetime]):
+        orders_additional_rules (Union[None, Unset, str]):
+        orders_particular_rules (Union[None, Unset, str]):
         password (Union[None, Unset, str]):
     """
 
@@ -30,6 +32,8 @@ class UserUpdate:
     full_name: Union[None, Unset, str] = UNSET
     is_auto_approved: Union[Unset, bool] = False
     created_at: Union[Unset, datetime.datetime] = UNSET
+    orders_additional_rules: Union[None, Unset, str] = UNSET
+    orders_particular_rules: Union[None, Unset, str] = UNSET
     password: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -56,6 +60,18 @@ class UserUpdate:
         if not isinstance(self.created_at, Unset):
             created_at = self.created_at.isoformat()
 
+        orders_additional_rules: Union[None, Unset, str]
+        if isinstance(self.orders_additional_rules, Unset):
+            orders_additional_rules = UNSET
+        else:
+            orders_additional_rules = self.orders_additional_rules
+
+        orders_particular_rules: Union[None, Unset, str]
+        if isinstance(self.orders_particular_rules, Unset):
+            orders_particular_rules = UNSET
+        else:
+            orders_particular_rules = self.orders_particular_rules
+
         password: Union[None, Unset, str]
         if isinstance(self.password, Unset):
             password = UNSET
@@ -77,6 +93,10 @@ class UserUpdate:
             field_dict["is_auto_approved"] = is_auto_approved
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
+        if orders_additional_rules is not UNSET:
+            field_dict["orders_additional_rules"] = orders_additional_rules
+        if orders_particular_rules is not UNSET:
+            field_dict["orders_particular_rules"] = orders_particular_rules
         if password is not UNSET:
             field_dict["password"] = password
 
@@ -117,6 +137,24 @@ class UserUpdate:
         else:
             created_at = isoparse(_created_at)
 
+        def _parse_orders_additional_rules(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        orders_additional_rules = _parse_orders_additional_rules(d.pop("orders_additional_rules", UNSET))
+
+        def _parse_orders_particular_rules(data: object) -> Union[None, Unset, str]:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(Union[None, Unset, str], data)
+
+        orders_particular_rules = _parse_orders_particular_rules(d.pop("orders_particular_rules", UNSET))
+
         def _parse_password(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
@@ -133,6 +171,8 @@ class UserUpdate:
             full_name=full_name,
             is_auto_approved=is_auto_approved,
             created_at=created_at,
+            orders_additional_rules=orders_additional_rules,
+            orders_particular_rules=orders_particular_rules,
             password=password,
         )
 

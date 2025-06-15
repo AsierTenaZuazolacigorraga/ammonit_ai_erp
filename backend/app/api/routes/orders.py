@@ -29,13 +29,18 @@ def read_orders(
     """
     orders = order_service.get_all(skip=skip, limit=limit, owner_id=current_user.id)
     count = order_service.get_count(owner_id=current_user.id)
+
+    orders_public = []
+    for order in orders:
+        update = {}
+        update["client_name"] = "Desconocido"
+        if order.content_structured is not None:
+            if "client" in order.content_structured.keys():
+                update["client_name"] = order.content_structured["client"]
+        orders_public.append(OrderPublic.model_validate(order, update=update))
+
     return OrdersPublic(
-        data=[
-            OrderPublic.model_validate(
-                order, update={"client_name": order.owner.name if order.owner else None}
-            )
-            for order in orders
-        ],
+        data=orders_public,
         count=count,
     )
 
@@ -52,7 +57,7 @@ def read_order(
     order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
-    if not current_user.is_superuser and (order.owner.owner_id != current_user.id):
+    if not current_user.is_superuser and (order.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
     # Convert Order object to OrderPublic object
     return OrderPublic.model_validate(order)
@@ -91,7 +96,7 @@ def delete_order(
     order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
-    if not current_user.is_superuser and (order.owner.owner_id != current_user.id):
+    if not current_user.is_superuser and (order.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
     order_service.delete(id)
     return Message(message="Documento eliminado correctamente")
@@ -115,7 +120,7 @@ def approve_order(
     order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
-    if not current_user.is_superuser and (order.owner.owner_id != current_user.id):
+    if not current_user.is_superuser and (order.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
     if order.state != OrderState.PENDING:
         raise HTTPException(
@@ -143,7 +148,7 @@ def update_order_erp_state(
     order = order_service.get_by_id(id)
     if not order:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
-    if not current_user.is_superuser and (order.owner.owner_id != current_user.id):
+    if not current_user.is_superuser and (order.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Permisos insuficientes")
     if order.state != OrderState.APPROVED:
         raise HTTPException(

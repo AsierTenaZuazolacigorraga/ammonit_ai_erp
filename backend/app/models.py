@@ -29,6 +29,8 @@ class UserBase(SQLModel):
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
+    orders_additional_rules: str | None = Field(default=None)
+    orders_particular_rules: str | None = Field(default=None)
 
 
 class UserCreate(UserBase):
@@ -54,7 +56,7 @@ class UpdatePassword(SQLModel):
 class User(Entity, UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-    clients: list["Client"] = Relationship(back_populates="owner", cascade_delete=True)
+    orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
     emails: list["Email"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
@@ -64,77 +66,6 @@ class UserPublic(UserBase):
 
 class UsersPublic(SQLModel):
     data: list[UserPublic]
-    count: int
-
-
-##########################################################################################
-# Clients
-##########################################################################################
-
-
-class ClientBase(SQLModel):
-    name: str = Field(nullable=False)
-    base_document: bytes | None = Field(default=None, nullable=False)
-    base_document_name: str | None = Field(default=None, max_length=255)
-    base_document_markdown: str | None = Field(default=None)
-    content_processed: str | None = Field(default=None)
-    clasifier: str = Field(nullable=False)
-    structure: dict = Field(sa_column=Column(JSON, nullable=False))
-    structure_descriptions: dict = Field(sa_column=Column(JSON, nullable=False))
-    additional_info: str | None = Field(default=None)
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
-    )
-
-
-class ClientCreate(ClientBase):
-    pass
-
-
-class ClientUpdate(ClientBase):
-    pass
-
-
-class Client(Entity, ClientBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="clients")
-    orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
-
-
-class ClientPublic(ClientBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-    @classmethod
-    def model_validate(
-        cls,
-        obj: Any,
-        *,
-        strict: Union[bool, None] = None,
-        from_attributes: Union[bool, None] = None,
-        context: Union[Dict[str, Any], None] = None,
-        update: Union[Dict[str, Any], None] = None,
-    ):
-        obj_dict = obj.model_dump()
-        if obj_dict.get("base_document") is not None:
-            obj_dict["base_document"] = base64.b64encode(
-                obj_dict["base_document"]
-            ).decode("utf-8")
-        return sqlmodel_validate(
-            cls=cls,
-            obj=cls(**obj_dict),
-            strict=strict,
-            from_attributes=from_attributes,
-            context=context,
-            update=update,
-        )
-
-
-class ClientsPublic(SQLModel):
-    data: list[ClientPublic]
     count: int
 
 
@@ -155,6 +86,7 @@ class OrderBase(SQLModel):
     base_document_name: str | None = Field(default=None, max_length=255)
     base_document_markdown: str | None = Field(default=None)
     content_processed: str | None = Field(default=None)
+    content_structured: dict | None = Field(default=None, sa_type=JSON)
     state: OrderState = Field(
         sa_column=Column(
             PGEnum(OrderState, name="order_state_enum", create_type=True),
@@ -180,12 +112,12 @@ class OrderUpdate(OrderBase):
 class Order(Entity, OrderBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(
-        foreign_key="client.id", nullable=True, ondelete="SET NULL"
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
+    owner: User | None = Relationship(back_populates="orders")
     email_id: uuid.UUID | None = Field(
         foreign_key="email.id", nullable=True, ondelete="SET NULL"
     )
-    owner: Client | None = Relationship(back_populates="orders")
 
 
 class OrderPublic(OrderBase):
@@ -233,8 +165,10 @@ class OrdersPublic(SQLModel):
 
 class EmailBase(SQLModel):
     email: str = Field(nullable=False)
-    is_active: bool = True
-    filter: str | None = Field(default=None)
+    is_orders: bool = False
+    orders_filter: str | None = Field(default=None)
+    is_offers: bool = False
+    offers_filter: str | None = Field(default=None)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
