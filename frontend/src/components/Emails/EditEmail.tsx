@@ -50,9 +50,7 @@ const EditEmail = ({ email }: EditEmailProps) => {
         criteriaMode: "all",
         defaultValues: {
             is_orders: email.is_orders ?? false,
-            is_orders_active: email.is_orders_active ?? true,
             is_offers: email.is_offers ?? false,
-            is_offers_active: email.is_offers_active ?? true,
             orders_filter: email.orders_filter ?? "",
             offers_filter: email.offers_filter ?? "",
         },
@@ -65,9 +63,7 @@ const EditEmail = ({ email }: EditEmailProps) => {
                 requestBody: {
                     email: email.email,
                     is_orders: data.is_orders,
-                    is_orders_active: data.is_orders_active,
                     is_offers: data.is_offers,
-                    is_offers_active: data.is_offers_active,
                     orders_filter: data.orders_filter,
                     offers_filter: data.offers_filter,
                 }
