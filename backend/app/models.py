@@ -29,8 +29,8 @@ class UserBase(SQLModel):
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
-    orders_additional_rules: str | None = Field(default=None)
-    orders_particular_rules: str | None = Field(default=None)
+    prompts_orders_additional_rules: str | None = Field(default=None)
+    prompts_orders_particular_rules: str | None = Field(default=None)
 
 
 class UserCreate(UserBase):
@@ -58,6 +58,7 @@ class User(Entity, UserBase, table=True):
     hashed_password: str
     orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
     emails: list["Email"] = Relationship(back_populates="owner", cascade_delete=True)
+    prompts: list["Prompt"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 class UserPublic(UserBase):
@@ -155,6 +156,49 @@ class OrderPublic(OrderBase):
 
 class OrdersPublic(SQLModel):
     data: list[OrderPublic]
+    count: int
+
+
+##########################################################################################
+# Prompt
+##########################################################################################
+
+
+class PromptBase(SQLModel):
+    query: str | None = Field(default=None, max_length=255)
+    service: str | None = Field(default=None, max_length=255)
+    model: str | None = Field(default=None, max_length=255)
+    prompt: str | None = Field(default=None)
+    structure: dict | None = Field(default=None, sa_type=JSON)
+    version: int = Field(default=1)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )  # In UTC
+
+
+class PromptCreate(PromptBase):
+    pass
+
+
+class PromptUpdate(PromptBase):
+    pass
+
+
+class Prompt(Entity, PromptBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=True, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="prompts")
+
+
+class PromptPublic(PromptBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+
+
+class PromptsPublic(SQLModel):
+    data: list[PromptPublic]
     count: int
 
 

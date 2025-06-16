@@ -15,7 +15,6 @@ import {
 import { useState } from "react"
 
 import { type UserPublic, type UserUpdate, UsersService } from "@/client"
-import type { ApiError } from "@/client/core/ApiError"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DialogBody,
@@ -26,7 +25,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { emailPattern } from "@/utils"
 import { FiEdit2 } from "react-icons/fi"
 
 interface EditUserProps {
@@ -41,7 +40,7 @@ interface UserUpdateForm extends UserUpdate {
 const EditUser = ({ user, disabled = false }: EditUserProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
-  const { showSuccessToast } = useCustomToast()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
   const {
     control,
     register,
@@ -63,8 +62,8 @@ const EditUser = ({ user, disabled = false }: EditUserProps) => {
       reset(updatedUser)
       setIsOpen(false)
     },
-    onError: (err: ApiError) => {
-      handleError(err)
+    onError: () => {
+      showErrorToast("Ha ocurrido un error al editar el usuario")
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
@@ -169,26 +168,26 @@ const EditUser = ({ user, disabled = false }: EditUserProps) => {
                 />
               </Field>
               <Field
-                invalid={!!errors.orders_additional_rules}
-                errorText={errors.orders_additional_rules?.message}
+                invalid={!!errors.prompts_orders_additional_rules}
+                errorText={errors.prompts_orders_additional_rules?.message}
                 label="Reglas adicionales para pedidos"
               >
                 <Textarea
-                  id="orders_additional_rules"
-                  {...register("orders_additional_rules")}
+                  id="prompts_orders_additional_rules"
+                  {...register("prompts_orders_additional_rules")}
                   placeholder="Reglas adicionales para pedidos"
                   rows={6}
                   minH="150px"
                 />
               </Field>
               <Field
-                invalid={!!errors.orders_particular_rules}
-                errorText={errors.orders_particular_rules?.message}
+                invalid={!!errors.prompts_orders_particular_rules}
+                errorText={errors.prompts_orders_particular_rules?.message}
                 label="Reglas particulares para pedidos"
               >
                 <Textarea
-                  id="orders_particular_rules"
-                  {...register("orders_particular_rules")}
+                  id="prompts_orders_particular_rules"
+                  {...register("prompts_orders_particular_rules")}
                   placeholder="Reglas particulares para pedidos"
                   rows={6}
                   minH="150px"

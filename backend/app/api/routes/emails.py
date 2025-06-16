@@ -148,7 +148,6 @@ def delete_email(
     response_model=EmailPublic,
 )
 def update_email(
-    *,
     email_service: EmailServiceDep,
     current_user: CurrentUserDep,
     id: uuid.UUID,

@@ -19,6 +19,13 @@ from .order_update import OrderUpdate
 from .order_update_content_structured_type_0 import OrderUpdateContentStructuredType0
 from .orders_public import OrdersPublic
 from .outlook_token_step_2 import OutlookTokenStep2
+from .prompt_create import PromptCreate
+from .prompt_create_structure_type_0 import PromptCreateStructureType0
+from .prompt_public import PromptPublic
+from .prompt_public_structure_type_0 import PromptPublicStructureType0
+from .prompt_update import PromptUpdate
+from .prompt_update_structure_type_0 import PromptUpdateStructureType0
+from .prompts_public import PromptsPublic
 from .token import Token
 from .update_password import UpdatePassword
 from .user_create import UserCreate
@@ -46,6 +53,13 @@ __all__ = (
     "OrderUpdate",
     "OrderUpdateContentStructuredType0",
     "OutlookTokenStep2",
+    "PromptCreate",
+    "PromptCreateStructureType0",
+    "PromptPublic",
+    "PromptPublicStructureType0",
+    "PromptsPublic",
+    "PromptUpdate",
+    "PromptUpdateStructureType0",
     "Token",
     "UpdatePassword",
     "UserCreate",

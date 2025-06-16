@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, EmailsDeleteEmailData, EmailsDeleteEmailResponse, EmailsUpdateEmailData, EmailsUpdateEmailResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, EmailsDeleteEmailData, EmailsDeleteEmailResponse, EmailsUpdateEmailData, EmailsUpdateEmailResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, PromptsReadPromptsData, PromptsReadPromptsResponse, PromptsCreatePromptData, PromptsCreatePromptResponse, PromptsReadPromptData, PromptsReadPromptResponse, PromptsUpdatePromptData, PromptsUpdatePromptResponse, PromptsDeletePromptData, PromptsDeletePromptResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class EmailsService {
     /**
@@ -287,6 +287,118 @@ export class OrdersService {
             },
             body: data.requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+}
+
+export class PromptsService {
+    /**
+     * Read Prompts
+     * Retrieve prompts.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns PromptsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readPrompts(data: PromptsReadPromptsData = {}): CancelablePromise<PromptsReadPromptsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/prompts/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Prompt
+     * Create a prompt.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns PromptPublic Successful Response
+     * @throws ApiError
+     */
+    public static createPrompt(data: PromptsCreatePromptData): CancelablePromise<PromptsCreatePromptResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/prompts/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Prompt
+     * Get prompt by id.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns PromptPublic Successful Response
+     * @throws ApiError
+     */
+    public static readPrompt(data: PromptsReadPromptData): CancelablePromise<PromptsReadPromptResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/prompts/{id}/',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Prompt
+     * Update a prompt.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns PromptPublic Successful Response
+     * @throws ApiError
+     */
+    public static updatePrompt(data: PromptsUpdatePromptData): CancelablePromise<PromptsUpdatePromptResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/prompts/{id}/',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Prompt
+     * Delete a prompt.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deletePrompt(data: PromptsDeletePromptData): CancelablePromise<PromptsDeletePromptResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/prompts/{id}/',
+            path: {
+                id: data.id
+            },
             errors: {
                 422: 'Validation Error'
             }
