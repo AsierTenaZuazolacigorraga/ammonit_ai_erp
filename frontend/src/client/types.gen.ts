@@ -103,49 +103,6 @@ export type OutlookTokenStep2 = {
     code: string;
 };
 
-export type PromptCreate = {
-    query?: (string | null);
-    service?: (string | null);
-    model?: (string | null);
-    prompt?: (string | null);
-    structure?: ({
-    [key: string]: unknown;
-} | null);
-    version?: number;
-    created_at?: string;
-};
-
-export type PromptPublic = {
-    query?: (string | null);
-    service?: (string | null);
-    model?: (string | null);
-    prompt?: (string | null);
-    structure?: ({
-    [key: string]: unknown;
-} | null);
-    version?: number;
-    created_at?: string;
-    id: string;
-    owner_id: string;
-};
-
-export type PromptsPublic = {
-    data: Array<PromptPublic>;
-    count: number;
-};
-
-export type PromptUpdate = {
-    query?: (string | null);
-    service?: (string | null);
-    model?: (string | null);
-    prompt?: (string | null);
-    structure?: ({
-    [key: string]: unknown;
-} | null);
-    version?: number;
-    created_at?: string;
-};
-
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -163,8 +120,8 @@ export type UserCreate = {
     full_name?: (string | null);
     is_auto_approved?: boolean;
     created_at?: string;
-    prompts_orders_additional_rules?: (string | null);
-    prompts_orders_particular_rules?: (string | null);
+    orders_additional_rules?: (string | null);
+    orders_particular_rules?: (string | null);
     password: string;
 };
 
@@ -175,8 +132,8 @@ export type UserPublic = {
     full_name?: (string | null);
     is_auto_approved?: boolean;
     created_at?: string;
-    prompts_orders_additional_rules?: (string | null);
-    prompts_orders_particular_rules?: (string | null);
+    orders_additional_rules?: (string | null);
+    orders_particular_rules?: (string | null);
     id: string;
 };
 
@@ -192,8 +149,8 @@ export type UserUpdate = {
     full_name?: (string | null);
     is_auto_approved?: boolean;
     created_at?: string;
-    prompts_orders_additional_rules?: (string | null);
-    prompts_orders_particular_rules?: (string | null);
+    orders_additional_rules?: (string | null);
+    orders_particular_rules?: (string | null);
     password?: (string | null);
 };
 
@@ -293,38 +250,6 @@ export type OrdersUpdateOrderErpStateData = {
 };
 
 export type OrdersUpdateOrderErpStateResponse = (OrderPublic);
-
-export type PromptsReadPromptsData = {
-    limit?: number;
-    skip?: number;
-};
-
-export type PromptsReadPromptsResponse = (PromptsPublic);
-
-export type PromptsCreatePromptData = {
-    requestBody: PromptCreate;
-};
-
-export type PromptsCreatePromptResponse = (PromptPublic);
-
-export type PromptsReadPromptData = {
-    id: string;
-};
-
-export type PromptsReadPromptResponse = (PromptPublic);
-
-export type PromptsUpdatePromptData = {
-    id: string;
-    requestBody: PromptUpdate;
-};
-
-export type PromptsUpdatePromptResponse = (PromptPublic);
-
-export type PromptsDeletePromptData = {
-    id: string;
-};
-
-export type PromptsDeletePromptResponse = (Message);
 
 export type UsersReadUserMeResponse = (UserPublic);
 

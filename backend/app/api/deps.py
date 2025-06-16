@@ -8,7 +8,6 @@ from app.core.db import engine
 from app.models import TokenPayload, User
 from app.services.emails import EmailService
 from app.services.orders import OrderService
-from app.services.prompts import PromptService
 from app.services.users import UserService
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
@@ -101,19 +100,6 @@ def order_service(
 
 
 OrderServiceDep = Annotated[OrderService, Depends(order_service)]
-
-##########################################################################################
-# Prompts
-##########################################################################################
-
-
-def prompt_service(
-    session: SessionDep,
-) -> PromptService:
-    return PromptService(session=session)
-
-
-PromptServiceDep = Annotated[PromptService, Depends(prompt_service)]
 
 ##########################################################################################
 # Emails

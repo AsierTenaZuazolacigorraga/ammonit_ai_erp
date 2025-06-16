@@ -22,8 +22,8 @@ class UserCreate:
         full_name (Union[None, Unset, str]):
         is_auto_approved (Union[Unset, bool]):  Default: False.
         created_at (Union[Unset, datetime.datetime]):
-        prompts_orders_additional_rules (Union[None, Unset, str]):
-        prompts_orders_particular_rules (Union[None, Unset, str]):
+        orders_additional_rules (Union[None, Unset, str]):
+        orders_particular_rules (Union[None, Unset, str]):
     """
 
     email: str
@@ -33,8 +33,8 @@ class UserCreate:
     full_name: Union[None, Unset, str] = UNSET
     is_auto_approved: Union[Unset, bool] = False
     created_at: Union[Unset, datetime.datetime] = UNSET
-    prompts_orders_additional_rules: Union[None, Unset, str] = UNSET
-    prompts_orders_particular_rules: Union[None, Unset, str] = UNSET
+    orders_additional_rules: Union[None, Unset, str] = UNSET
+    orders_particular_rules: Union[None, Unset, str] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -58,17 +58,17 @@ class UserCreate:
         if not isinstance(self.created_at, Unset):
             created_at = self.created_at.isoformat()
 
-        prompts_orders_additional_rules: Union[None, Unset, str]
-        if isinstance(self.prompts_orders_additional_rules, Unset):
-            prompts_orders_additional_rules = UNSET
+        orders_additional_rules: Union[None, Unset, str]
+        if isinstance(self.orders_additional_rules, Unset):
+            orders_additional_rules = UNSET
         else:
-            prompts_orders_additional_rules = self.prompts_orders_additional_rules
+            orders_additional_rules = self.orders_additional_rules
 
-        prompts_orders_particular_rules: Union[None, Unset, str]
-        if isinstance(self.prompts_orders_particular_rules, Unset):
-            prompts_orders_particular_rules = UNSET
+        orders_particular_rules: Union[None, Unset, str]
+        if isinstance(self.orders_particular_rules, Unset):
+            orders_particular_rules = UNSET
         else:
-            prompts_orders_particular_rules = self.prompts_orders_particular_rules
+            orders_particular_rules = self.orders_particular_rules
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -88,10 +88,10 @@ class UserCreate:
             field_dict["is_auto_approved"] = is_auto_approved
         if created_at is not UNSET:
             field_dict["created_at"] = created_at
-        if prompts_orders_additional_rules is not UNSET:
-            field_dict["prompts_orders_additional_rules"] = prompts_orders_additional_rules
-        if prompts_orders_particular_rules is not UNSET:
-            field_dict["prompts_orders_particular_rules"] = prompts_orders_particular_rules
+        if orders_additional_rules is not UNSET:
+            field_dict["orders_additional_rules"] = orders_additional_rules
+        if orders_particular_rules is not UNSET:
+            field_dict["orders_particular_rules"] = orders_particular_rules
 
         return field_dict
 
@@ -124,27 +124,23 @@ class UserCreate:
         else:
             created_at = isoparse(_created_at)
 
-        def _parse_prompts_orders_additional_rules(data: object) -> Union[None, Unset, str]:
+        def _parse_orders_additional_rules(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(Union[None, Unset, str], data)
 
-        prompts_orders_additional_rules = _parse_prompts_orders_additional_rules(
-            d.pop("prompts_orders_additional_rules", UNSET)
-        )
+        orders_additional_rules = _parse_orders_additional_rules(d.pop("orders_additional_rules", UNSET))
 
-        def _parse_prompts_orders_particular_rules(data: object) -> Union[None, Unset, str]:
+        def _parse_orders_particular_rules(data: object) -> Union[None, Unset, str]:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(Union[None, Unset, str], data)
 
-        prompts_orders_particular_rules = _parse_prompts_orders_particular_rules(
-            d.pop("prompts_orders_particular_rules", UNSET)
-        )
+        orders_particular_rules = _parse_orders_particular_rules(d.pop("orders_particular_rules", UNSET))
 
         user_create = cls(
             email=email,
@@ -154,8 +150,8 @@ class UserCreate:
             full_name=full_name,
             is_auto_approved=is_auto_approved,
             created_at=created_at,
-            prompts_orders_additional_rules=prompts_orders_additional_rules,
-            prompts_orders_particular_rules=prompts_orders_particular_rules,
+            orders_additional_rules=orders_additional_rules,
+            orders_particular_rules=orders_particular_rules,
         )
 
         user_create.additional_properties = d
