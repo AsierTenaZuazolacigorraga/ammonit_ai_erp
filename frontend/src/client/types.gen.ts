@@ -61,6 +61,17 @@ export type Message = {
     message: string;
 };
 
+export type OfferPublic = {
+    created_at?: string;
+    id: string;
+    owner_id: string;
+};
+
+export type OffersPublic = {
+    data: Array<OfferPublic>;
+    count: number;
+};
+
 export type OrderPublic = {
     base_document?: (string | null);
     base_document_name?: (string | null);
@@ -211,6 +222,27 @@ export type LoginLoginAccessTokenData = {
 };
 
 export type LoginLoginAccessTokenResponse = (Token);
+
+export type OffersReadOffersData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type OffersReadOffersResponse = (OffersPublic);
+
+export type OffersCreateOfferResponse = (OfferPublic);
+
+export type OffersReadOfferData = {
+    id: string;
+};
+
+export type OffersReadOfferResponse = (OfferPublic);
+
+export type OffersDeleteOfferData = {
+    id: string;
+};
+
+export type OffersDeleteOfferResponse = (Message);
 
 export type OrdersReadOrdersData = {
     limit?: number;

@@ -9,7 +9,7 @@ import {
   type UserPublic,
   UsersService,
 } from "@/client"
-import { handleError } from "@/utils"
+import { handleError } from "@/utils/utils"
 
 const isLoggedIn = () => {
   return localStorage.getItem("access_token") !== null

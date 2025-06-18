@@ -17,7 +17,7 @@ import type { ApiError } from "@/client/core/ApiError";
 import DocumentViewer from "@/components/Common/DocumentViewer";
 import TableViewer from '@/components/Common/TableViewer';
 import useCustomToast from "@/hooks/useCustomToast";
-import { handleError } from "@/utils";
+import { handleError } from "@/utils/utils";
 import {
     DialogBody,
     DialogContent,

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
+import { handleError } from "@/utils/utils"
 import {
     Button,
     Checkbox,

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Type, TypeVar, Union
 
-from pydantic import EmailStr, model_validator
+from pydantic import BaseModel, EmailStr, model_validator
 from sqlalchemy import JSON, Column
 from sqlalchemy.dialects.postgresql import ENUM as PGEnum
 from sqlmodel import Field, Relationship, SQLModel
@@ -57,6 +57,7 @@ class User(Entity, UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     orders: list["Order"] = Relationship(back_populates="owner", cascade_delete=True)
+    offers: list["Offer"] = Relationship(back_populates="owner", cascade_delete=True)
     emails: list["Email"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
@@ -118,6 +119,9 @@ class Order(Entity, OrderBase, table=True):
     email_id: uuid.UUID | None = Field(
         foreign_key="email.id", nullable=True, ondelete="SET NULL"
     )
+    offer_id: uuid.UUID | None = Field(
+        foreign_key="offer.id", nullable=True, ondelete="SET NULL"
+    )
 
 
 class OrderPublic(OrderBase):
@@ -155,6 +159,46 @@ class OrderPublic(OrderBase):
 
 class OrdersPublic(SQLModel):
     data: list[OrderPublic]
+    count: int
+
+
+##########################################################################################
+# Offer
+##########################################################################################
+
+
+class OfferBase(SQLModel):
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
+    )  # In UTC
+
+
+class OfferCreate(OfferBase):
+    pass
+
+
+class OfferUpdate(OfferBase):
+    pass
+
+
+class Offer(Entity, OfferBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="offers")
+    email_id: uuid.UUID | None = Field(
+        foreign_key="email.id", nullable=True, ondelete="SET NULL"
+    )
+
+
+class OfferPublic(OfferBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+
+
+class OffersPublic(SQLModel):
+    data: list[OfferPublic]
     count: int
 
 
@@ -234,6 +278,20 @@ class EmailData(Entity, EmailDataBase, table=True):
         foreign_key="email.id", nullable=False, ondelete="CASCADE"
     )
     owner: Email | None = Relationship(back_populates="emails_data")
+
+
+##########################################################################################
+# Prompts
+##########################################################################################
+
+
+class PromptBase(BaseModel):
+    query: str | None = Field(default=None, max_length=255)
+    service: str | None = Field(default=None, max_length=255)
+    model: str | None = Field(default=None, max_length=255)
+    prompt: str | None = Field(default=None)
+    structure: dict | None = Field(default=None)
+    version: int = Field(default=1)
 
 
 ##########################################################################################

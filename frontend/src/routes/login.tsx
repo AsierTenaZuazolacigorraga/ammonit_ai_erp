@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import { emailPattern, passwordRules } from "../utils"
+import { emailPattern, passwordRules } from "@/utils/utils"
 import Logo from "/assets/images/ammonit_generic_logo.svg"
 
 export const Route = createFileRoute("/login")({

@@ -1,12 +1,6 @@
-import base64
-import io
-import json
-import logging
 import os
 import traceback
 import uuid
-from datetime import datetime, timezone
-from typing import List
 
 from app.core.config import settings
 from app.logger import get_logger
@@ -21,10 +15,11 @@ from app.models import (
     User,
 )
 from app.repositories.base import CRUDRepository
+from app.services.ai import AiService
+from app.services.offers import OfferCreate, OfferService
 from app.services.orders import OrderService
 from app.services.users import UserService
 from O365 import Account, FileSystemTokenBackend, Message
-from openai import OpenAI
 from sqlmodel import Session
 
 logger = get_logger(__name__)
@@ -39,12 +34,11 @@ class EmailService:
         self.emaildata_repository = CRUDRepository[EmailData](EmailData, session)
         self.order_service = OrderService(session)
         self.user_service = UserService(session)
+        self.offer_service = OfferService(session)
+        self.ai_service = AiService(session)
         self.id = settings.OUTLOOK_ID
         self.secret = settings.OUTLOOK_SECRET
         self.accounts = {}
-
-        # Initialize clients
-        self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     def authenticate(self, email: str) -> None:
         if not self.accounts[email]["account"].is_authenticated:
@@ -223,18 +217,18 @@ class EmailService:
                         .get_message(msg.object_id, download_attachments=True)
                     )
 
-                    logger.info(f"From: {msg_complete.sender}")
-                    for to in msg_complete.to:
-                        logger.info(f"To: {to.name} <{to.address}>")
-                    logger.info(f"Subject: {msg_complete.subject}")
-                    logger.info(f"Received: {msg_complete.received}")
-                    logger.info(f"Body: {msg_complete.body_preview}")
+                    logger.info(f"Email: {msg_complete.object_id}")
+                    # logger.info(f"From: {msg_complete.sender}")
+                    # for to in msg_complete.to:
+                    #     logger.info(f"To: {to.name} <{to.address}>")
+                    # logger.info(f"Subject: {msg_complete.subject}")
+                    # logger.info(f"Received: {msg_complete.received}")
+                    # logger.info(f"Body: {msg_complete.body_preview}")
 
                     # Only process if email is active
                     if email.is_orders:
                         for order in self.filter_orders(msg_complete, user, email):
                             try:
-                                # Create the order
                                 await self.order_service.create(
                                     order_create=OrderCreate(
                                         base_document=order["base_document"] or None,
@@ -254,7 +248,20 @@ class EmailService:
                     else:
                         logger.info(f"Email {k} is not active for orders")
                     if email.is_offers:
-                        logger.info(f"Email {k} is active for offers, comming soon ...")
+                        for offer in self.filter_offers(msg_complete, user, email):
+                            try:
+                                self.offer_service.create(
+                                    offer_create=OfferCreate(),
+                                    owner_id=owner_id,
+                                    email_id=email.id,
+                                )
+                            except Exception as e:
+                                state = EmailDataState.PROCESSED_ERROR
+                                logger.error(
+                                    "Failed to create offer: %s\nTraceback:\n%s",
+                                    str(e),
+                                    traceback.format_exc(),
+                                )
                     else:
                         logger.info(f"Email {k} is not active for offers")
 
@@ -282,50 +289,65 @@ class EmailService:
         # Decide to process or not
         process = False
         if email.orders_filter:
-            logger.info(f"TBD a filter according to {email.orders_filter} ...")
-            # response = self.ai_client.responses.create(
-            #     model="gpt-4.1-nano",
-            #     input=[
-            #         {
-            #             "role": "developer",
-            #             "content": [
-            #                 {
-            #                     "type": "input_text",
-            #                     "text": "",  # TODO
-            #                 }
-            #             ],
-            #         },
-            #         {
-            #             "role": "user",
-            #             "content": [
-            #                 {
-            #                     "type": "input_text",
-            #                     "text": "",  # TODO
-            #                 }
-            #             ],
-            #         },
-            #     ],
-            #     text={"format": {"type": "text"}},
-            #     reasoning={},
-            #     tools=[],
-            #     temperature=0,
-            #     max_output_tokens=2048,
-            #     top_p=0,
-            #     store=True,
-            #     metadata={
-            #         "service": "emails",
-            #         "query": "filter_orders",
-            #         "user_id": str(user.id),
-            #         "user_email": user.email,
-            #     },
-            # )
-            # process = response.output_text
-            # if process is None:
-            #     raise ValueError("Failed to filter orders.")
+            response = self.ai_service.response_create_basic(
+                "filter_orders",
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": email.orders_filter,
+                        }
+                    ],
+                },
+                user=user,
+            )
+            process = response.output_text.lower() == "true"
         else:
             process = True
 
         if process:
             return orders
+        else:
+            return []
+
+    def filter_offers(
+        self, msg_complete: Message, user: User, email: Email
+    ) -> list[dict]:
+
+        from app.services._emails._filters import _filter_offers
+
+        offers = _filter_offers(msg_complete, user, email)
+
+        # Decide to process or not
+        process = False
+        if email.offers_filter:
+            response = self.ai_service.response_create_basic(
+                "filter_offers",
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": f"""
+Email Details:
+From: {msg_complete.sender}
+To: {', '.join([f"{to.name} <{to.address}>" for to in msg_complete.to])}
+CC: {', '.join([f"{cc.name} <{cc.address}>" for cc in msg_complete.cc]) if msg_complete.cc else 'None'}
+Subject: {msg_complete.subject}
+Date: {msg_complete.created}
+Attachments: {', '.join([att.name for att in msg_complete.attachments]) if msg_complete.attachments else 'None'}
+Body:\n {msg_complete.body}""",
+                        }
+                    ],
+                },
+                user=user,
+            )
+            process = response.output_text.lower() == "true"
+        else:
+            process = True
+
+        if process:
+            return offers
         else:
             return []

@@ -19,7 +19,7 @@ import {
 import { Field } from "@/components/ui/field"
 import useAuth from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { emailPattern, handleError } from "@/utils/utils"
 
 const UserInformation = () => {
   const queryClient = useQueryClient()

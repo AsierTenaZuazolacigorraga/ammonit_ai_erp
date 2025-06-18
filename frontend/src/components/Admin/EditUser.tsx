@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern, handleError } from "@/utils"
+import { emailPattern, handleError } from "@/utils/utils"
 import { FiEdit2 } from "react-icons/fi"
 
 interface EditUserProps {

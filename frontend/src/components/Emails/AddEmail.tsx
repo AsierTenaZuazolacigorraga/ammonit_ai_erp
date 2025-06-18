@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import useCustomToast from "@/hooks/useCustomToast"
-import { emailPattern } from "@/utils"
+import { emailPattern } from "@/utils/utils"
 import { Button, Input, VStack } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"

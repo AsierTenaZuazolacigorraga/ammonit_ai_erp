@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, EmailsDeleteEmailData, EmailsDeleteEmailResponse, EmailsUpdateEmailData, EmailsUpdateEmailResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { EmailsReadEmailsData, EmailsReadEmailsResponse, EmailsCreateEmailData, EmailsCreateEmailResponse, EmailsCreateOutlookTokenStep1Data, EmailsCreateOutlookTokenStep1Response, EmailsCreateOutlookTokenStep2Data, EmailsCreateOutlookTokenStep2Response, EmailsDeleteEmailData, EmailsDeleteEmailResponse, EmailsUpdateEmailData, EmailsUpdateEmailResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, OffersReadOffersData, OffersReadOffersResponse, OffersCreateOfferResponse, OffersReadOfferData, OffersReadOfferResponse, OffersDeleteOfferData, OffersDeleteOfferResponse, OrdersReadOrdersData, OrdersReadOrdersResponse, OrdersCreateOrderData, OrdersCreateOrderResponse, OrdersReadOrderData, OrdersReadOrderResponse, OrdersDeleteOrderData, OrdersDeleteOrderResponse, OrdersApproveOrderData, OrdersApproveOrderResponse, OrdersUpdateOrderErpStateData, OrdersUpdateOrderErpStateResponse, UsersReadUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersReadUserData, UsersReadUserResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class EmailsService {
     /**
@@ -151,6 +151,87 @@ export class LoginService {
             url: '/api/v1/login/access-token/',
             formData: data.formData,
             mediaType: 'application/x-www-form-urlencoded',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+}
+
+export class OffersService {
+    /**
+     * Read Offers
+     * Retrieve offers.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @returns OffersPublic Successful Response
+     * @throws ApiError
+     */
+    public static readOffers(data: OffersReadOffersData = {}): CancelablePromise<OffersReadOffersResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/offers/',
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Offer
+     * Create an offer.
+     * @returns OfferPublic Successful Response
+     * @throws ApiError
+     */
+    public static createOffer(): CancelablePromise<OffersCreateOfferResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/offers/'
+        });
+    }
+    
+    /**
+     * Read Offer
+     * Get offer by id.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns OfferPublic Successful Response
+     * @throws ApiError
+     */
+    public static readOffer(data: OffersReadOfferData): CancelablePromise<OffersReadOfferResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/offers/{id}/',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Offer
+     * Delete an offer.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteOffer(data: OffersDeleteOfferData): CancelablePromise<OffersDeleteOfferResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/offers/{id}/',
+            path: {
+                id: data.id
+            },
             errors: {
                 422: 'Validation Error'
             }

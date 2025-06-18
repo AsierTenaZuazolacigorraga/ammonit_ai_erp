@@ -12,6 +12,8 @@ from .emails_create_outlook_token_step_2_response_emails_create_outlook_token_st
 from .emails_public import EmailsPublic
 from .http_validation_error import HTTPValidationError
 from .message import Message
+from .offer_public import OfferPublic
+from .offers_public import OffersPublic
 from .order_public import OrderPublic
 from .order_public_content_structured_type_0 import OrderPublicContentStructuredType0
 from .order_state import OrderState
@@ -39,6 +41,8 @@ __all__ = (
     "EmailUpdate",
     "HTTPValidationError",
     "Message",
+    "OfferPublic",
+    "OffersPublic",
     "OrderPublic",
     "OrderPublicContentStructuredType0",
     "OrdersPublic",

@@ -13,7 +13,7 @@ import { OrdersService } from "@/client"
 import { ApiError } from "@/client/core/ApiError"
 import DropZone from "@/components/Common/DropZone"
 import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
+import { handleError } from "@/utils/utils"
 import {
   DialogBody,
   DialogContent,

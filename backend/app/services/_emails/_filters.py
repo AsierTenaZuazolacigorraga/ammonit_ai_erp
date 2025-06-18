@@ -32,3 +32,7 @@ def _filter_orders(msg_complete: Message, user: User, email: Email) -> list[dict
         logger.warning(f"Non orders found for ID: {msg_complete.object_id}")
 
     return orders
+
+
+def _filter_offers(msg_complete: Message, user: User, email: Email) -> list[dict]:
+    return []

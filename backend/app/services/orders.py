@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.logger import get_logger
 from app.models import Email, Order, OrderCreate, OrderState, OrderUpdate, User
 from app.repositories.base import CRUDRepository
+from app.services.ai import AiService
 from app.services.users import UserService
 from dotenv import load_dotenv
 from fastapi import HTTPException
@@ -52,50 +53,25 @@ def parse_pdf_binary_2_base64(pdf_binary: bytes) -> str:
 
 
 async def parse_document_2_md(
-    ai_client: OpenAI, document: bytes, document_name: str, user: User
+    ai_service: AiService, document: bytes, document_name: str, user: User
 ) -> str:
 
     # Convert to md
     if not document_name.endswith(".pdf"):
         raise ValueError(f"Unsupported file type: {document_name}")
 
-    from app.services._orders._prompts import DOCUMENT_2_MD_PROMPT
-
-    response = ai_client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
-            {
-                "role": "developer",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": DOCUMENT_2_MD_PROMPT,
-                    }
-                ],
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_image",
-                        "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(document)}",
-                    }
-                ],
-            },  # type: ignore
-        ],
-        text={"format": {"type": "text"}},
-        reasoning={},
-        tools=[],
-        temperature=0,
-        max_output_tokens=2048,
-        top_p=0,
-        store=True,
-        metadata={
-            "service": "orders",
-            "query": "document_2_md",
-            "user_id": str(user.id),
-            "user_email": user.email,
-        },
+    response = ai_service.response_create_basic(
+        "document_2_md",
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/jpeg;base64,{parse_pdf_binary_2_base64_jpg(document)}",
+                }
+            ],
+        },  # type: ignore
+        user=user,
     )
     md = response.output_text
     if md is None:
@@ -103,89 +79,42 @@ async def parse_document_2_md(
     return md
 
 
-async def parse_md_2_order(ai_client: OpenAI, md: str, user: User) -> dict:
+async def parse_md_2_order(ai_service: AiService, md: str, user: User) -> dict:
 
-    from app.services._orders._prompts import MD_2_ORDER_PROMPT
-
-    response = ai_client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
-            {
-                "role": "developer",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": MD_2_ORDER_PROMPT.replace(
-                            "{ADDITIONAL_RULES}",
-                            user.orders_additional_rules or "",
-                        ).replace(
-                            "{PARTICULAR_RULES}",
-                            user.orders_particular_rules or "",
-                        ),
-                    }
-                ],
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": md,
-                    }
-                ],
-            },
-        ],
-        text={"format": {"type": "text"}},
-        reasoning={},
-        tools=[],
-        temperature=0,
-        max_output_tokens=2048,
-        top_p=0,
-        store=True,
-        metadata={
-            "service": "orders",
-            "query": "md_2_order",
-            "user_id": str(user.id),
-            "user_email": user.email,
+    response = ai_service.response_create_basic(
+        "md_2_order",
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": md,
+                }
+            ],
+        },
+        user=user,
+        find_and_replace={
+            "{ADDITIONAL_RULES}": user.orders_additional_rules or "",
+            "{PARTICULAR_RULES}": user.orders_particular_rules or "",
         },
     )
     order = response.output_text
     if order is None:
         raise ValueError("Failed to parse the markdown to order.")
 
-    from app.services._orders._prompts import ORDER_SCHEMA
-
     # Extract structured info
-    response = ai_client.responses.create(
-        model="gpt-4.1-nano",
-        input=[
-            {
-                "role": "developer",
-                "content": f"""
-El usuario te proporcionará un texto con cierto formato json.
-Tu tarea es analizar el texto y responder con un json estructurado acorde a esta especificación:
-
-{json.dumps(ORDER_SCHEMA, indent=4, ensure_ascii=False)}
-""",
-            },
-            {
-                "role": "user",
-                "content": order,
-            },
-        ],
-        text={"format": {"type": "json_schema", **ORDER_SCHEMA}},  # type: ignore
-        reasoning={},
-        tools=[],
-        temperature=0,
-        max_output_tokens=2048,
-        top_p=0,
-        store=True,
-        metadata={
-            "service": "orders",
-            "query": "order_2_dict",
-            "user_id": str(user.id),
-            "user_email": user.email,
+    response = ai_service.response_create_basic(
+        "order_2_json",
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": order,
+                }
+            ],
         },
+        user=user,
     )
     if response.output_text is None:
         raise ValueError("Failed to parse the order information from the markdown.")
@@ -227,7 +156,7 @@ def parse_order_dict_2_csv(order_dict: dict) -> str:
 
 
 async def process(
-    order_create: OrderCreate, ai_client: OpenAI, user: User
+    order_create: OrderCreate, ai_service: AiService, user: User
 ) -> tuple[User, OrderCreate]:
 
     if order_create.base_document is None:
@@ -242,14 +171,19 @@ async def process(
 
     # Parse document to md
     md = await parse_document_2_md(
-        ai_client, document, order_create.base_document_name, user
+        ai_service, document, order_create.base_document_name, user
     )
 
     # Parse md to order
-    order_dict = await parse_md_2_order(ai_client, md, user)
+    order_dict = await parse_md_2_order(ai_service, md, user)
 
     # Preprocess order
-    order_create.content_processed = preprocess_order(order_dict, user)
+    order_columns_mapping = ai_service.get_prompt("order_columns_mapping").structure
+    if order_columns_mapping is None:
+        raise ValueError("Order columns mapping cannot be None")
+    order_create.content_processed = preprocess_order(
+        order_columns_mapping, order_dict, user
+    )
     order_create.content_structured = order_dict
     order_create.base_document_markdown = md
 
@@ -262,10 +196,12 @@ def preprocess_document(document: bytes, document_name: str, user: User) -> byte
     return _preprocess_document(document, document_name, user)
 
 
-def preprocess_order(order_dict: dict, user: User) -> str:
+def preprocess_order(order_columns_mapping: dict, order_dict: dict, user: User) -> str:
     from app.services._orders._preprocessors_orders import _preprocess_order
 
-    return parse_order_dict_2_csv(_preprocess_order(order_dict, user))
+    return parse_order_dict_2_csv(
+        _preprocess_order(order_columns_mapping, order_dict, user)
+    )
 
 
 class OrderService:
@@ -275,14 +211,11 @@ class OrderService:
     ) -> None:
         self.repository = CRUDRepository[Order](Order, session)
         self.user_service = UserService(session)
+        self.ai_service = AiService(session)
         self.session = session
-
-        # Initialize clients
-        self.ai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     async def create(
         self,
-        *,
         order_create: OrderCreate,
         owner_id: uuid.UUID,
         email_id: uuid.UUID | None = None,
@@ -299,7 +232,7 @@ class OrderService:
         # Process parsing
         user, order_create = await process(
             order_create=order_create,
-            ai_client=self.ai_client,
+            ai_service=self.ai_service,
             user=user,
         )
 

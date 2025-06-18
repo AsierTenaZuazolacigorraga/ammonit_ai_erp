@@ -4,24 +4,24 @@ from app.models import Order, User
 logger = get_logger(__name__)
 
 
-def _process_dict_fields(old_dict: dict) -> dict:
-
-    from app.services._orders._prompts import ORDER_COLUMS_MAPPING
+def _process_dict_fields(order_columns_mapping: dict, old_dict: dict) -> dict:
 
     new_dict = {}
 
     for field, value in old_dict.items():
         # If value is a dictionary, process it recursively
         if isinstance(value, dict):
-            new_dict[field] = _process_dict_fields(value)
+            new_dict[field] = _process_dict_fields(order_columns_mapping, value)
         # If value is a list of dictionaries, process each item
         elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
-            new_dict[field] = [_process_dict_fields(item) for item in value]
+            new_dict[field] = [
+                _process_dict_fields(order_columns_mapping, item) for item in value
+            ]
         # If field exists in mapping
-        elif field in ORDER_COLUMS_MAPPING:
+        elif field in order_columns_mapping:
             # If field should be included, rename it according to mapping
-            if ORDER_COLUMS_MAPPING[field]["include"]:
-                new_dict[ORDER_COLUMS_MAPPING[field]["column"]] = value
+            if order_columns_mapping[field]["include"]:
+                new_dict[order_columns_mapping[field]["column"]] = value
         # If field is not in mapping, keep it as is
         else:
             new_dict[field] = value
@@ -37,10 +37,12 @@ def _process_dict_fields(old_dict: dict) -> dict:
     return new_dict
 
 
-def _preprocess_order(order_dict: dict, user: User) -> dict:
+def _preprocess_order(
+    order_columns_mapping: dict, order_dict: dict, user: User
+) -> dict:
 
     ##############################################################
-    order_dict = _process_dict_fields(order_dict)
+    order_dict = _process_dict_fields(order_columns_mapping, order_dict)
 
     ##############################################################
     if user.email == "asier.tena.zu@outlook.com":
