@@ -131,10 +131,10 @@ def approve_order(
 
 
 @router.patch(
-    "/update_erp_state/{id}/",
+    "/{id}/",
     response_model=OrderPublic,
 )
-def update_order_erp_state(
+def update_order(
     *,
     order_service: OrderServiceDep,
     current_user: CurrentUserDep,
@@ -142,7 +142,7 @@ def update_order_erp_state(
     order_in: OrderUpdate,
 ) -> OrderPublic:
     """
-    Update ERP state of an order.
+    Update an order.
     """
 
     order = order_service.get_by_id(id)
@@ -154,7 +154,5 @@ def update_order_erp_state(
         raise HTTPException(
             status_code=400, detail="No se puede actualizar un documento no aprobado"
         )
-    order = order_service.update_erp_state(
-        order_update=order_in, id=id, user=current_user
-    )
+    order = order_service.update(order_update=order_in, id=id)
     return OrderPublic.model_validate(order)

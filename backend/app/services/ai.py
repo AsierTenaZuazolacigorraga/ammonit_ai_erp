@@ -308,8 +308,9 @@ is_offer_email = PromptBase(
     model="gpt-4.1-nano",
     prompt=f"""
 Eres un asistente especializado en analizar correos electrónicos y determinar si son ofertas comerciales.
-Por ahora, response siempre con "true".
-Solamente responde con con la palabra "true".
+Por ahora, response con "true", se el email que se te proporciona contine la palabra "oferta" en su asunto.
+Si no contiene la palabra "oferta" en su asunto, responde con "false".
+Solamente responde con con la palabra "true" o "false".
 """,
     # Please analyze the email data that the user provides and determine if it's an offer-related email.
     # Respond with a single word: 'true' if this appears to be an offer-related email, or 'false' if it's not. Consider factors like:

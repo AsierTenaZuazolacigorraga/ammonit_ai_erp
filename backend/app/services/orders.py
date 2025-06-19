@@ -240,6 +240,11 @@ class OrderService:
         update = {"owner_id": user.id, "email_id": email_id}
         order = Order.model_validate(order_create, update=update)
 
+        # Timestamp
+        order.state_set_at = {
+            OrderState.PENDING.value: datetime.now(timezone.utc).isoformat()
+        }
+
         # Create the order
         self.repository.create(order)
 
@@ -249,34 +254,40 @@ class OrderService:
 
         return order
 
-    def approve(self, order_update: OrderUpdate, id: uuid.UUID, user: User) -> Order:
-
+    def update(self, order_update: OrderUpdate, id: uuid.UUID) -> Order:
         order = self.get_by_id(id)
+        return self.repository.update(
+            order, update=order_update.model_dump(exclude_unset=True)
+        )
 
-        # Update the order
-        order_update.approved_at = datetime.now(timezone.utc)
+    def adapt_state(
+        self, order_update: OrderUpdate, new_state: OrderState
+    ) -> OrderUpdate:
+
+        current_time = datetime.now(timezone.utc).isoformat()
+
+        # Initialize state_set_at if it doesn't exist
+        if order_update.state_set_at is None:
+            order_update.state_set_at = {}
+
+        # Update the state timestamps using enum value
+        order_update.state_set_at[new_state.value] = current_time
+
+        # Update the order state
+        order_update.state = new_state
+
+        return order_update
+
+    def approve(self, order_update: OrderUpdate, id: uuid.UUID, user: User) -> Order:
 
         from app.services._orders._postprocessors_orders import _postprocess_order
 
-        state, created_in_erp_at = _postprocess_order(user)
-        order_update.state = state
-        order_update.created_in_erp_at = created_in_erp_at
+        state = _postprocess_order(user)
 
-        return self.repository.update(
-            order, update=order_update.model_dump(exclude_unset=True)
-        )
+        # Adaptations
+        order_update = self.adapt_state(order_update, state)
 
-    def update_erp_state(
-        self, order_update: OrderUpdate, id: uuid.UUID, user: User
-    ) -> Order:
-
-        order = self.get_by_id(id)
-
-        # Update the order
-        order_update.created_in_erp_at = datetime.now(timezone.utc)
-        return self.repository.update(
-            order, update=order_update.model_dump(exclude_unset=True)
-        )
+        return self.update(order_update, id)
 
     def get_all(self, skip: int, limit: int, owner_id: uuid.UUID) -> list[Order]:
         return self.repository.get_all_by_kwargs(

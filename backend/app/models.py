@@ -95,8 +95,9 @@ class OrderBase(SQLModel):
         ),
         default=OrderState.PENDING,
     )
-    approved_at: datetime | None = Field(default=None, nullable=True)  # In UTC
-    created_in_erp_at: datetime | None = Field(default=None, nullable=True)  # In UTC
+    state_set_at: dict | None = Field(
+        default=None, sa_type=JSON
+    )  # Track when each state was set
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )  # In UTC
@@ -167,7 +168,25 @@ class OrdersPublic(SQLModel):
 ##########################################################################################
 
 
+class OfferState(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    INTEGRATED_OK = "INTEGRATED_OK"
+    INTEGRATED_ERROR = "INTEGRATED_ERROR"
+
+
 class OfferBase(SQLModel):
+    base_message: str | None = Field(default=None)
+    state: OfferState = Field(
+        sa_column=Column(
+            PGEnum(OfferState, name="offer_state_enum", create_type=True),
+            nullable=False,
+        ),
+        default=OfferState.PENDING,
+    )
+    state_set_at: dict | None = Field(
+        default=None, sa_type=JSON
+    )  # Track when each state was set
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )  # In UTC
@@ -254,8 +273,9 @@ class EmailDataState(str, Enum):
 
 
 class EmailDataBase(SQLModel):
-    email_id: str = Field(nullable=False)
-    email_body: str | None = Field(default=None)
+    message_id: str = Field(nullable=False)
+    conversation_id: str | None = Field(default=None)
+    web_link: str | None = Field(default=None)
     state: EmailDataState = Field(
         sa_column=Column(
             PGEnum(EmailDataState, name="email_state_enum", create_type=True),

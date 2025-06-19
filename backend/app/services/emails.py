@@ -138,7 +138,7 @@ class EmailService:
             )
         )
 
-    def emaildata_create(
+    def email_data_create(
         self, email_data_create: EmailDataCreate, owner_id: uuid.UUID
     ) -> EmailData:
         return self.emaildata_repository.create(
@@ -227,14 +227,12 @@ class EmailService:
 
                     # Only process if email is active
                     if email.is_orders:
-                        for order in self.filter_orders(msg_complete, user, email):
+                        for order_create in self.filter_orders(
+                            msg_complete, user, email
+                        ):
                             try:
                                 await self.order_service.create(
-                                    order_create=OrderCreate(
-                                        base_document=order["base_document"] or None,
-                                        base_document_name=order["base_document_name"]
-                                        or None,
-                                    ),
+                                    order_create=order_create,
                                     owner_id=owner_id,
                                     email_id=email.id,
                                 )
@@ -248,10 +246,12 @@ class EmailService:
                     else:
                         logger.info(f"Email {k} is not active for orders")
                     if email.is_offers:
-                        for offer in self.filter_offers(msg_complete, user, email):
+                        for offer_create in self.filter_offers(
+                            msg_complete, user, email
+                        ):
                             try:
                                 self.offer_service.create(
-                                    offer_create=OfferCreate(),
+                                    offer_create=offer_create,
                                     owner_id=owner_id,
                                     email_id=email.id,
                                 )
@@ -267,24 +267,22 @@ class EmailService:
 
                     # Save it for tracing
                     new_messages.append(msg)
-                    self.emaildata_create(
+                    self.email_data_create(
                         email_data_create=EmailDataCreate(
-                            email_id=msg.object_id,
-                            email_body=msg.body,
+                            message_id=msg.object_id,
+                            conversation_id=msg.conversation_id,
+                            web_link=msg.web_link,
                             state=state,
                         ),
                         owner_id=email.id,
                     )
+
             if not new_messages:
                 logger.info(f"No new messages found for {email.email}")
 
     def filter_orders(
         self, msg_complete: Message, user: User, email: Email
-    ) -> list[dict]:
-
-        from app.services._emails._filters import _filter_orders
-
-        orders = _filter_orders(msg_complete, user, email)
+    ) -> list[OrderCreate]:
 
         # Decide to process or not
         process = False
@@ -307,17 +305,17 @@ class EmailService:
             process = True
 
         if process:
-            return orders
+            from app.services._emails._preprocessors_emails import (
+                _preprocessors_emails_orders,
+            )
+
+            return _preprocessors_emails_orders(msg_complete, user, email)
         else:
             return []
 
     def filter_offers(
         self, msg_complete: Message, user: User, email: Email
-    ) -> list[dict]:
-
-        from app.services._emails._filters import _filter_offers
-
-        offers = _filter_offers(msg_complete, user, email)
+    ) -> list[OfferCreate]:
 
         # Decide to process or not
         process = False
@@ -348,6 +346,10 @@ Body:\n {msg_complete.body}""",
             process = True
 
         if process:
-            return offers
+            from app.services._emails._preprocessors_emails import (
+                _preprocessors_emails_offers,
+            )
+
+            return _preprocessors_emails_offers(msg_complete, user, email)
         else:
             return []
